@@ -1,0 +1,57 @@
+---
+title: Lists and read later
+description: Save posts for later and organise them into public or private reading lists.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Lists are how you keep a post without following its author, and how you curate
+collections others can read.
+
+## Read later
+
+Every post has a save control that drops it into your built-in **Read later**
+list at `/lists/read-later`. It is always private, always yours, and needs no
+setup.
+
+## Custom lists
+
+Create named lists at `/lists`. Each list has:
+
+- a **name** and optional description,
+- an **ordered set of posts**,
+- a **visibility** setting.
+
+Add a post from the post itself — the control shows which of your lists already
+contain it — or manage membership from the list page.
+
+## Public lists
+
+A public list appears on your profile's **Lists** tab and has its own shareable
+URL, so a list is a lightweight way to publish a reading guide without writing a
+post about it.
+
+Private lists are visible only to you.
+
+<Callout type="note">
+Reading lists are exposed to the fediverse as ActivityPub objects under
+`/users/{username}/lists/{listId}`, so a public list is genuinely public — it can
+be fetched by any server that knows its URI.
+</Callout>
+
+## Lists and remote posts
+
+A list can hold federated posts as well as local ones. The list stores a
+reference; if the remote post is deleted upstream, the entry stops resolving.
+
+## Managing a list
+
+| Action | Where |
+| --- | --- |
+| Create | `/lists` |
+| Rename, edit description, change visibility | The list page |
+| Add a post | The post, or the list page |
+| Remove a post | The list page |
+| Delete the list | The list page |
+
+Deleting a list never deletes the posts in it — a list is a set of references.

@@ -1,0 +1,89 @@
+---
+title: How federation works
+description: What ActivityPub means in practice for an Omicron instance — identity, delivery, and the boundaries of your control.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Federation is implemented with [Fedify](https://fedify.dev), which handles
+HTTP signatures, delivery, and retries. The entire `federation/` tree — and the
+Fedify dependency itself — is imported **only** when `FEDERATION_ENABLED=true`,
+so a standalone blog carries none of it at runtime.
+
+## Identity
+
+With federation on, each local account becomes an ActivityPub **actor**:
+
+```
+handle:  @alice@your-domain
+actor:   https://your-domain/users/alice
+inbox:   https://your-domain/users/alice/inbox
+outbox:  https://your-domain/users/alice/outbox
+```
+
+Discovery starts at **WebFinger**: a remote server asked to find
+`@alice@your-domain` queries
+`/.well-known/webfinger?resource=acct:alice@your-domain`, gets back the actor URI,
+and fetches the actor document from there.
+
+Every one of those URIs is built from your domain, which is why the domain must
+be settled **before** you federate and must not change afterwards.
+
+<Callout type="note" title="Why HTTPS is effectively mandatory">
+Remote servers will not deliver to, or fetch from, a plain-HTTP actor. Caddy
+terminates TLS and forwards to the backend over HTTP inside the Docker network;
+the backend trusts `x-forwarded-proto` from that single hop so every generated
+URI is `https://`.
+</Callout>
+
+## Inbound
+
+Other servers POST activities to an actor's inbox, or to the **shared inbox** at
+`/inbox` when one activity is addressed to many of your users at once.
+
+| Incoming | What Omicron does |
+| --- | --- |
+| `Follow` | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept` |
+| `Create` (Note/Article) | Stores the post or reply and shows it in the appropriate feed |
+| `Like` | Records the like; it counts in the writer dashboard |
+| `Announce` | Records the boost |
+| `Undo` | Reverses the referenced Follow, Like, or Announce |
+| `Delete` | Removes the referenced remote content |
+
+Inbound requests are signature-verified by Fedify, rate-limited per source IP,
+and capped in body size — twice, once by declared `Content-Length` and again
+while buffering, so a spoofed or missing length cannot stream an unbounded
+payload into the parser.
+
+## Outbound
+
+Publishing a post enqueues a `Create` activity for delivery to each remote
+follower's inbox. Delivery is asynchronous: a slow or unreachable remote server
+never blocks the user's request, and Fedify retries.
+
+The same path carries `Accept`, `Like`, `Undo`, `Delete`, and profile updates.
+
+See [Delivery and queues](/docs/federation/delivery/).
+
+## Author attribution on link cards
+
+The bare actor document has Mastodon's `attributionDomains` spliced in, so when
+one of your articles is shared, the link preview card renders an author byline
+instead of an anonymous card.
+
+## What federation does not give you
+
+- **No retroactive history.** A new follower receives what you publish from then
+  on, not your archive.
+- **No delivery guarantee.** A remote server may be down, may have blocked you,
+  or may simply drop activities. Fedify retries; it cannot compel.
+- **No takedown power.** A `Delete` is a request other servers choose to honour.
+- **No read visibility.** You learn about likes, boosts, replies, and follows
+  because they are sent to you. Reads on other servers are invisible, by design —
+  see [Writer dashboard](/docs/using/analytics/).
+
+## Standalone mode is a first-class choice
+
+Running with federation off is fully supported, not a degraded state: you get a
+clean, self-hosted blog with no ActivityPub surface exposed to the internet at
+all. You can turn federation on later, once your domain is settled.

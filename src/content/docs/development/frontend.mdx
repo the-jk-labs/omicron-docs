@@ -1,0 +1,109 @@
+---
+title: Frontend guide
+description: Working inside apps/frontend — SvelteKit structure, the Bits UI rules, and the theme tokens.
+---
+
+import Callout from "@/components/Callout.astro";
+
+SvelteKit (Svelte 5), Bits UI, Tailwind CSS 3.4, Tiptap, Lucide.
+
+## Directory map
+
+| Directory | Responsibility |
+| --- | --- |
+| `src/routes/` | Pages (SSR) plus `/api/[...path]`, the reverse proxy to the backend |
+| `src/lib/api/` | Typed API client |
+| `src/lib/components/` | Application components; `Icon.svelte` is the single Lucide wrapper |
+| `src/lib/components/ui/` | Bits UI (headless) wrappers |
+| `src/lib/editor/` | Tiptap integration, lazy-loaded on `/compose` |
+
+## The reverse proxy
+
+`/api/[...path]` proxies to the backend, so the browser only ever talks to its
+own origin. That means **no CORS configuration and cookies that just work** —
+the session cookie is same-origin by construction.
+
+`INTERNAL_API_URL` tells the frontend how to reach the backend inside the
+container network.
+
+## UI rules
+
+These are strict, and they are what keeps the app visually coherent.
+
+### 1. Use Bits UI for every primitive that has one
+
+Button, Avatar, DropdownMenu, Tabs, Toolbar, Label, Separator, Dialog, Tooltip,
+and the rest. Fall back to native HTML **only** where Bits UI ships no equivalent
+— text `<input>`, `<form>`, headings, layout — because Bits UI is headless and
+has no such component.
+
+### 2. Style with the ported theme tokens, never ad-hoc colours
+
+<Callout type="danger" title="No default-palette colours">
+`text-neutral-*`, `bg-gray-*`, `text-red-600`, and raw `bg-white` are all
+violations. Use `text-foreground`, `bg-muted`, `text-destructive`,
+`bg-background`.
+</Callout>
+
+| Kind | Tokens |
+| --- | --- |
+| Colours | `foreground`, `foreground-alt`, `muted`, `muted-foreground`, `background`, `background-alt`, `dark`, `dark-10`, `accent`, `destructive`, `border` / `border-input` |
+| Radii | `rounded-input`, `rounded-card`, `rounded-9px`, `rounded-button`, … |
+| Shadows | `shadow-mini`, `shadow-popover`, `shadow-btn`, `shadow-card` |
+
+### 3. Copy the docs' class strings verbatim
+
+The [Bits UI docs](https://bits-ui.com/docs/) are the single source of truth for
+appearance. Copy each component page's example classes as-is, adapting only for
+Tailwind v3 (the docs are v4):
+
+| Docs (v4) | This project (v3) |
+| --- | --- |
+| `outline-hidden` | `outline-none` |
+| `ring-0!` | `!ring-0` |
+| `data-highlighted:` | `data-[highlighted]:` |
+
+### Where the theme lives
+
+- Tokens: `apps/frontend/tailwind.config.ts`
+- CSS variables, ported verbatim from the docs' `:root`: `apps/frontend/src/app.css`
+
+Keep them in sync with the Bits UI docs theme. **Do not invent new design
+tokens.**
+
+## Icons
+
+One wrapper, `Icon.svelte`, around Lucide. Import icons through it rather than
+scattering direct Lucide imports — it keeps sizing and stroke width consistent
+and the bundle predictable.
+
+## The editor
+
+Tiptap lives in `src/lib/editor/` and is **lazy-loaded on `/compose`** only. It
+carries Markdown input rules, image upload on paste and drop, and corner-drag
+image resizing. It is the heaviest dependency in the app; keep it off every other
+route.
+
+## Typography and fonts
+
+- **Inter** (variable, self-hosted) for UI — no render-blocking third-party font
+  request.
+- **Georgia** and friends for rendered post content: a Medium-like serif reading
+  column.
+- **Twemoji** as a self-hosted COLR colour font, scoped by `unicode-range` to
+  emoji codepoints only, so every reader sees the same emoji artwork regardless
+  of OS while the document keeps plain Unicode emoji — federation-friendly,
+  selectable, copyable.
+
+## Rendered post content
+
+`.prose-omicron` styles the HTML Tiptap produces. Media never overflows the
+reading column, and wide preformatted blocks are scaled to fit rather than
+pushing the page sideways.
+
+## Checks
+
+```bash
+cd apps/frontend
+npm run check      # svelte-check against tsconfig.json
+```

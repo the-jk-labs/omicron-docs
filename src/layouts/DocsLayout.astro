@@ -1,0 +1,95 @@
+---
+import type { MarkdownHeading } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Sidebar from "@/components/Sidebar.svelte";
+import TableOfContents from "@/components/TableOfContents.astro";
+import Pager from "@/components/Pager.astro";
+import { nav } from "@/lib/nav";
+
+interface Props {
+  title: string;
+  description: string;
+  badge?: string;
+  slug: string;
+  headings: MarkdownHeading[];
+}
+
+const { title, description, badge, slug, headings } = Astro.props;
+const editUrl = `https://github.com/the-jk-labs/omicron-docs/edit/main/src/content/docs/${slug}.mdx`;
+const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
+---
+
+<BaseLayout {title} {description} currentSlug={slug}>
+  <div class="mx-auto flex w-full max-w-[100rem] flex-1 px-4 sm:px-6">
+    {/* Sidebar — sticky under the header, its own scroll region. */}
+    <aside
+      class="hidden w-[17rem] shrink-0 lg:block"
+      style="position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height))"
+    >
+      <nav aria-label="Documentation" class="no-scrollbar h-full overflow-y-auto py-6 pr-4">
+        <Sidebar client:load sections={nav} currentSlug={slug} />
+      </nav>
+    </aside>
+
+    <main id="main" class="min-w-0 flex-1 py-10 lg:px-10">
+      {/* data-pagefind-* scopes the search index to the article body and gives
+          each result its title and section. */}
+      <article
+        class="mx-auto max-w-3xl"
+        data-pagefind-body
+        data-pagefind-meta={`title:${title}${section ? `, section:${section}` : ""}`}
+      >
+        <header class="mb-8">
+          {
+            section && (
+              <p class="text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
+                {section}
+              </p>
+            )
+          }
+          <div class="mt-1.5 flex flex-wrap items-center gap-3">
+            <h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-[2.125rem]">
+              {title}
+            </h1>
+            {
+              badge && (
+                <span class="rounded-input border border-border bg-muted px-2 py-0.5 text-xxs font-medium uppercase tracking-wide text-foreground-alt">
+                  {badge}
+                </span>
+              )
+            }
+          </div>
+          <p class="mt-3 text-base text-muted-foreground">{description}</p>
+        </header>
+
+        <div class="prose-docs">
+          <slot />
+        </div>
+
+        <Pager {slug} />
+
+        <p class="mt-6 text-sm text-muted-foreground">
+          Found a mistake?
+          <a
+            href={editUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            class="text-foreground underline decoration-dark-40 underline-offset-4 hover:decoration-foreground"
+          >
+            Edit this page on GitHub
+          </a>.
+        </p>
+      </article>
+    </main>
+
+    {/* Table of contents — hidden below xl, where the reading column takes over. */}
+    <aside
+      class="hidden w-[15rem] shrink-0 xl:block"
+      style="position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height))"
+    >
+      <div class="no-scrollbar h-full overflow-y-auto py-10 pl-2">
+        <TableOfContents {headings} />
+      </div>
+    </aside>
+  </div>
+</BaseLayout>

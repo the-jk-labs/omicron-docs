@@ -1,0 +1,132 @@
+---
+title: Troubleshooting
+description: The failures people actually hit, and what each one means.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Start here, always:
+
+```bash
+docker compose ps                 # what is running
+docker compose logs -f backend    # or: caddy, frontend, postgres, redis
+```
+
+## Installation
+
+**The first `up` takes a long time or seems stuck.**
+The first build compiles the images — a few minutes is normal. Watch progress
+with `docker compose logs -f`.
+
+**A service keeps restarting.**
+Read its logs specifically. A restarting `backend` is usually a database it cannot
+reach; a restarting `postgres` is usually a `pgdata` volume that does not match
+the password in `secrets` (see [Backups](/docs/self-hosting/backups/)).
+
+## Reaching the site
+
+**I cannot reach it at all.**
+
+- **Local:** use `http://localhost` (not HTTPS). The app is also directly at
+  `http://localhost:5173` for debugging.
+- **Public:** confirm the DNS `A`/`AAAA` record points at the server, and that
+  ports 80 and 443 are open in both the host firewall and your provider's
+  security group.
+
+**Ports 80/443 already in use.**
+Set `HTTP_PORT` / `HTTPS_PORT` in `.env` to free ports, or stop the conflicting
+service.
+
+## HTTPS
+
+**The certificate is not being issued.**
+
+- DNS must resolve to this server first.
+- Ports 80 and 443 must be reachable from the internet — Let's Encrypt validates
+  over them.
+- Check the ACME error: `docker compose logs -f caddy`.
+
+**`localhost` has no certificate.**
+Expected. Local development is served over plain HTTP.
+
+## Email
+
+**"Port 25 is blocked" when setting up direct email.**
+Expected on most hosts, and always on localhost. Use the `smtp` or `relay` mode
+instead, or ask your provider to unblock port 25 and set reverse DNS.
+
+**The test email fails.**
+The error is shown verbatim. Common causes: wrong SMTP password, the wrong
+port/TLS combination (587 = STARTTLS, 465 = implicit TLS), or a provider that
+requires a verified sender. Fix and press **send test** again.
+
+**Mail sends but lands in spam.**
+With `direct`, check SPF, DKIM, DMARC, and especially the PTR record. With any
+mode, a brand-new IP or domain has no reputation yet.
+
+## Federation
+
+**The federation toggle did not take effect.**
+It applies on restart. Run `docker compose up -d`, then check
+`curl localhost:8000/version` for `"federation": true`.
+
+**`/.well-known/nodeinfo` returns 404.**
+Federation is still off, or the restart has not happened.
+
+**Nobody can find `@me@my-domain` from Mastodon.**
+Check, from another machine:
+
+```bash
+curl "https://your-domain/.well-known/webfinger?resource=acct:me@your-domain"
+curl -H "Accept: application/activity+json" https://your-domain/users/me
+```
+
+Both must return JSON over **HTTPS on your real domain**. If the domain in the
+returned URIs is wrong, your public domain setting does not match the domain
+being served.
+
+**Posts are not reaching remote followers.**
+Delivery is queued. Check the backend logs for delivery errors, confirm the
+remote instance has not defederated you, and confirm the post is **published**,
+not a draft.
+
+## Scraper shield
+
+**The toggle in Admin → Security is unavailable.**
+Caddy has not been recreated with the newer Caddyfile. Run once:
+
+```bash
+docker compose up -d --build --force-recreate
+```
+
+**Readers are being challenged again after a restart.**
+Expected — the challenge service's signing key is in memory, so a restart costs
+one extra solve.
+
+## Data
+
+**I ran `docker compose down -v`.**
+That deleted the volumes: database, uploads, secrets, and certificates. Restore
+from a backup; there is no other recovery.
+
+**The backend cannot connect to Postgres after a restore.**
+The classic pairing failure: a fresh `pgdata` with an old `secrets`, or the
+reverse. See the pairing rule in
+[Backups and restore](/docs/self-hosting/backups/).
+
+## Still stuck
+
+Collect the version and the relevant logs before opening an issue:
+
+```bash
+curl localhost:8000/version
+docker compose logs --since 30m backend > backend.log
+```
+
+<Callout type="warning" title="Scrub before you share">
+Logs can contain email addresses, domains, and — in `console` email mode —
+password-reset links. Read through them before attaching them to a public issue.
+</Callout>
+
+Then open an issue at
+[github.com/the-jk-labs/omicron/issues](https://github.com/the-jk-labs/omicron/issues).

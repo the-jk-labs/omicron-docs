@@ -1,0 +1,104 @@
+---
+title: Domain and HTTPS
+description: Point one DNS record at your server and get an automatic Let's Encrypt certificate — the only manual infrastructure step.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Going public is a **single DNS record**. There is no certbot, no certificate
+file, no renewal cron, and no domain typed into any config file.
+
+## 1. Point DNS at your server
+
+In your domain provider's DNS settings, add a record for the hostname you want:
+
+- an **`A`** record pointing at your server's IPv4 address, or
+- an **`AAAA`** record pointing at its IPv6 address.
+
+```
+blog.example.com.   A   203.0.113.10
+```
+
+## 2. Wait for propagation
+
+Usually minutes, occasionally up to an hour. Check with:
+
+```bash
+dig +short blog.example.com
+```
+
+The answer must be your server's IP before the next step can succeed.
+
+## 3. Open `https://your-domain`
+
+The first HTTPS request triggers the bundled Caddy to fetch a Let's Encrypt
+certificate **on demand**. Caddy handles issuance and renewal from then on, and
+stores the certificate in the `caddy_data` volume so upgrades keep it.
+
+You will see the setup wizard, served over HTTPS on your domain.
+
+## How the domain is learned
+
+You do not put your domain in a file. Caddy learns the hostname from the incoming
+request and asks the backend whether it is allowed to obtain a certificate for
+it. Once the wizard is finished, only your saved domain — and its `www.` alias —
+is ever issued a certificate.
+
+That guard matters: without it, anyone pointing a stray hostname at your server's
+IP could trigger unbounded certificate requests against Let's Encrypt's rate
+limits.
+
+<Callout type="note">
+You can also set `APP_DOMAIN` up front in `.env`, but it is not required. Web
+settings (wizard or admin panel) take precedence over the environment variable.
+</Callout>
+
+## Ports
+
+Let's Encrypt validates over ports **80** and **443**, so both must be reachable
+from the internet — check your host firewall and your provider's security group.
+
+If those ports are already in use on the host you can move Omicron:
+
+```bash
+# .env
+HTTP_PORT=8080
+HTTPS_PORT=8443
+```
+
+Automatic HTTPS on non-standard ports is not standard behaviour, so for a real
+public instance prefer freeing 80 and 443 instead.
+
+## Localhost never gets a certificate
+
+That is expected. `localhost` is served over plain HTTP for local development.
+Do not chase an ACME error you see while testing locally.
+
+## Changing the domain later
+
+Set the new domain in **Admin → Instance**, then restart:
+
+```bash
+docker compose up -d
+```
+
+<Callout type="warning" title="Changing the domain breaks federation identity">
+An actor's ActivityPub identity is built from the domain. Remote servers already
+following `@you@old-domain` will not automatically follow `@you@new-domain` —
+existing followers are effectively lost. Choose your domain before you federate.
+</Callout>
+
+## Troubleshooting
+
+**No certificate is issued.** DNS must resolve to this server, and 80/443 must be
+reachable from the internet. Read the ACME error:
+
+```bash
+docker compose logs -f caddy
+```
+
+**The site loads over HTTP but not HTTPS.** Almost always a firewall rule on 443,
+or a DNS record still pointing somewhere else.
+
+**A `www.` visitor gets a certificate error.** Add the matching DNS record for
+`www.your-domain`; the alias is allowed but still needs to resolve.

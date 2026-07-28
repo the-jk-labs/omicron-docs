@@ -1,0 +1,108 @@
+---
+title: Core concepts
+description: The vocabulary used throughout these docs — instances, actors, handles, federation, and the setup model.
+---
+
+import Callout from "@/components/Callout.astro";
+
+## Instance
+
+An **instance** is one installation of Omicron running at one domain. It has its
+own accounts, posts, settings, and moderation rules. There is no central server:
+your instance is the whole product, and other instances are peers.
+
+The instance has a **name** (shown in the UI) and a **public domain** (used in
+links, email, share cards, and your fediverse identity). Both are set in the
+setup wizard and editable later in the admin panel.
+
+## Account, actor, and handle
+
+A local **account** is a user on your instance. When federation is enabled, that
+account is also an ActivityPub **actor** — an addressable identity other servers
+can follow and deliver activities to.
+
+Its **handle** is `@username@your-domain`. Someone on Mastodon can paste that
+into their search box and follow directly.
+
+## Federation
+
+**Federation** is the exchange of ActivityPub activities between servers.
+Omicron ships it turned **off**: a fresh instance is a private, standalone blog.
+Turning it on binds your server's identity to your domain, which is why the
+domain must be set first and the change applies on restart.
+
+| Activity | What it means here |
+| --- | --- |
+| `Follow` | Someone subscribes to one of your writers. Inbound follows are auto-accepted (unless the account requires approval). |
+| `Create(Article/Note)` | A new post is delivered to your followers' inboxes. |
+| `Like` | A like on a post, counted in the writer dashboard. |
+| `Announce` | A boost/repost. |
+| `Undo` | Reverses a previous Follow, Like, or Announce. |
+
+See [How federation works](/docs/federation/overview/) for the full picture.
+
+## Inbox and outbox
+
+Every actor has an **inbox** (where other servers deliver activities addressed to
+them) and an **outbox** (their own public activity stream). Omicron also exposes
+a **shared inbox** at `/inbox` so a remote server delivering one post to fifty of
+your followers can send it once.
+
+Outbound delivery goes through a **queue**, so a slow or down remote server
+never blocks a user's request.
+
+## Posts, drafts, and comments
+
+A **post** is an article: title, optional cover image, and rich body text edited
+in Tiptap with full Markdown support. Unpublished posts are **drafts** and are
+never federated or publicly readable.
+
+**Comments** are replies. Local comments and federated replies land in the same
+place.
+
+## Standalone vs federated
+
+| | Standalone | Federated |
+| --- | --- | --- |
+| `FEDERATION_ENABLED` | `false` (default) | `true` |
+| Public domain | Optional | **Required** |
+| HTTPS | Recommended | **Required in practice** |
+| ActivityPub code paths | Not even loaded | Active |
+| Reachable by Mastodon | No | Yes |
+
+<Callout type="note">
+The whole `federation/` tree and the Fedify dependency are imported **only** when
+federation is enabled, so a standalone blog carries none of that code at runtime.
+</Callout>
+
+## The setup model
+
+Omicron's configuration philosophy: **the web UI is the interface, not the file
+system.**
+
+1. **Generated automatically** — database password, session secret, TLS
+   certificates. You never see or type them.
+2. **Set in the wizard or admin panel** — instance name, domain, email, federation
+   toggle, moderation, scraper shield. Stored in the database.
+3. **Environment variables** — a fallback for the above, plus infrastructure-level
+   knobs (ports, external database, rate limits). Every one is optional; web
+   settings take precedence.
+
+See [Configuration](/docs/self-hosting/configuration/) and
+[Environment variables](/docs/reference/environment/).
+
+## Volumes and state
+
+Nothing you care about lives inside a container image:
+
+| Volume | Holds |
+| --- | --- |
+| `pgdata` | All Postgres data — accounts, posts, follows |
+| `uploads` | User-uploaded media |
+| `secrets` | Generated database password and bootstrap session secret |
+| `state` | App-managed state, e.g. a UI-rotated session secret |
+| `redis_data` | Queued jobs and pending federation deliveries |
+| `caddy_data` | Let's Encrypt certificates |
+
+Rebuilding recreates containers, never volumes. See
+[Backups and restore](/docs/self-hosting/backups/).

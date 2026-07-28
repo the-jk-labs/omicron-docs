@@ -1,0 +1,83 @@
+---
+title: Introduction
+description: What Omicron is, who it is for, and what you get when you run an instance.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron is a **federated blogging platform**. You write rich-text posts, readers
+follow you, and your writing travels across the fediverse over **ActivityPub** —
+without a company in the middle deciding who gets to read it.
+
+It is designed to be run by one person on one small server. Nothing about it
+assumes a hosting company, a managed database, or a paid plan.
+
+## What Omicron is
+
+- **A blog, not a microblog.** The unit of publishing is an article with a
+  title, a cover image, and formatted body text — closer to Medium than to
+  Mastodon, but speaking the same protocol.
+- **Federated.** Every user on your instance is an ActivityPub actor. People on
+  Mastodon, other Omicron instances, and any other ActivityPub software can
+  follow them, like posts, boost them, and reply.
+- **Self-hosted.** One `docker compose up` brings up the entire stack, including
+  the database, the queue, and automatic HTTPS.
+- **Free software.** AGPL-3.0-or-later. If you modify it and run it as a network
+  service, your users are entitled to your source.
+
+## What Omicron is not
+
+- It is **not a hosted service**. There is no omicron.com to sign up for; you run
+  it or you join someone else's instance.
+- It is **not a Twitter clone**. There are no character limits, no boosts of
+  boosts of boosts, no algorithmic timeline.
+- It is **not an analytics product**. On-instance view counts are deliberately
+  crude and unlinkable — see [Writer dashboard](/docs/using/analytics/).
+
+## Who it is for
+
+**Writers** who want a clean place to publish that they control, and who want
+their work to reach the fediverse rather than a walled garden.
+
+**Instance operators** who are comfortable running one command on a VPS. The
+project treats "toy-easy setup" as a hard requirement: you never edit a config
+file, generate a secret, or touch a TLS certificate by hand.
+
+**Developers** who want a small, readable codebase to build on. The architecture
+is deliberately boring — layered, with the database reachable only through
+repository functions.
+
+<Callout type="tip" title="In a hurry?">
+Go straight to the [Quick start](/docs/quick-start/). It takes one command and a
+short web wizard.
+</Callout>
+
+## The stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend | Deno, Hono, Fedify (ActivityPub), Drizzle ORM |
+| Database | PostgreSQL |
+| Queue and cache | Redis (optional — falls back to in-process) |
+| Frontend | SvelteKit, Bits UI, Tailwind CSS, Tiptap |
+| Entrypoint | Caddy, with on-demand Let's Encrypt certificates |
+
+Everything ships in a single `docker-compose.yml`. You do not install or manage
+any of these individually.
+
+## What running an instance gives you
+
+- A public blog at your own domain, over HTTPS, with certificates issued and
+  renewed automatically.
+- A fediverse identity for every account: `@you@your-domain`.
+- An admin panel for instance settings, email, moderation, users, and
+  defederation — no config files.
+- Automatic, idempotent database migrations on every upgrade.
+- A writer dashboard with engagement figures that never profile your readers.
+
+## Where to go next
+
+- [Quick start](/docs/quick-start/) — get an instance running now.
+- [Core concepts](/docs/concepts/) — the vocabulary the rest of these docs uses.
+- [Requirements](/docs/self-hosting/requirements/) — what a public instance needs.
+- [Architecture](/docs/development/architecture/) — how the code is organised.

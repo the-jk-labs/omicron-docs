@@ -1,0 +1,136 @@
+---
+title: Email
+description: The four email modes — console, SMTP, relay, and direct DKIM delivery — and how to pick one.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron sends two kinds of transactional email: **password resets** and **email
+verification**. You configure it entirely from the web — the setup wizard or
+**Admin → Email** — with no file editing, and there is a **live test button** at
+every step.
+
+## Which mode should I use?
+
+| Mode | Setup | Use it when |
+| --- | --- | --- |
+| `console` | None | Local testing, or a single-user instance where you never need real mail |
+| `smtp` | Host, port, username, password | You have any mail server or provider SMTP endpoint — **the usual answer** |
+| `relay` | One API key | You want provider delivery with no SMTP settings at all |
+| `direct` | Port 25 + DNS records + PTR | You want no third party and your host allows outbound port 25 |
+
+<Callout type="tip" title="Recommendation">
+For most people, `relay` (one API key) or `smtp` (a provider's endpoint) is the
+least-friction path to email that actually lands in inboxes. Reach for `direct`
+only if you specifically want no third party.
+</Callout>
+
+## `console` — no email, just logs
+
+The message and its link are printed to the backend's logs instead of being sent:
+
+```bash
+docker compose logs -f backend
+```
+
+This is the default. It is genuinely usable for a single-user instance: when you
+need a password reset, you read the link out of the logs.
+
+## `smtp` — any mail server or provider
+
+Paste the host, port, username, and password of an SMTP server — your own, or a
+provider's endpoint (SendGrid, Mailgun, Postmark, Brevo, Resend, Gmail, and so
+on). The admin page has **presets** that fill in host, port, and TLS for common
+providers; you add your key.
+
+| Port | TLS setting |
+| --- | --- |
+| **587** | STARTTLS — leave "implicit TLS" **off** (the common case) |
+| **465** | Implicit TLS — turn "implicit TLS" **on** |
+
+Getting this pair wrong is the single most common cause of a failed test send.
+
+## `relay` — one API key, no SMTP
+
+Send through a provider's HTTP API instead of SMTP. Today this supports
+**Resend**: paste a single API key and you are done. Nothing else to configure —
+no host, no port, no TLS choice.
+
+## `direct` — self-hosted delivery with DKIM
+
+The instance delivers mail straight to each recipient's mail server and
+cryptographically signs it. No third party is involved. Real-world
+deliverability then depends on three things only your host and DNS can provide:
+
+### 1. Outbound port 25 must be open
+
+Most VPS providers **block it by default** to fight spam. The admin page has a
+**Check port 25** button that tests this from inside the container. If it is
+blocked, use `smtp` or `relay` instead — there is no workaround.
+
+### 2. Publish SPF, DKIM, and DMARC records
+
+The admin page **generates an RSA-2048 DKIM keypair** (the private key never
+leaves your server) and shows the exact records to add at your DNS provider,
+with copy buttons. It then **verifies them live over DNS** before declaring email
+healthy.
+
+### 3. Set reverse DNS (PTR)
+
+At your VPS provider, set the PTR record for your server's IP to your mail
+hostname, forward-confirmed. This is the most commonly missed step, and mail from
+fresh IPs is routinely spam-filtered without it.
+
+<Callout type="warning">
+A brand-new IP address has no sending reputation. Even with SPF, DKIM, DMARC, and
+PTR all correct, early messages may land in spam. This is a property of email,
+not of Omicron.
+</Callout>
+
+## The sender address
+
+By default the From address is derived from your domain:
+
+```
+Your Instance <noreply@your-domain>
+```
+
+Override it in the email settings if you need a different sender.
+
+## Testing
+
+Every mode has a **send test email** button. Use it before finishing the wizard
+and after every change. Failures are shown **verbatim** — the provider's own
+error message, not a generic one.
+
+Common failures:
+
+| Message | Cause |
+| --- | --- |
+| Authentication failed | Wrong username or password/API key |
+| Connection timed out | Wrong host or port, or the port is blocked outbound |
+| TLS handshake error | 587 with implicit TLS on, or 465 with it off |
+| Sender not verified | The provider requires a verified sender or domain |
+
+## Requiring verified email
+
+Set `EMAIL_VERIFICATION_REQUIRED=true` to require email confirmation before a new
+account can sign in. This is useful for closed or invite-only instances. Do not
+turn it on while email is still in `console` mode, or new users will be unable to
+complete registration on their own.
+
+## Environment fallbacks
+
+Web settings take precedence, but these environment variables set defaults —
+useful for automated deploys:
+
+```bash
+EMAIL_TRANSPORT=console
+EMAIL_FROM=Omicron <no-reply@localhost>
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_TLS=false            # implicit TLS (465); false = STARTTLS (587)
+EMAIL_VERIFICATION_REQUIRED=false
+```

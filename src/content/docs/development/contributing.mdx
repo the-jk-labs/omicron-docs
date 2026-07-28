@@ -1,0 +1,104 @@
+---
+title: Contributing
+description: How to propose a change, what the review looks for, and the licensing implications.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron is AGPL-3.0-or-later free software. Contributions are welcome, and the
+bar is mostly about fitting the existing shape rather than about volume.
+
+## Before you write code
+
+- **Open an issue first** for anything beyond a small fix. A short discussion
+  about approach saves rewriting.
+- **Read [Architecture](/docs/development/architecture/)**. Most review feedback
+  is a layering rule the contributor had not seen yet.
+- **Check the roadmap** in the repository — a feature may already be planned with
+  a particular design in mind.
+
+## The workflow
+
+```bash
+git clone https://github.com/the-jk-labs/omicron.git
+cd omicron
+git checkout -b your-change
+# … work …
+cd apps/backend  && deno task check && deno lint
+cd apps/frontend && npm run check
+```
+
+Then open a pull request describing **what changes for the user** and why.
+
+## What review looks for
+
+| Area | Expectation |
+| --- | --- |
+| **Layering** | Routes stay thin; no SQL outside `db/`; no HTTP inside `services/` |
+| **Repositories** | Every query is a repository function |
+| **Pagination** | Cursor-based on `(created_at, id)`, never `OFFSET` |
+| **UI** | Bits UI primitives and theme tokens only — no ad-hoc colours |
+| **Migrations** | Additive within a version; generated SQL committed |
+| **Federation** | Nothing imported from `federation/` when the flag is off |
+| **Privacy** | No new reader-identifying data. See [Writer dashboard](/docs/using/analytics/) |
+| **Comments** | Explain *why*, at the density of the surrounding code |
+
+<Callout type="tip" title="Match the code you are standing in">
+The codebase has a consistent voice — naming, comment density, error handling.
+A patch that reads like the file around it gets merged faster than a better patch
+that does not.
+</Callout>
+
+## Migrations in a pull request
+
+Include the generated SQL from `deno task db:generate`, and state in the
+description whether the change is additive. A migration that drops or renames a
+column needs to be split across releases — see
+[Database and migrations](/docs/development/database/).
+
+## UI changes
+
+Screenshots in the PR, light **and** dark. The theme tokens are ported from the
+Bits UI docs and both themes are first-class; a change that only looks right in
+one is not finished.
+
+## Documentation
+
+This documentation site lives in a separate repository:
+[the-jk-labs/omicron-docs](https://github.com/the-jk-labs/omicron-docs). A
+feature that changes operator-visible behaviour should come with a docs PR — or
+at least an issue there, so the pages do not drift from the software.
+
+Every page here has an **Edit this page on GitHub** link at the bottom.
+
+## Reporting bugs
+
+Include:
+
+- `curl localhost:8000/version` output,
+- your container engine and version,
+- whether federation is enabled,
+- the relevant logs (`docker compose logs --since 30m backend`).
+
+<Callout type="warning" title="Scrub logs before posting">
+Logs can contain email addresses, domains, and — in `console` email mode —
+password-reset links.
+</Callout>
+
+## Security issues
+
+Report privately through
+[GitHub security advisories](https://github.com/the-jk-labs/omicron/security/advisories),
+not as a public issue, so a fix can ship before the details are public.
+
+## Licensing
+
+By contributing you agree your work is licensed under **AGPL-3.0-or-later**, the
+project's licence. Every source file carries an SPDX header:
+
+```ts
+// SPDX-License-Identifier: AGPL-3.0-or-later
+```
+
+Keep it on new files. See [License and AGPL](/docs/reference/license/) for what
+the licence requires of people who deploy modified versions.

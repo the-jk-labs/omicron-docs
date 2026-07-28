@@ -1,0 +1,99 @@
+---
+title: Writing posts
+description: The editor, drafts, tags, images, and what happens when you publish.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Open **`/compose`** to start writing. The editor is Tiptap, with full Markdown
+support — type Markdown and it formats as you go, or use the toolbar.
+
+## The composer
+
+| Field | Notes |
+| --- | --- |
+| **Title** | Plain text. Used for the page title, share cards, and federated `name`. |
+| **Body** | Rich text: headings, bold, italic, links, lists, quotes, code blocks, images. |
+| **Tags** | Free-form. Readers follow tags, so they are how a post gets discovered beyond your followers. |
+| **Language** | Used by readers' feed language filters. |
+
+Two buttons: **Save draft** and **Publish**. The editor tracks unsaved changes
+and warns you before you navigate away with work in progress.
+
+## Markdown
+
+The editor accepts Markdown input directly — `## ` for a heading, `**bold**`,
+`` `code` ``, `> ` for a quote, `- ` for a list. Pasting Markdown works too. You
+never have to choose between a rich editor and Markdown; it is the same surface.
+
+## Images
+
+Three ways to add one:
+
+- **Paste** an image from the clipboard.
+- **Drag and drop** a file into the body.
+- Use the toolbar's image button.
+
+Uploads go to the instance's `uploads` volume and are served from your own
+domain — no third-party image host. Once placed, an image can be **resized by
+dragging its corner**.
+
+<Callout type="tip">
+Cover images and in-body images are part of your instance's disk usage. That is
+what the "grows with uploads" note in
+[Requirements](/docs/self-hosting/requirements/) refers to.
+</Callout>
+
+## Drafts
+
+**Save draft** stores the post privately at **`/drafts`**. Drafts are:
+
+- never publicly readable,
+- never federated,
+- reopenable — saving again updates the same post rather than creating a copy.
+
+## Publishing
+
+Publishing makes the post readable at its public URL and, when federation is
+enabled, enqueues delivery as a `Create` activity to every remote follower's
+inbox. Delivery is asynchronous — a slow remote server never blocks your
+publish.
+
+<Callout type="warning" title="Publishing is hard to un-ring">
+Once a post is delivered, remote servers hold their own copy. Deleting it sends a
+`Delete` activity, which well-behaved servers honour — but you cannot guarantee
+every instance in the network processes it. Treat publishing as public and
+permanent.
+</Callout>
+
+## Editing and deleting
+
+Edit a published post and readers on your instance see the change immediately.
+Deleting it removes it locally and federates the deletion.
+
+## Comments
+
+Readers comment on posts, and comments can be liked. Federated replies from other
+instances arrive in the same place as local comments. You can edit or delete your
+own comments.
+
+## Feeds
+
+Every author has an RSS feed at:
+
+```
+https://your-domain/@handle/feed.xml
+```
+
+RSS readers are never challenged by the AI-scraper shield, so feeds keep working
+even with protection enabled.
+
+## What travels to the fediverse
+
+| Yes | No |
+| --- | --- |
+| Published posts (title, body, images) | Drafts |
+| Edits and deletions of published posts | Your tag list's internal state |
+| Comments and likes on federated posts | Anything from a suspended account |
+
+See [How federation works](/docs/federation/overview/).

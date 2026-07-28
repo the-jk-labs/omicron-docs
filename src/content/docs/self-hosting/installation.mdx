@@ -1,0 +1,110 @@
+---
+title: Installation
+description: The two ways to install Omicron, what the installer does, and how to verify the stack came up correctly.
+---
+
+import Callout from "@/components/Callout.astro";
+
+## Option A — the installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | sh
+```
+
+The script:
+
+1. Detects your container engine (`docker compose`, `docker-compose`,
+   `podman compose`, or `podman-compose`).
+2. Downloads the source into a directory in the current working directory.
+3. Runs the equivalent of `compose up -d --build`.
+4. Prints the URLs to open and the command to upgrade later.
+
+No git required. Re-running the installer later performs an upgrade.
+
+<Callout type="tip">
+Piping a script to a shell is worth reading first. The script is short and
+lives at
+[install.sh](https://github.com/the-jk-labs/omicron/blob/main/install.sh) —
+download it, read it, then run it if you prefer.
+</Callout>
+
+## Option B — clone and run
+
+```bash
+git clone https://github.com/the-jk-labs/omicron.git omicron
+cd omicron
+docker compose up -d --build
+```
+
+This is the same thing, with the source in a directory you control — which is
+what you want if you plan to track upstream with `git pull`.
+
+The first build compiles the images and takes a few minutes. Subsequent builds
+are cached and fast.
+
+## What comes up
+
+```bash
+docker compose ps
+```
+
+| Service | Purpose | Published on |
+| --- | --- | --- |
+| `caddy` | Public entrypoint, TLS termination, Let's Encrypt | 80, 443 |
+| `frontend` | SvelteKit web app | 127.0.0.1:5173 |
+| `backend` | JSON API + ActivityPub (Deno) | 127.0.0.1:8000 |
+| `postgres` | Database | internal only |
+| `redis` | Queue + rate-limit state | internal only |
+
+The frontend and backend ports are bound to **loopback only**. They exist for
+troubleshooting on the host; all public traffic goes through Caddy.
+
+## No configuration step
+
+There is no `.env` to create. On first boot the stack generates:
+
+- the **Postgres password**, into the `secrets` volume;
+- the **session secret**, into the same volume;
+- the **database schema**, by running migrations automatically.
+
+You only create a `.env` if you want to override a default — see
+[Configuration](/docs/self-hosting/configuration/).
+
+## Verify
+
+```bash
+curl localhost:8000/healthz     # {"status":"ok"}
+curl localhost:8000/version     # {"name":"omicron","version":"…","federation":false}
+```
+
+Then open the app:
+
+- **Local:** `http://localhost`
+- **Public:** point DNS at the host first —
+  [Domain and HTTPS](/docs/self-hosting/domain-and-https/) — then open
+  `https://your-domain`.
+
+Every route redirects to the **setup wizard** until it is finished. See
+[Setup wizard](/docs/self-hosting/setup-wizard/).
+
+## Watching logs
+
+```bash
+docker compose logs -f            # everything
+docker compose logs -f backend    # or: frontend, caddy, postgres, redis
+```
+
+The backend logs its version on boot, whether federation is enabled, and — in
+`console` email mode — every outgoing message with its link.
+
+## Stopping and removing
+
+```bash
+docker compose down      # stop, keep all data
+docker compose down -v   # stop and DELETE all volumes
+```
+
+<Callout type="danger" title="`down -v` is irreversible">
+`-v` removes the named volumes: database, uploads, secrets, and certificates.
+Never run it on an instance whose data you want to keep.
+</Callout>

@@ -1,0 +1,74 @@
+---
+title: Setup wizard
+description: The three-step first-run wizard — instance identity, the admin account, and email.
+---
+
+import Callout from "@/components/Callout.astro";
+
+The wizard appears on first launch. Every route redirects to it until it is
+finished, and it can never run again once an admin exists.
+
+## Step 1 — Instance identity
+
+Two fields:
+
+- **Name** — shown across the site (page titles, share cards, email).
+- **Public domain** — used for links in email, share cards, and, if you enable
+  it, your fediverse identity.
+
+For a local test you can leave the domain at its default. For a public instance,
+set the domain you already pointed at this server — see
+[Domain and HTTPS](/docs/self-hosting/domain-and-https/).
+
+## Step 2 — Admin account
+
+Create the first user. This account:
+
+- is **automatically the administrator**;
+- is **auto-verified**, so you can proceed before email works;
+- is **signed in immediately** when the wizard completes.
+
+<Callout type="warning" title="Do this before anyone else can reach the instance">
+The wizard is open until the first account exists. On a publicly reachable
+server, finish it as soon as the stack is up — the first person to complete it
+owns the instance.
+</Callout>
+
+## Step 3 — Email
+
+Choose how the instance sends password resets and verification mail. There are
+four modes and a **send test email** button so you can confirm delivery before
+finishing.
+
+You can pick the zero-setup `console` mode now and configure real email later
+from the admin panel. Nothing here is permanent.
+
+See [Email](/docs/self-hosting/email/) for how to choose.
+
+## After the wizard
+
+You are dropped into your live instance, signed in as the admin. Everything the
+wizard set is editable in [the admin panel](/docs/self-hosting/admin-panel/) —
+you never have to reinstall to change your mind.
+
+Common next steps:
+
+1. [Turn on federation](/docs/self-hosting/federation/) if you want to be part of
+   the fediverse (it is off by default and needs a restart).
+2. [Set up backups](/docs/self-hosting/backups/).
+3. Write your first post.
+
+## Re-running the wizard
+
+You cannot, by design — it is guarded so it cannot run once an admin account
+exists. If you genuinely need a clean slate on a throwaway instance:
+
+```bash
+docker compose down -v      # deletes ALL data, then start over
+docker compose up -d --build
+```
+
+<Callout type="danger">
+`down -v` destroys the database, uploads, secrets, and certificates. There is no
+undo.
+</Callout>

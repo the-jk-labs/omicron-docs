@@ -1,0 +1,83 @@
+---
+title: Compatibility
+description: What works when Omicron meets Mastodon and other ActivityPub software, and where the edges are.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron speaks standard ActivityPub through Fedify, so the common interactions
+work with any conformant server. The differences that matter are about **content
+shape**, not protocol.
+
+## The shape mismatch
+
+Omicron publishes **articles**: a title, a cover image, and long formatted body
+text. Microblogging software is built around short notes.
+
+| Software | What your readers there see |
+| --- | --- |
+| Mastodon | The post as a status with its title and a link back to your instance; long bodies are truncated in the timeline |
+| Other Omicron instances | The full article, rendered natively |
+| Read-it-later and RSS clients | Whatever your feed and OpenGraph metadata provide |
+
+This is inherent to the network, not a defect: a 2,000-word essay cannot render
+natively in a client designed for 500-character posts.
+
+<Callout type="tip" title="Write a title that stands alone">
+On microblogging clients, your title plus the link is often the whole
+impression. Titles that read well without the body get more clicks back to your
+instance.
+</Callout>
+
+## What works across the network
+
+- **Follow / Undo Follow** — in both directions.
+- **Like** and **Announce** (boost) — counted in your dashboard.
+- **Replies** — federated replies land alongside local comments.
+- **Delete** — honoured by well-behaved servers.
+- **Profile discovery** — WebFinger resolves your handle from anywhere.
+- **Link previews** — the actor document carries Mastodon's
+  `attributionDomains`, so shared articles render an author byline on the card.
+
+## Where the edges are
+
+- **No retroactive backfill.** A new follower gets what you publish afterwards.
+  Some software fetches your outbox to fill history; some does not.
+- **Formatting is renegotiated by the receiver.** Each server sanitises HTML to
+  its own allowlist. Complex layouts, tables, and embeds may be stripped in
+  transit.
+- **Edits propagate unevenly.** Not every implementation handles updates the same
+  way, so an edited post may still show its original text somewhere.
+- **Polls, custom emoji, and other extensions** are not part of Omicron's
+  publishing model.
+
+## Testing interoperability
+
+The honest test is an account on another server:
+
+1. Search for `@you@your-domain` from a Mastodon account and follow it.
+2. Confirm the follow is accepted (it should be, immediately, unless you require
+   approval).
+3. Publish a post and confirm it arrives.
+4. Like and reply from there, and confirm both appear on your side.
+5. Delete the post and confirm it disappears there.
+
+By hand:
+
+```bash
+curl "https://your-domain/.well-known/webfinger?resource=acct:you@your-domain"
+curl -H "Accept: application/activity+json" https://your-domain/users/you
+```
+
+## When something does not federate
+
+Work through, in order:
+
+1. Is federation actually on? `curl localhost:8000/version` → `"federation": true`.
+2. Does `https://your-domain/.well-known/nodeinfo` return JSON from **outside**
+   your network?
+3. Do the URIs in the actor document use `https://` and your real domain?
+4. Has the remote instance defederated your domain?
+5. Are there delivery errors in `docker compose logs backend`?
+
+More in [Troubleshooting](/docs/self-hosting/troubleshooting/).

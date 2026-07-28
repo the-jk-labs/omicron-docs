@@ -1,0 +1,88 @@
+---
+title: Delivery and queues
+description: How outbound activities are queued, retried, and made durable with Redis.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Outbound federation never happens inside a user's request. Publishing a post
+enqueues a job; the request returns immediately.
+
+## The queue abstraction
+
+Application code calls one thing:
+
+```ts
+queue.add("federate_post", { postId });
+```
+
+Two backends sit behind that call:
+
+| Backend | When | Behaviour |
+| --- | --- | --- |
+| **In-process** | No `REDIS_URL` | Jobs live in memory; **lost on restart** |
+| **Redis** | `REDIS_URL` set (the Compose default) | Jobs persist; survives restarts; shared across processes |
+
+The call sites and signatures are identical either way, so switching is a matter
+of setting one environment variable.
+
+<Callout type="warning" title="In-process mode loses pending work">
+Without Redis, a restart while deliveries are pending drops them silently. The
+post stays published locally, but the followers who had not yet received it never
+will. The bundled Compose stack sets `REDIS_URL` for you — only local
+`deno task dev` runs without it by default.
+</Callout>
+
+## What Redis backs
+
+When `REDIS_URL` is set, three things move out of process memory:
+
+1. The **application job queue** (federation deliveries and other background
+   work).
+2. **Fedify's key-value store and message queue** — its own delivery retry state.
+3. The **rate limiter**, so counters are shared across backend processes rather
+   than per-process.
+
+## Delivery mechanics
+
+For each recipient inbox, Fedify signs the request with the actor's private key
+and POSTs the activity. It handles:
+
+- **HTTP signatures** on every outbound request.
+- **Retries with backoff** for transient failures.
+- **Shared-inbox optimisation** — one delivery to a remote server serving many of
+  your followers, instead of one per follower.
+
+## Failure modes
+
+| Symptom | Cause | Action |
+| --- | --- | --- |
+| One remote server never receives anything | It has defederated your domain | Nothing to fix on your side |
+| Deliveries stall after a restart | In-process queue, jobs lost | Set `REDIS_URL` |
+| Persistent signature errors | Domain or scheme mismatch in generated URIs | Check the public domain setting and that Caddy sets `x-forwarded-proto` |
+| Everything is slow to arrive | Large follower set, normal backoff | Watch the backend logs; this is usually just retry pacing |
+
+## Federated reach
+
+The writer dashboard's "reach" figure counts **successful deliveries to remote
+inboxes**. It measures your instance's sending, not anyone's reading — there is
+no mechanism, and no intention, to observe reads on other servers. See
+[Writer dashboard](/docs/using/analytics/).
+
+## Inbound throttling
+
+The receiving side is throttled too, so a hostile peer cannot flood you:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `RL_INBOX_MAX` | 300 | inbox POSTs per minute per source IP |
+| `INBOX_MAX_BODY_BYTES` | 1000000 | maximum accepted payload (bytes) |
+
+Both are generous on purpose — a busy instance legitimately delivers many
+activities in a burst.
+
+## The `redis_data` volume
+
+It holds only transient queue state and is deliberately **excluded from backups**
+— Redis re-drains it after a restart, and no durable content lives there. See
+[Backups and restore](/docs/self-hosting/backups/).

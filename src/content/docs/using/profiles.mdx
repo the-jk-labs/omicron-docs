@@ -1,0 +1,82 @@
+---
+title: Profiles
+description: Your public page, the About tab, avatars, links, and the settings that control all of it.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Your profile lives at `/@username` and is the page remote servers link to when
+they show your byline.
+
+## Tabs
+
+| Tab | Contents |
+| --- | --- |
+| **Articles** | Your published posts, newest first |
+| **Lists** | Your public reading lists, if you have any |
+| **About** | Your longer self-description |
+
+## The About tab
+
+Alongside your short bio, the About tab carries a **custom Markdown section** you
+control entirely. It is a layout surface, not just a paragraph: badges, tables,
+code blocks, and ASCII art all render, and it uses a wider measure than the
+reading column so wide blocks fit.
+
+Edit it in **Settings → Profile**. There is a live preview so you can check
+formatting before saving.
+
+<Callout type="note">
+Wide preformatted blocks are scaled to fit the column rather than overflowing the
+page, so a wide ASCII banner degrades gracefully on a phone.
+</Callout>
+
+## Avatar and identity
+
+- **Avatar** — uploaded and stored in the `uploads` volume, served from your
+  domain.
+- **Display name** — what readers see.
+- **Username** — the immutable part of your fediverse handle,
+  `@username@your-domain`.
+
+## Links
+
+Add social and web links with a platform and an optional label. They render as
+compact icon-only links in the profile header, with the labelled versions in the
+About tab.
+
+## Settings
+
+**Settings** (`/settings`) is organised into sections:
+
+| Section | What it controls |
+| --- | --- |
+| **Profile** | Display name, bio, avatar, links, custom About section |
+| **Appearance** | Theme: light, dark, or system |
+| **Reading** | Default feed tab (For you, Local, Global) and feed language filtering |
+| **Privacy** | Follower approval and related visibility settings |
+| **Followed tags** | The tags feeding your personalised timeline |
+| **Muted and blocked** | Accounts you have silenced, local or remote |
+| **Account** | Email, password, and session management |
+| **Delete account** | Permanent removal |
+
+## Privacy and follower approval
+
+With approval enabled, inbound follows — local or federated — wait in
+**`/follow-requests`** until you approve or reject them. Nothing is delivered to
+an unapproved follower.
+
+You can also remove an existing follower, which revokes their subscription on
+your side and stops future deliveries.
+
+## Deleting your account
+
+Account deletion is permanent and removes your content from the instance. Copies
+already delivered to remote servers are handled by the `Delete` activities that
+federation sends; whether every remote instance honours them is outside your
+instance's control.
+
+<Callout type="warning">
+There is no undo, and no export-then-delete flow that guarantees your posts come
+back. Save anything you want to keep first.
+</Callout>

@@ -1,0 +1,139 @@
+---
+title: Backend guide
+description: Working inside apps/backend — routes, services, repositories, the queue, and federation.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Deno, Hono, Fedify, Drizzle, PostgreSQL.
+
+## Directory map
+
+| Directory | Responsibility |
+| --- | --- |
+| `src/routes/` | HTTP only — parse, call a service, serialize |
+| `src/services/` | Business logic — no HTTP, no SQL |
+| `src/db/` | Drizzle schema, migrations, and repositories |
+| `src/federation/` | ActivityPub, loaded only when federation is on |
+| `src/queue/` | The `queue.add(name, payload)` abstraction and job handlers |
+| `src/lib/` | Small shared helpers (HTTP errors, rate limiting, body caps) |
+
+## Adding an endpoint
+
+The whole loop, in order:
+
+1. **Repository** — add a query function in `src/db/repositories/`. This is the
+   only place SQL is written.
+2. **Service** — add the business logic in `src/services/`, calling the
+   repository. No `Context`, no request objects, no HTTP status codes.
+3. **Route** — add the handler in `src/routes/`, parse and validate input, call
+   the service, serialize the result.
+4. **Mount** — register the route file in `src/routes/index.ts` if it is a new
+   group.
+
+```ts
+// routes/posts.ts — thin by design
+postRoutes.get("/:id", async (c) => {
+  const post = await postsService.getById(c.req.param("id"), c.get("user"));
+  return c.json(serializePost(post));
+});
+```
+
+<Callout type="danger" title="The one hard rule">
+No Drizzle in `routes/` or `services/`. If you find yourself importing `db` there,
+the query belongs in a repository.
+</Callout>
+
+## Route composition
+
+`src/routes/index.ts` mounts every group under `/api`:
+
+```ts
+apiRoutes.route("/auth", authRoutes);
+apiRoutes.route("/posts", postRoutes);
+apiRoutes.route("/users", userRoutes);
+// …
+```
+
+`src/app.ts` composes the whole application: the logger, the error handler,
+optional federation mounting, health routes, session middleware, the write rate
+limiter, and finally the API.
+
+## Middleware order
+
+It matters, and it is deliberate:
+
+1. `logger()` and `onError` — always outermost.
+2. **Federation** paths (`/.well-known/`, `/users/`, `/inbox`, `/nodeinfo`) are
+   intercepted before app routes when enabled.
+3. `sessionMiddleware` on `/api/*` — so later layers can key by user.
+4. The **write throttle** on `/api/*`, skipped for `GET`/`HEAD`/`OPTIONS`.
+5. The API routes themselves.
+
+## Rate limiting
+
+```ts
+const apiWriteLimiter = rateLimit({
+  name: "api-write",
+  windowMs: 60_000,
+  max: config.RL_API_WRITE_MAX,
+  key: (c) => {
+    const user = c.get("user");
+    return user ? `u:${user.id}` : `ip:${clientIp(c)}`;
+  },
+});
+```
+
+Endpoint-specific limiters (auth, registration, inbox) layer stricter caps on
+top of this backstop. Counters are per-process without Redis and shared with it.
+
+## The queue
+
+```ts
+queue.add("federate_post", { postId });
+```
+
+Handlers are registered in `src/queue/handlers.ts` via `registerJobHandlers()`,
+called once while building the app. Adding a job type means adding a handler
+there and calling `queue.add` from a service — never from a route.
+
+## Federation
+
+`src/federation/` is imported dynamically, only when federation is running:
+
+| File | Role |
+| --- | --- |
+| `mod.ts` | Fedify setup — actor, followers, outbox, inbox listeners, object dispatchers |
+| `actor.ts` | Building actor documents |
+| `article.ts` | Mapping posts to ActivityPub objects |
+| `deliver.ts`, `outbound.ts` | Sending activities |
+| `remote.ts` | Resolving and caching remote actors |
+| `attribution.ts` | Splicing Mastodon's `attributionDomains` into the actor doc |
+| `lists.ts` | Public reading lists as addressable objects |
+
+<Callout type="warning" title="Proxy scheme correction">
+Caddy terminates TLS and proxies over plain HTTP, so the request Fedify sees is
+`http://`. The app corrects the scheme from `x-forwarded-proto` before handing
+the request over — otherwise every generated actor URI would be `http://` on an
+HTTPS site. When touching that path, never re-read `req.body`: the POST path
+buffers the body once, and rebuilding a `Request` from the same object twice
+throws.
+</Callout>
+
+## Health and version
+
+```ts
+healthRoutes.get("/healthz", (c) => c.json({ status: "ok" }));
+healthRoutes.get("/version", …);   // name, version, federation flag
+```
+
+`APP_VERSION` lives in `src/version.ts`, is logged on boot, and is bumped per
+release.
+
+## Checks
+
+```bash
+cd apps/backend
+deno task check     # type-check
+deno lint           # style
+```

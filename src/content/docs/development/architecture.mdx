@@ -1,0 +1,115 @@
+---
+title: Architecture
+description: The layered design, the repository pattern, and the rules that keep the codebase readable.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Clean, layered, minimal-abstraction. **Layers never mix.**
+
+```
+apps/backend (Deno)
+  routes/        HTTP layer only (Hono) — parse, call a service, serialize
+  services/      business logic — no HTTP, no SQL
+  db/            Drizzle schema + repositories (the ONLY place SQL runs)
+  federation/    ActivityPub (Fedify) — fully isolated, loaded only when enabled
+  queue/         queue.add(name, payload) abstraction (in-process or Redis)
+
+apps/frontend (SvelteKit)
+  routes/                 pages (SSR) + /api/[...path] reverse-proxy to backend
+  lib/api/                typed API client (same-origin → no CORS, cookies flow)
+  lib/components/         UI; Icon.svelte is the single Lucide wrapper
+  lib/components/ui/      bits-ui (headless) wrappers
+  lib/editor/             Tiptap integration (lazy-loaded on /compose)
+```
+
+## The rules
+
+### 1. Layered architecture
+
+| Layer | May do | Must never do |
+| --- | --- | --- |
+| `routes/` | Parse input, call a service, serialize a response | Touch the database, hold business logic |
+| `services/` | Business logic, orchestration | Know about HTTP, write SQL |
+| `db/` | Drizzle schema and repository functions | Contain business rules |
+| `federation/` | ActivityPub concerns | Be imported when federation is off |
+
+<Callout type="danger" title="No direct DB calls in routes">
+A route that reaches for Drizzle is the one architectural violation that
+compounds fastest. If a route needs data, a service asks a repository for it.
+</Callout>
+
+### 2. Repository pattern (mandatory)
+
+All database access goes through repository functions in `db/repositories/*`.
+
+```ts
+// Never:
+db.select().from(posts);
+
+// Always:
+const post = await postRepository.findById(id);
+```
+
+This keeps every query in one searchable place, makes the query surface
+auditable, and means schema changes have a bounded blast radius.
+
+### 3. Cursor pagination everywhere
+
+Keyset pagination on `(created_at, id)` — never `OFFSET`. Offsets degrade as the
+table grows and skip or duplicate rows when data changes between pages.
+
+### 4. Server-side sessions
+
+Sessions live in a Postgres `sessions` table behind an httpOnly cookie. The app
+stays stateless; all state is in Postgres. That is what makes a restart, an
+upgrade, or a second backend process a non-event.
+
+### 5. Queue-ready by construction
+
+```ts
+queue.add("federate_post", { postId });
+```
+
+runs in-process when there is no Redis and through Redis when there is — the call
+sites and signatures are identical. One file to swap.
+
+### 6. Federation isolation
+
+The whole `federation/` tree and the Fedify dependency are imported **only** when
+`FEDERATION_ENABLED=true`, so a standalone blog carries no ActivityPub code paths
+at all — not merely disabled ones.
+
+## Request lifecycle
+
+A signed-in user publishes a post:
+
+1. The browser calls the SvelteKit app, which reverse-proxies `/api/*` to the
+   backend — **same-origin**, so no CORS and cookies flow naturally.
+2. Hono resolves the session (`sessionMiddleware`), then applies the write rate
+   limiter, keyed by user id or IP.
+3. The route parses the body and calls the posts service.
+4. The service applies business rules and calls repositories to persist.
+5. The service calls `queue.add("federate_post", …)`.
+6. The route serializes the response. The user's request is done.
+7. Later, a worker delivers the `Create` activity to remote inboxes.
+
+## Frontend conventions
+
+- **Bits UI for every primitive that has one** — Button, Avatar, DropdownMenu,
+  Tabs, Toolbar, Label, Separator, Dialog, Tooltip. Native HTML only where Bits
+  UI ships nothing (text inputs, forms, headings, layout).
+- **Theme tokens, never ad-hoc colours** — `foreground`, `muted`, `background`,
+  `accent`, `destructive`, `border`, and the matching radii and shadows. No
+  `text-neutral-*`, no `bg-gray-*`.
+- **One icon wrapper** — `Icon.svelte` around Lucide.
+- **Lazy-load the heavy things** — Tiptap is loaded only on `/compose`.
+
+See [Frontend guide](/docs/development/frontend/).
+
+## Why this shape
+
+The project's stated goals are a small readable codebase, no vendor lock-in, and
+easy self-hosting. Each rule above serves one of those: layering keeps the code
+readable, repositories keep the database swappable, the queue abstraction keeps
+Redis optional, and federation isolation keeps a standalone blog small.

@@ -1,0 +1,98 @@
+---
+title: Admin panel
+description: Every instance setting, moderation queue, and security switch — all at /admin, no config files.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Sign in as the admin and open **`/admin`**. Everything the setup wizard set — and
+more — is editable here.
+
+## Instance
+
+- **Name** and **public domain**.
+- The **federation** toggle.
+- **Session-secret rotation**.
+
+Domain and federation changes apply on the **next restart**; the page tells you
+when a restart is needed.
+
+### Rotating the session secret
+
+Rotate the secret that signs login sessions **only** if you suspect it was
+exposed. It signs everyone out — including you — on the next restart, and is
+guarded by a confirmation dialog.
+
+If you pinned the secret yourself via the `SESSION_SECRET` environment variable,
+the UI tells you to rotate it there instead: an env-supplied value wins over the
+generated one.
+
+## Email
+
+Switch modes, edit connection details, generate DKIM keys, verify DNS records,
+and **send a live test**. Passwords are write-only — the UI shows "unchanged"
+rather than reading a stored secret back to the browser.
+
+Full detail: [Email](/docs/self-hosting/email/).
+
+## Reports
+
+The moderation queue. Review user-reported posts and actors, remove posts, and
+dismiss reports. Reports cover both local and remote content.
+
+## Users
+
+Suspend or reinstate local accounts. A suspended account cannot sign in, and its
+content stops being served.
+
+## Federation
+
+**Defederate** (block) a domain, or re-federate it. Blocking **purges
+already-cached content** from that domain — it is not just a forward-looking
+filter.
+
+## Security
+
+### AI-scraper protection
+
+A lightweight proof-of-work challenge
+([Anubis](https://anubis.techaro.lol)) for page loads. It is **off by default**.
+
+<Callout type="warning" title="Leave it off unless you need it">
+The challenge adds roughly a one-second interstitial for **every reader**,
+including visitors without JavaScript. Turn it on when AI crawlers are actually
+hammering your instance, not pre-emptively.
+</Callout>
+
+When enabled, browser-like traffic to your pages is challenged; real browsers
+solve it in about a second, most scrapers cannot. Deliberately never challenged:
+
+- **Federation** — ActivityPub delivery keeps working.
+- **The API** — API clients are untouched.
+- **Feeds** — RSS keeps working.
+- **OpenGraph crawlers** — link-preview cards still render.
+
+The toggle applies **live**: no restart, no config file. The backend re-routes
+the app through the bundled challenge service via Caddy's internal admin API.
+Per-IP rate limiting stays accurate.
+
+The challenge service always runs but only sits in the request path while the
+toggle is on. Its signing key is held in memory, so a stack restart re-challenges
+readers once — a harmless one-time solve.
+
+<Callout type="note">
+On instances upgraded from before this feature shipped, the toggle needs Caddy to
+have been recreated once with the new Caddyfile — see
+[Upgrading](/docs/self-hosting/upgrading/).
+</Callout>
+
+## Analytics and SEO
+
+The admin settings also cover instance-level analytics behaviour and SEO
+metadata. What is and is not measured about readers is documented in full in
+[Writer dashboard](/docs/using/analytics/).
+
+## Everything is reversible
+
+No admin setting requires a reinstall to undo. The ones that need a restart say
+so; the rest apply immediately.

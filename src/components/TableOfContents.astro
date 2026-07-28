@@ -1,0 +1,69 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+// Only h2/h3 — deeper levels make the rail noisy without helping navigation.
+const headings = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  headings.length > 0 && (
+    <nav aria-labelledby="toc-heading" class="text-sm">
+      <p
+        id="toc-heading"
+        class="mb-3 text-[13px] font-semibold uppercase tracking-wide text-foreground-alt"
+      >
+        On this page
+      </p>
+      <ul class="flex flex-col gap-1 border-l border-dark-10">
+        {headings.map((heading) => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              data-toc-link
+              class:list={[
+                "-ml-px block border-l-2 border-transparent py-1 text-[13px] text-muted-foreground transition-colors hover:border-dark-40 hover:text-foreground",
+                heading.depth === 2 ? "pl-4" : "pl-7",
+              ]}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  // Highlight the heading currently in view. Plain DOM: this is decoration on
+  // static content, so it costs nothing and needs no framework island.
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
+  const active = "!border-foreground !text-foreground font-medium";
+  if (links.length > 0) {
+    const byId = new Map<string, HTMLAnchorElement>();
+    for (const link of links) byId.set(decodeURIComponent(link.hash.slice(1)), link);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          for (const link of links) link.className = link.className.replace(` ${active}`, "");
+          const link = byId.get(entry.target.id);
+          if (link) link.className += ` ${active}`;
+        }
+      },
+      // A band near the top of the viewport: the heading that just scrolled
+      // under the header is the one considered current.
+      { rootMargin: "-80px 0px -75% 0px", threshold: 0 },
+    );
+
+    for (const id of byId.keys()) {
+      const heading = document.getElementById(id);
+      if (heading) observer.observe(heading);
+    }
+  }
+</script>

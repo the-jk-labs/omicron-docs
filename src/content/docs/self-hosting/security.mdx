@@ -1,0 +1,102 @@
+---
+title: Security
+description: The security properties of a default install, and the handful of things an operator can get wrong.
+---
+
+import Callout from "@/components/Callout.astro";
+
+## What is secure by default
+
+- **Debug ports are loopback-only.** The backend (`:8000`) and frontend (`:5173`)
+  are published on `127.0.0.1` for local troubleshooting. All public traffic goes
+  through Caddy on 80/443 over TLS.
+- **Secrets are generated, never typed.** The database password and session
+  secret are created on first boot into the `secrets` volume.
+- **HTTPS is automatic.** Certificates are fetched on demand and renewed by
+  Caddy, and only for your saved domain and its `www.` alias.
+- **Sessions are server-side.** Session records live in Postgres behind an
+  httpOnly cookie; there is no session state in the token itself.
+- **Rate limiting is on** for logins, registrations, API writes, and the
+  federation inbox.
+- **The federation inbox is capped.** Oversized payloads are rejected by declared
+  length and again while buffering, so a missing or spoofed `Content-Length`
+  cannot stream an unbounded body into the parser.
+
+## What you can get wrong
+
+<Callout type="danger" title="Do not expose the debug ports">
+Changing the backend or frontend port mapping from `127.0.0.1` to `0.0.0.0` on a
+public host exposes the API without TLS. There is no reason to do this.
+</Callout>
+
+- **Do not disable rate limiting** (`RATE_LIMIT_ENABLED=false`) unless a trusted
+  upstream already throttles for you.
+- **Do not leave the wizard unfinished** on a publicly reachable server — the
+  first person to complete it becomes the admin.
+- **Do not store backups on the same machine**, and remember that Method B
+  backups contain your secrets.
+
+## Rate limits
+
+Defaults, tunable in `.env`:
+
+| Variable | Default | Limit |
+| --- | --- | --- |
+| `RL_LOGIN_MAX` | 15 | login attempts per IP / 15 min |
+| `RL_REGISTER_MAX` | 5 | registrations per IP / hour |
+| `RL_API_WRITE_MAX` | 120 | writes / min per signed-in user (or per IP) |
+| `RL_INBOX_MAX` | 300 | federation inbox POSTs / min per source IP |
+| `INBOX_MAX_BODY_BYTES` | 1000000 | maximum inbox payload size |
+
+Without Redis these counters are per-process and reset on restart. With
+`REDIS_URL` set they are shared and durable. See
+[Rate limits](/docs/reference/rate-limits/).
+
+## Session secret rotation
+
+**Admin → Instance → Session secret** rotates the secret that signs sessions. It
+signs everyone out — including you — on the next restart. Use it only if you
+suspect exposure.
+
+If you pinned `SESSION_SECRET` in the environment, rotate it there instead; an
+env-supplied value takes precedence over the stored one.
+
+## Federation exposure
+
+Enabling federation opens a public, unauthenticated POST endpoint (the inbox) to
+the entire internet. Fedify verifies HTTP signatures on inbound activities, and
+the inbox is rate-limited and size-capped, but you are now a network participant:
+
+- Expect background noise from crawlers and probing servers.
+- Use **Admin → Federation** to defederate abusive domains; blocking also purges
+  cached content from them.
+- Use **Admin → Reports** for user-reported content.
+
+## AI-scraper protection
+
+Off by default. When on, it challenges browser-like page traffic with a
+proof-of-work interstitial while leaving federation, the API, feeds, and
+OpenGraph crawlers untouched. It is a bandwidth and scraping mitigation, not a
+security control — see [Admin panel](/docs/self-hosting/admin-panel/).
+
+## Reader privacy
+
+Omicron does not profile readers. On-instance view counts are aggregate integers
+keyed by a one-way hash, with no IP address, fingerprint, or per-visit row stored
+anywhere. The full account, including what is deliberately never collected, is in
+[Writer dashboard](/docs/using/analytics/).
+
+## Keeping up to date
+
+```bash
+git pull && docker compose up -d --build
+```
+
+Pull and rebuild regularly for security fixes, back up before upgrades, and test
+that your backups actually restore.
+
+## Reporting a vulnerability
+
+Report security issues privately through
+[GitHub security advisories](https://github.com/the-jk-labs/omicron/security/advisories)
+rather than in a public issue, so a fix can ship before the details are public.

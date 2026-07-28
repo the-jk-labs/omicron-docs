@@ -1,0 +1,100 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { nav, hrefFor } from "@/lib/nav";
+
+const entryPoints = [
+  {
+    slug: "quick-start",
+    title: "Quick start",
+    body: "One command brings the whole stack up. Be running in a few minutes.",
+  },
+  {
+    slug: "self-hosting/requirements",
+    title: "Self-hosting",
+    body: "Requirements, your domain, HTTPS, email, upgrades, and backups.",
+  },
+  {
+    slug: "federation/overview",
+    title: "Federation",
+    body: "How Omicron speaks ActivityPub and what the rest of the fediverse sees.",
+  },
+  {
+    slug: "development/architecture",
+    title: "Development",
+    body: "The layered architecture, local setup, and how to contribute.",
+  },
+];
+---
+
+<BaseLayout
+  title="Omicron"
+  description="Documentation for Omicron — a minimal, self-hostable, federated blogging platform built on ActivityPub."
+>
+  <main id="main" class="mx-auto w-full max-w-5xl flex-1 px-4 py-16 sm:px-6 sm:py-20">
+    <p class="text-sm font-medium uppercase tracking-wide text-muted-foreground">Documentation</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+      Own your words.
+    </h1>
+    <p class="mt-4 max-w-2xl text-lg text-muted-foreground">
+      Omicron is a federated blogging platform: write rich-text posts, follow other writers, and
+      federate with the wider fediverse over ActivityPub — self-hosted, with no vendor lock-in.
+      These pages cover running an instance, using it, and building on it.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <a
+        href={hrefFor("quick-start")}
+        class="inline-flex h-11 items-center justify-center rounded-input bg-dark px-5 text-[15px] font-semibold text-background shadow-mini transition-all hover:bg-dark/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
+      >
+        Get started
+      </a>
+      <a
+        href={hrefFor("introduction")}
+        class="inline-flex h-11 items-center justify-center rounded-input border border-border-input bg-background-alt px-5 text-[15px] font-semibold text-foreground shadow-btn transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
+      >
+        What is Omicron?
+      </a>
+    </div>
+
+    <div class="mt-14 grid gap-4 sm:grid-cols-2">
+      {
+        entryPoints.map((item) => (
+          <a
+            href={hrefFor(item.slug)}
+            class="rounded-card border border-border bg-background-alt p-5 shadow-card transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+          >
+            <h2 class="text-base font-semibold tracking-tight text-foreground">{item.title}</h2>
+            <p class="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
+          </a>
+        ))
+      }
+    </div>
+
+    <section class="mt-16">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-foreground-alt">
+        All pages
+      </h2>
+      <div class="mt-5 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          nav.map((section) => (
+            <div>
+              <p class="text-sm font-semibold text-foreground">{section.label}</p>
+              <ul class="mt-2 flex flex-col gap-1.5">
+                {section.items.map((item) => (
+                  <li>
+                    <a
+                      href={hrefFor(item.slug)}
+                      class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</BaseLayout>

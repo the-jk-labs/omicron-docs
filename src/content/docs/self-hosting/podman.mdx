@@ -1,0 +1,78 @@
+---
+title: Running on Podman
+description: The stack runs unchanged under Podman — with one caveat about rootless port binding.
+---
+
+import Callout from "@/components/Callout.astro";
+
+The stack is engine-agnostic: anything that speaks Compose works. The installer
+auto-detects `docker compose`, `docker-compose`, `podman compose`, and
+`podman-compose`.
+
+To drive Podman by hand, just substitute the command:
+
+```bash
+podman compose up -d --build      # or: podman-compose up -d --build
+```
+
+## The one difference: ports below 1024
+
+**Rootless Podman cannot bind ports below 1024** by default — which includes 80
+and 443. Two ways around it.
+
+### Option A — publish on high ports
+
+The ports are already parameterised:
+
+```bash
+HTTP_PORT=8080 HTTPS_PORT=8443 podman compose up -d --build
+# then browse http://localhost:8080
+```
+
+Good for local development. Not ideal for a public instance, because automatic
+Let's Encrypt issuance expects 80/443.
+
+### Option B — allow low ports once
+
+```bash
+sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+```
+
+Make it permanent by adding it to `/etc/sysctl.d/`:
+
+```bash
+echo 'net.ipv4.ip_unprivileged_port_start=80' | sudo tee /etc/sysctl.d/99-omicron.conf
+```
+
+This is the right choice for a public rootless instance: you keep the security
+benefit of rootless containers and still serve standard ports.
+
+## Everything else behaves identically
+
+- Generated secrets, named volumes, and on-demand HTTPS work the same.
+- Volume names are prefixed with the project name, exactly as under Docker
+  (`omicron_pgdata`, `omicron_uploads`, and so on).
+- Every command in [Backups and restore](/docs/self-hosting/backups/) works with
+  `podman` substituted for `docker`.
+
+<Callout type="note" title="Rootful Podman">
+Running Podman as root removes the port restriction entirely, and the stack
+behaves exactly like Docker. Rootless is generally the better trade — one sysctl
+is a small price for containers that are not running as root.
+</Callout>
+
+## Upgrading
+
+Same as Docker:
+
+```bash
+git pull
+podman compose up -d --build
+```
+
+## SELinux
+
+On Fedora, RHEL, and derivatives, SELinux is enforcing by default. The bundled
+Compose file uses named volumes rather than host bind mounts, which avoids the
+usual `:z`/`:Z` labelling problems. If you add your own bind mount, remember the
+label suffix.

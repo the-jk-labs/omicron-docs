@@ -1,0 +1,97 @@
+---
+title: Configuration
+description: How settings are layered — generated secrets, web settings, and the optional .env overrides.
+---
+
+import Callout from "@/components/Callout.astro";
+
+You normally need **no configuration at all**. `docker compose up -d --build`
+works with no `.env` file. Create one next to `docker-compose.yml` **only** to
+override a default.
+
+## The three layers
+
+1. **Generated** — the database password, session secret, and TLS certificates
+   are created on first boot and stored in volumes. You never type them.
+2. **Web settings** — instance name, domain, federation, email, moderation, and
+   security live in the database and are edited in the wizard or admin panel.
+   **These take precedence over environment variables.**
+3. **Environment** — an optional fallback for the above, plus infrastructure
+   knobs (ports, external database, rate limits). Every variable is optional.
+
+<Callout type="note">
+If you set `APP_DOMAIN` in `.env` and a different domain in the admin panel, the
+admin panel wins. Environment values are defaults, not overrides.
+</Callout>
+
+## Most-used variables
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_DOMAIN` | `localhost:5173` | Public domain (no scheme). Usually set via the wizard. |
+| `PUBLIC_APP_NAME` | `Omicron` | Instance name shown in the UI. |
+| `FEDERATION_ENABLED` | `false` | `true` enables ActivityPub. Applied on restart. |
+| `HTTP_PORT` | `80` | Host HTTP port for Caddy. |
+| `HTTPS_PORT` | `443` | Host HTTPS port for Caddy. |
+| `SESSION_SECRET` | *(generated)* | Only set to pin your own: `openssl rand -hex 32`. |
+| `DATABASE_URL` | *(bundled Postgres)* | Point at an **external** Postgres. |
+| `REDIS_URL` | *(bundled Redis)* | Durable queues and shared rate limits. |
+| `RATE_LIMIT_ENABLED` | `true` | Leave on unless a trusted upstream throttles. |
+| `EMAIL_VERIFICATION_REQUIRED` | `false` | Require email confirmation before sign-in. |
+
+The complete annotated list is in
+[Environment variables](/docs/reference/environment/) and in
+[`.env.example`](https://github.com/the-jk-labs/omicron/blob/main/.env.example).
+
+## Example: non-standard ports
+
+If 80 and 443 are taken on the host:
+
+```bash
+# .env
+HTTP_PORT=8080
+HTTPS_PORT=8443
+```
+
+Then browse `http://your-host:8080`. Automatic Let's Encrypt issuance on custom
+ports is not standard, so for a real public instance prefer freeing 80/443.
+
+## Example: bring your own Postgres
+
+```bash
+# .env
+DATABASE_URL=postgres://user:password@your-db-host:5432/omicron
+```
+
+When set, this takes precedence over the generated password and the bundled
+`postgres` service is bypassed. Migrations still run automatically on backend
+startup, so the database only needs to exist and be reachable.
+
+## Example: drop Redis
+
+Redis is optional. Without `REDIS_URL`, the rate limiter, Fedify's key-value
+store and message queue, and the app job queue all run **in-process**.
+
+<Callout type="warning">
+In-process mode means queued jobs and pending federation deliveries are **lost on
+restart**, and multiple backend processes do not share rate-limit state. Fine for
+local development or a tiny box; not what you want for a busy federated instance.
+</Callout>
+
+## Applying changes
+
+```bash
+docker compose up -d          # picks up .env changes
+```
+
+Most environment changes need a container restart. Web settings apply
+immediately, except domain and federation, which the admin panel flags as
+needing a restart.
+
+## What not to change
+
+- **Do not** rebind the backend (`:8000`) or frontend (`:5173`) ports to
+  `0.0.0.0` on a public host. That exposes the API without TLS. They are
+  loopback-only on purpose.
+- **Do not** set `RATE_LIMIT_ENABLED=false` unless a trusted upstream proxy
+  already throttles for you.

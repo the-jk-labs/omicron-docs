@@ -1,0 +1,136 @@
+---
+title: Backups and restore
+description: Two verified backup strategies — a portable logical dump, or a full volume snapshot. Pick one, don't mix them.
+---
+
+import Callout from "@/components/Callout.astro";
+
+All state lives in named volumes; nothing important is inside a container image.
+
+| Volume | Holds | In backups? |
+| --- | --- | --- |
+| `pgdata` | All database content | Yes (Method B) or via dump (Method A) |
+| `uploads` | User-uploaded media | **Always** |
+| `secrets` | Generated DB password + bootstrap session secret | Method B only |
+| `state` | UI-rotated session secret, if any | Method B only |
+| `caddy_data` | Let's Encrypt certificates | Optional |
+| `redis_data` | Transient queue state | **Never** |
+
+`redis_data` is deliberately excluded: it holds only pending jobs and in-flight
+federation deliveries, which Redis re-drains after a restart. No durable content
+lives there.
+
+<Callout type="warning" title="The pairing rule">
+`secrets/db_password` is bound to whatever `pgdata` was created with. The
+database and that password must always travel **together** — or neither. A
+partial mix (new `pgdata` with old `secrets`) breaks the pairing and the backend
+will not connect.
+</Callout>
+
+Commands assume the default Compose project name `omicron` (the directory name),
+so volumes are `omicron_pgdata`, `omicron_uploads`, and so on. Swap the prefix if
+you run with `-p <name>`. Everything works the same under `podman` — substitute
+the command.
+
+Both methods below are verified end to end: seed, back up, destroy, restore, data
+intact.
+
+## Method A — logical dump (portable, recommended)
+
+Portable across Postgres major versions and safe to run on a live instance. On
+restore, the instance generates a **fresh** database password and session secret
+— so `secrets` is *not* backed up — which means everyone is signed out once.
+That is expected for a restore or migration.
+
+### Back up
+
+```bash
+# SQL dump + the two file volumes that hold real content.
+docker compose exec -T postgres \
+  pg_dump -U omicron -Fc omicron > omicron-db-$(date +%F).dump
+for v in uploads caddy_data; do
+  docker run --rm -v omicron_$v:/v:ro -v "$PWD":/backup alpine:3 \
+    tar czf /backup/omicron-$v-$(date +%F).tgz -C /v .
+done
+```
+
+### Restore onto a fresh host
+
+```bash
+docker compose up -d postgres            # regenerates secrets, inits an empty DB
+sleep 5
+docker compose exec -T postgres \
+  pg_restore -U omicron -d omicron --clean --if-exists < omicron-db-YYYY-MM-DD.dump
+for v in uploads caddy_data; do
+  docker run --rm -v omicron_$v:/v -v "$PWD":/backup alpine:3 \
+    sh -c "rm -rf /v/* && tar xzf /backup/omicron-$v-YYYY-MM-DD.tgz -C /v"
+done
+docker compose up -d
+```
+
+Do **not** restore an old `secrets` tarball here — its `db_password` will not
+match the freshly initialised `pgdata`. `caddy_data` is optional; skipping it just
+re-issues certificates on first request.
+
+## Method B — full volume snapshot (simple, version-locked)
+
+Copies every volume as-is, so `pgdata` and its matching `secrets` stay consistent
+and **sessions survive**. Tied to the same Postgres major version, and you must
+stop the stack first so the database files are copied at rest.
+
+### Back up
+
+```bash
+docker compose stop
+for v in pgdata uploads state secrets caddy_data; do
+  docker run --rm -v omicron_$v:/v:ro -v "$PWD":/backup alpine:3 \
+    tar czf /backup/omicron-$v-$(date +%F).tgz -C /v .
+done
+docker compose start
+```
+
+### Restore onto a fresh host
+
+```bash
+for v in pgdata uploads state secrets caddy_data; do
+  docker run --rm -v omicron_$v:/v -v "$PWD":/backup alpine:3 \
+    sh -c "tar xzf /backup/omicron-$v-YYYY-MM-DD.tgz -C /v"
+done
+docker compose up -d
+```
+
+Restore the **whole set** or none of it.
+
+## Choosing between them
+
+| | Method A | Method B |
+| --- | --- | --- |
+| Runs on a live instance | Yes | No — requires a stop |
+| Portable across Postgres versions | Yes | No |
+| Sessions survive restore | No | Yes |
+| Backup contains your secrets | No | **Yes** |
+| Simplicity | One dump + two tarballs | Five tarballs |
+
+Method A for routine backups and host migrations. Method B when you want a
+byte-for-byte snapshot before a risky upgrade.
+
+## Automating it
+
+Run Method A from cron and ship the files off the box:
+
+```bash
+0 4 * * * cd /opt/omicron && docker compose exec -T postgres \
+  pg_dump -U omicron -Fc omicron > /var/backups/omicron-$(date +\%F).dump
+```
+
+<Callout type="danger" title="Store backups privately">
+Method B backups contain your database password and session secret. Method A
+backups contain every account's data. Encrypt them, and keep them off the same
+machine.
+</Callout>
+
+## Test your restores
+
+A backup you have never restored is a hypothesis. Restore into a throwaway VM or
+a second Compose project (`-p omicron-test`) at least once, and confirm you can
+sign in and read a post.

@@ -1,0 +1,96 @@
+---
+title: License and AGPL
+description: What AGPL-3.0-or-later requires, especially section 13, and what it means if you deploy a modified instance.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron is free software licensed under the **GNU Affero General Public License
+v3.0 or later** (`AGPL-3.0-or-later`). The full text is in
+[LICENSE](https://github.com/the-jk-labs/omicron/blob/main/LICENSE).
+
+<Callout type="note">
+This page is a plain-language summary, not legal advice. The licence text
+governs.
+</Callout>
+
+## What you may do
+
+- **Run it**, for any purpose, including commercially.
+- **Study and modify it.**
+- **Share it**, modified or not.
+
+There is no field-of-use restriction, no user cap, and no separate commercial
+licence to buy.
+
+## What you must do
+
+If you **distribute** Omicron, or a modified version, you must pass on the same
+freedoms: source code, under the same licence, with copyright notices intact.
+
+## Section 13 — the network clause
+
+This is the part that matters for a hosted service, and it is why Omicron is AGPL
+rather than GPL:
+
+> If you run a **modified** version on a server and let users interact with it
+> **over a network**, you must offer those users the **corresponding source code
+> of your modified version**.
+
+In plain terms: you cannot take Omicron, change it, run it as a public service,
+and keep your changes private. Your users are entitled to the source of the thing
+they are actually using.
+
+<Callout type="warning" title="This applies to hosted instances, not just downloads">
+Under a plain GPL, running modified software as a service triggers nothing —
+because nothing is distributed. Section 13 closes that gap. Running a modified
+Omicron instance publicly **is** the trigger.
+</Callout>
+
+## Running it unmodified
+
+If you run stock Omicron with no source changes, section 13 asks nothing extra of
+you: the corresponding source is upstream, and the app's "Source" link already
+points there.
+
+Configuration, instance settings, branding-level content, and your own posts are
+not modifications of the program.
+
+## The Source link
+
+The app surfaces a **Source** link in the UI for exactly this purpose. If you
+deploy changes, **point it at your fork.** That single change is usually all it
+takes to satisfy section 13 in practice.
+
+## Practical guidance for operators
+
+| Situation | What you need to do |
+| --- | --- |
+| Stock instance | Nothing beyond keeping the Source link intact |
+| You changed the code and run it publicly | Publish your fork and point the Source link at it |
+| You changed the code and run it privately, alone | Nothing — no network users to offer source to |
+| You redistribute images or a fork | Ship the source under AGPL-3.0-or-later |
+
+## For contributors
+
+By contributing you agree your work is licensed under AGPL-3.0-or-later. Every
+source file carries an SPDX header:
+
+```ts
+// SPDX-License-Identifier: AGPL-3.0-or-later
+```
+
+Keep it on new files. See [Contributing](/docs/development/contributing/).
+
+## Why this licence
+
+The project's stated aims are freedom of speech, no vendor lock-in, and
+self-hostability. A licence that let someone build a closed, hosted fork on top
+of the same code would undercut all three. AGPL keeps the improvements flowing
+back to the people running instances.
+
+## This documentation
+
+The documentation site
+([the-jk-labs/omicron-docs](https://github.com/the-jk-labs/omicron-docs)) is a
+separate repository from the application.

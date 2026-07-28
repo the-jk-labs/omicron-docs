@@ -1,0 +1,209 @@
+/* Self-hosted Inter (variable) — no render-blocking third-party font request. */
+@import "@fontsource-variable/inter/index.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bits UI docs theme tokens (ported verbatim from the docs :root, matching the
+   Omicron app). Channel form so Tailwind's `<alpha-value>` opacity modifiers
+   work in v3. */
+:root {
+  --background: 0 0% 100%;
+  --background-alt: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --foreground-alt: 0 0% 32%;
+  --muted: 240 5% 96%;
+  /* Raised from the docs' 0.4 alpha to meet WCAG AA (4.5:1) for secondary text. */
+  --muted-foreground: 0 0% 9% / 0.65;
+  --border-card: 240 6% 10% / 0.1;
+  --border-input: 240 6% 10% / 0.17;
+  --dark: 240 6% 10%;
+  --dark-10: 240 6% 10% / 0.1;
+  --dark-40: 240 6% 10% / 0.4;
+  --dark-04: 240 6% 10% / 0.04;
+  --accent: 204 94% 94%;
+  --accent-foreground: 204 80% 16%;
+  --destructive: 347 77% 50%;
+  --tertiary: 37.7 92.1% 50.2%;
+  --line: 0 0% 100%;
+  --contrast: 0 0% 0%;
+
+  /* Layout metrics shared by the shell and the scroll-margin of headings. */
+  --header-height: 56px;
+}
+
+/* Dark theme tokens (ported verbatim from the docs `.dark`). Activated by the
+   `dark` class on <html> — see the no-FOUC script in BaseLayout.astro. */
+.dark {
+  --background: 0 0% 5%;
+  --background-alt: 0 0% 8%;
+  --foreground: 0 0% 95%;
+  --foreground-alt: 0 0% 70%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 0 0% 100% / 0.55;
+  --border-card: 0 0% 96% / 0.1;
+  --border-input: 0 0% 96% / 0.17;
+  --dark: 0 0% 96%;
+  --dark-10: 0 0% 96% / 0.1;
+  --dark-40: 0 0% 96% / 0.4;
+  --dark-04: 0 0% 96% / 0.04;
+  --accent: 204 90% 90%;
+  --accent-foreground: 204 94% 94%;
+  --destructive: 350 89% 60%;
+  --tertiary: 61.3 100% 82.2%;
+  --line: 0 0% 9.02%;
+  --contrast: 0 0% 100%;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  /* Anchored headings must clear the sticky header. */
+  :target {
+    scroll-margin-top: calc(var(--header-height) + 1.5rem);
+  }
+  ::selection {
+    @apply bg-dark-10;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Documentation prose. Hand-rolled (no @tailwindcss/typography colours) so
+   every colour is a Bits UI docs token.
+   --------------------------------------------------------------------------- */
+
+.prose-docs {
+  @apply text-[0.95rem] leading-7 text-foreground-alt;
+}
+
+.prose-docs > * + * {
+  @apply mt-5;
+}
+
+.prose-docs h2,
+.prose-docs h3,
+.prose-docs h4 {
+  @apply scroll-mt-24 font-semibold tracking-tight text-foreground;
+}
+.prose-docs h2 {
+  @apply mt-12 border-t border-border pt-8 text-2xl;
+}
+.prose-docs h2:first-child {
+  @apply mt-0 border-t-0 pt-0;
+}
+.prose-docs h3 {
+  @apply mt-9 text-lg;
+}
+.prose-docs h4 {
+  @apply mt-7 text-base;
+}
+
+.prose-docs p {
+  @apply text-foreground-alt;
+}
+
+.prose-docs a {
+  @apply font-medium text-foreground underline decoration-dark-40 underline-offset-4 transition-colors hover:decoration-foreground;
+}
+
+.prose-docs strong {
+  @apply font-semibold text-foreground;
+}
+
+.prose-docs ul,
+.prose-docs ol {
+  @apply space-y-2 pl-6;
+}
+.prose-docs ul {
+  @apply list-disc marker:text-dark-40;
+}
+.prose-docs ol {
+  @apply list-decimal marker:text-dark-40;
+}
+.prose-docs li > ul,
+.prose-docs li > ol {
+  @apply mt-2;
+}
+
+.prose-docs blockquote {
+  @apply rounded-card border border-border bg-muted/40 px-5 py-4 text-foreground-alt;
+}
+.prose-docs blockquote > * + * {
+  @apply mt-3;
+}
+
+/* Inline code. `:not(pre code)` keeps highlighted blocks untouched. */
+.prose-docs :not(pre) > code {
+  @apply rounded-5px border border-border bg-muted px-[0.35em] py-[0.15em] font-mono text-[0.85em] text-foreground;
+}
+
+.prose-docs pre {
+  @apply overflow-x-auto rounded-card border border-border bg-background-alt p-4 text-[0.85rem] leading-6 shadow-mini;
+}
+.prose-docs pre code {
+  @apply font-mono;
+}
+
+/* Shiki dual-theme: swap the CSS variables it emits when `.dark` is set. */
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+.dark .astro-code {
+  @apply bg-background-alt;
+}
+.astro-code {
+  @apply !bg-background-alt;
+}
+
+.prose-docs table {
+  @apply w-full border-collapse overflow-hidden text-left text-[0.9rem];
+}
+.prose-docs thead tr {
+  @apply border-b border-border;
+}
+.prose-docs th {
+  @apply px-3 py-2.5 font-semibold text-foreground;
+}
+.prose-docs td {
+  @apply border-b border-border px-3 py-2.5 align-top text-foreground-alt;
+}
+.prose-docs tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+/* Tables scroll rather than pushing the page sideways on narrow screens. */
+.prose-docs .table-wrapper {
+  @apply -mx-1 overflow-x-auto rounded-card border border-border px-1;
+}
+
+.prose-docs hr {
+  @apply my-10 border-border;
+}
+
+.prose-docs img {
+  @apply rounded-card border border-border;
+}
+
+.prose-docs kbd {
+  @apply rounded-5px border border-border bg-background-alt px-1.5 py-0.5 font-mono text-xs text-foreground shadow-kbd;
+}

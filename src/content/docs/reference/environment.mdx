@@ -1,0 +1,116 @@
+---
+title: Environment variables
+description: Every variable, its default, and when you would actually set it. All of them are optional.
+---
+
+import Callout from "@/components/Callout.astro";
+
+You do **not** need a `.env` file. `docker compose up -d --build` works with none
+at all. Create one next to `docker-compose.yml` only to override a default.
+
+<Callout type="note">
+Web settings (setup wizard and admin panel) **take precedence** over these
+values. Environment variables are defaults, not overrides.
+</Callout>
+
+## Instance identity
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_DOMAIN` | `localhost:5173` | Public domain, no scheme, no trailing slash. Usually set via the wizard. |
+| `PUBLIC_APP_NAME` | `Omicron` | Instance name shown in the UI. |
+
+## Federation
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `FEDERATION_ENABLED` | `false` | `true` enables ActivityPub (WebFinger, actor, inbox/outbox). Applied on restart. Needs a real domain and HTTPS to be useful. |
+
+## Secrets
+
+Normally auto-generated into the `secrets` volume on first boot — leave unset.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SESSION_SECRET` | *(generated)* | Pin your own: `openssl rand -hex 32`. Takes precedence over a UI-rotated secret. |
+| `POSTGRES_USER` | `omicron` | Bundled database user. |
+| `POSTGRES_DB` | `omicron` | Bundled database name. |
+| `DATABASE_URL` | *(bundled)* | Point at an **external** Postgres. Takes precedence over the generated password. |
+
+## Redis
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `REDIS_URL` | *(bundled `redis` service)* | Backs the rate limiter, Fedify's KV + message queue, and the app job queue. Unset it to run entirely in-process. |
+
+The Compose stack sets this to its bundled `redis` service automatically. Leave
+it unset for local `deno task dev`, or point it at your own Redis.
+
+<Callout type="warning">
+In-process mode loses queued jobs and pending federation deliveries on restart,
+and rate-limit counters are not shared across processes.
+</Callout>
+
+## Rate limiting
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `RATE_LIMIT_ENABLED` | `true` | Disable only behind a trusted upstream that already throttles. |
+| `RL_LOGIN_MAX` | `15` | Login attempts per IP / 15 min. |
+| `RL_REGISTER_MAX` | `5` | Registrations per IP / hour. |
+| `RL_API_WRITE_MAX` | `120` | Writes / min per signed-in user (or per IP). |
+| `RL_INBOX_MAX` | `300` | Federation inbox POSTs / min per source IP. |
+| `INBOX_MAX_BODY_BYTES` | `1000000` | Reject inbox POSTs larger than this. |
+
+## Email
+
+Normally set in the wizard or admin panel, where there is a live test button.
+These are fallbacks.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EMAIL_TRANSPORT` | `console` | `console`, `smtp`, `relay`, or `direct`. |
+| `EMAIL_FROM` | `Omicron <no-reply@localhost>` | Sender address. |
+| `SMTP_HOST` | — | SMTP server hostname. |
+| `SMTP_PORT` | `587` | 587 for STARTTLS, 465 for implicit TLS. |
+| `SMTP_USERNAME` | — | SMTP username. |
+| `SMTP_PASSWORD` | — | SMTP password or API key. |
+| `SMTP_TLS` | `false` | `true` = implicit TLS (465); `false` = STARTTLS (587). |
+| `EMAIL_VERIFICATION_REQUIRED` | `false` | Require email confirmation before sign-in. |
+
+## Public entrypoint
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `HTTP_PORT` | `80` | Host HTTP port for Caddy. |
+| `HTTPS_PORT` | `443` | Host HTTPS port for Caddy. |
+
+Changing these breaks standard automatic HTTPS — Let's Encrypt validates over 80
+and 443. Change them only when those ports are genuinely unavailable.
+
+## AI-scraper protection
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `CADDY_ADMIN_URL` | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
+
+There is nothing else to set — the shield is turned on from **Admin → Security**.
+
+## Networking and storage
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `8000` | Backend listen port. |
+| `INTERNAL_API_URL` | `http://backend:8000` | How the frontend reaches the backend. |
+| `UPLOADS_DIR` | `/data/uploads` | Where uploaded media is written. |
+| `STATE_DIR` | `/data/state` | Where generated secrets are persisted when not supplied via env or files. |
+
+## Applying changes
+
+```bash
+docker compose up -d
+```
+
+Some services only read certain files at startup; if a release changes the
+`Caddyfile`, add `--force-recreate` once — see
+[Upgrading](/docs/self-hosting/upgrading/).

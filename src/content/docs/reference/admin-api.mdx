@@ -1,0 +1,110 @@
+---
+title: Admin API
+description: The administrative endpoints under /api/admin — instance settings, email, moderation, users, and defederation.
+badge: Admin only
+---
+
+import Callout from "@/components/Callout.astro";
+
+Everything under **`/api/admin`** requires an authenticated **admin** session.
+These are the endpoints the admin panel itself calls; they are documented here
+because operators sometimes need to script against them.
+
+<Callout type="warning">
+There is no API token flow — an admin script authenticates by signing in and
+keeping the session cookie, exactly like the browser. Treat any script holding
+that cookie as holding admin rights.
+</Callout>
+
+## Instance
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/instance` | Instance name, domain, federation flag |
+| `PUT` | `/api/admin/instance` | Update them (domain and federation apply on restart) |
+| `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret |
+
+Rotating signs everyone out on the next restart. If `SESSION_SECRET` is pinned in
+the environment, rotate it there instead.
+
+## Settings and analytics
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/settings` | All instance settings |
+| `PUT` | `/api/admin/settings/analytics` | Analytics behaviour |
+
+What analytics can and cannot be turned on is described in
+[Writer dashboard](/docs/using/analytics/).
+
+## Security
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/security` | Current security settings |
+| `PUT` | `/api/admin/security/anubis` | Toggle the AI-scraper shield |
+
+The toggle applies live — the backend re-routes traffic through the challenge
+service via Caddy's internal admin API. No restart.
+
+## SEO
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/seo` | SEO settings |
+| `PUT` | `/api/admin/seo` | Update them |
+
+## Email
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/email` | Current email configuration (secrets are write-only) |
+| `PUT` | `/api/admin/email` | Update mode and connection details |
+| `POST` | `/api/admin/email/dkim` | Generate an RSA-2048 DKIM keypair |
+| `GET` | `/api/admin/email/dns` | The SPF, DKIM, and DMARC records to publish, and live verification |
+| `GET` | `/api/admin/email/port25` | Test outbound port 25 from inside the container |
+| `POST` | `/api/admin/email/test` | Send a live test message |
+
+Passwords and API keys are never read back — the API returns "unchanged" rather
+than the stored secret. The DKIM private key never leaves the server.
+
+See [Email](/docs/self-hosting/email/).
+
+## Users
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/users` | List local accounts |
+| `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
+
+## Content and reports
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/reports` | The moderation queue |
+| `POST` | `/api/admin/reports/:id/resolve` | Resolve or dismiss a report |
+| `DELETE` | `/api/admin/posts/:id` | Remove a post |
+
+Removing a published post federates a `Delete` to remote servers.
+
+## Federation domains
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/domains` | Blocked domains |
+| `POST` | `/api/admin/domains` | Block (defederate) a domain |
+| `DELETE` | `/api/admin/domains/:domain` | Re-federate a domain |
+
+<Callout type="danger" title="Blocking purges">
+Defederating a domain **purges already-cached content** from it — this is not a
+forward-only filter, and re-federating does not bring the purged content back.
+</Callout>
+
+## Notes for scripting
+
+- Every write is subject to the general API write limiter
+  (`RL_API_WRITE_MAX`, default 120/min).
+- Changes to the domain and the federation flag are only effective after
+  `docker compose up -d`.
+- Prefer the admin panel for one-off changes. Script only what you genuinely need
+  to repeat — these routes track the UI's needs and can change between releases.

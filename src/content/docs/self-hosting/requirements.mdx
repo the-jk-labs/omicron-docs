@@ -1,0 +1,86 @@
+---
+title: Requirements
+description: What you need before installing — hardware, a container engine, and (for a public instance) a domain.
+---
+
+import Callout from "@/components/Callout.astro";
+
+You need three things: a machine, a container engine, and — only for a public
+instance — a domain name.
+
+## 1. A machine
+
+The whole stack runs as five small containers (backend, frontend, PostgreSQL,
+Redis, Caddy). Everything is bundled, so the only thing you install on the host
+is a container engine.
+
+| Resource | Local test | Standalone blog | Public federated instance |
+| --- | --- | --- | --- |
+| CPU | 1 vCPU | 1 vCPU | 2 vCPU |
+| RAM | 1 GB | 1 GB | **2 GB** |
+| Disk | 2 GB free | a few GB (grows with uploads) | 5 GB+ (grows with uploads) |
+| Architecture | amd64 or arm64 | amd64 or arm64 | amd64 or arm64 |
+| Domain | not needed | optional | **required** |
+| Open ports | none (localhost) | 80 + 443 | **80 + 443, publicly reachable** |
+
+Notes:
+
+- **Architecture** — all base images are multi-arch, so a cheap ARM VPS works as
+  well as x86.
+- **1 GB RAM** is enough for standalone or low-traffic use. Federation adds
+  inbound delivery and background jobs, so treat **2 GB as the real floor for a
+  public federated instance**.
+- **Redis is optional.** It ships in the default stack for durable queues and
+  shared rate limits, but the app runs entirely in-process without it — drop it
+  to save memory on the smallest boxes.
+- **No managed database, TLS certificate, or secret to provision.** Postgres, the
+  Let's Encrypt certificate, the session secret, and the database password are
+  bundled or generated on first boot.
+
+<Callout type="warning" title="Federation needs to be reachable">
+Other ActivityPub servers deliver activities to your inbox over port 443. A
+federated instance behind a firewall that blocks inbound 443, or on a home
+connection without port forwarding, will send but never receive.
+</Callout>
+
+## 2. A container engine
+
+Either works — the stack is engine-agnostic and the installer auto-detects
+`docker compose`, `docker-compose`, `podman compose`, or `podman-compose`.
+
+- **Docker** with the Compose plugin. Install via
+  [docs.docker.com/engine/install](https://docs.docker.com/engine/install/).
+- **Podman** 4+ with `podman compose` or `podman-compose`. See
+  [Running on Podman](/docs/self-hosting/podman/) for the one difference
+  (binding ports below 1024 when rootless).
+
+Verify Docker is ready:
+
+```bash
+docker --version
+docker compose version
+```
+
+## 3. A domain name
+
+Only for a public instance. You need a domain (for example
+`blog.example.com`) and the ability to add a DNS record for it. You do **not**
+need one to try Omicron locally.
+
+<Callout type="note" title="A note on ports">
+A public instance uses ports **80** and **443**. Make sure nothing else on the
+host is using them (another web server, another Caddy or nginx). If they are
+taken you can move Omicron to other ports — see
+[Configuration](/docs/self-hosting/configuration/) — but automatic Let's Encrypt
+issuance on non-standard ports is not standard, so for a real public instance
+prefer freeing 80 and 443.
+</Callout>
+
+## What you do not need
+
+- A managed Postgres.
+- Certbot, or any TLS certificate handling.
+- A reverse proxy in front (Caddy is included, and it is the entrypoint).
+- An SMTP server of your own — the wizard offers a zero-setup console mode, and
+  any provider's SMTP or API works.
+- Any file editing at all, before or after installation.

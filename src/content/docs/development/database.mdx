@@ -1,0 +1,118 @@
+---
+title: Database and migrations
+description: The schema, the repository pattern, how migrations are generated and replayed, and the backward-compatibility rule.
+---
+
+import Callout from "@/components/Callout.astro";
+
+PostgreSQL, accessed exclusively through Drizzle ORM, and exclusively from
+`src/db/`.
+
+## The repository pattern
+
+Every query lives in a repository function:
+
+```ts
+// db/repositories/posts.ts
+export async function findById(id: string) { … }
+export async function listByAuthor(authorId: string, cursor?: Cursor) { … }
+```
+
+Services call repositories. Routes call services. Nothing else touches Drizzle.
+
+<Callout type="danger" title="Never do this">
+```ts
+db.select().from(posts);   // in a route or a service
+```
+Call a repository function instead. This is the project's most important
+architectural rule.
+</Callout>
+
+## Cursor pagination
+
+Keyset pagination on `(created_at, id)`, never `OFFSET`:
+
+```sql
+WHERE (created_at, id) < ($cursor_created_at, $cursor_id)
+ORDER BY created_at DESC, id DESC
+LIMIT $n
+```
+
+`OFFSET` scans and discards rows — it degrades as the table grows — and it skips
+or duplicates rows when data changes between page fetches. Every listing endpoint
+in the API returns a cursor for this reason.
+
+## Creating a migration
+
+```bash
+cd apps/backend
+# 1. edit src/db/schema.ts
+deno task db:generate     # 2. writes new SQL into ./drizzle
+# 3. commit the generated SQL
+```
+
+The generated file **is** the migration. Review it before committing —
+`db:generate` produces what it infers from the schema diff, which is not always
+what you meant.
+
+## How migrations run
+
+Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
+`src/db/migrate.ts` on **backend startup**. They are idempotent: a no-op when the
+database is already current.
+
+`drizzle-kit` is **not** required inside the container — only during development,
+to generate the SQL.
+
+This is why upgrading an instance is just `git pull && docker compose up -d
+--build` with no migration step for the operator to remember.
+
+## The backward-compatibility rule
+
+Upgrades must never break a running instance, so schema changes are **additive
+only** within a version:
+
+1. **Add** new columns and tables — nullable, or with defaults — and migrate data.
+2. Ship code that works with **both** the old and the new shape.
+3. **Remove** old columns only in a later major release.
+
+<Callout type="warning" title="Why this matters more than it looks">
+Containers do not all restart at the same instant, and an operator may roll back
+a patch release. Additive-only changes mean old and new code can both be running
+against the same database without corruption.
+</Callout>
+
+## Sessions
+
+Sessions are rows in a Postgres `sessions` table, referenced by an httpOnly
+cookie. The app holds no session state in memory, which is what makes restarts,
+upgrades, and multiple backend processes uneventful.
+
+## Version tracking
+
+`APP_VERSION` in `src/version.ts` is logged on boot and during migration, and is
+exposed at `GET /version`. Bump it per release and keep it in sync with the git
+tag.
+
+## Working with the database directly
+
+```bash
+# psql inside the running container
+docker compose exec postgres psql -U omicron omicron
+
+# One-off query
+docker compose exec -T postgres psql -U omicron -c '\dt' omicron
+```
+
+<Callout type="warning">
+Hand-editing production data bypasses every invariant the services enforce. If
+you must, take a backup first — see
+[Backups and restore](/docs/self-hosting/backups/).
+</Callout>
+
+## Bringing your own Postgres
+
+Set `DATABASE_URL` and the bundled `postgres` service is bypassed. Migrations
+still run automatically on startup, so the database only needs to exist and be
+reachable. Note that the generated `secrets/db_password` then no longer applies —
+your URL carries the credentials.

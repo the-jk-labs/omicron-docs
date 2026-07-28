@@ -1,0 +1,80 @@
+---
+title: Moderation tools
+description: What individual users can do, what admins can do, and how defederation works.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Moderation happens at two levels: what a reader does for themselves, and what an
+admin does for the whole instance.
+
+## User-level
+
+| Tool | Effect | Applies to |
+| --- | --- | --- |
+| **Mute** | Hides their content from you; they are not notified | Local and remote accounts |
+| **Block** | Mute, plus severing the follow relationship both ways | Local and remote accounts |
+| **Remove follower** | Revokes an existing subscription to you | Local and remote |
+| **Follower approval** | Holds every inbound follow for review | Set in Settings → Privacy |
+| **Report** | Sends a post or account to the admin queue | Local and remote |
+
+Muted and blocked accounts are listed in **Settings → Muted and blocked** and can
+be undone at any time.
+
+## Admin-level
+
+### Reports
+
+**Admin → Reports** is the moderation queue. For each report you can:
+
+- review the reported post or actor,
+- **remove the post**,
+- **dismiss** the report.
+
+Reports cover remote content too, though your only lever on a remote post is to
+stop serving it locally.
+
+### Users
+
+**Admin → Users** suspends or reinstates local accounts. A suspended account
+cannot sign in and its content stops being served.
+
+### Federation and defederation
+
+**Admin → Federation** blocks a domain outright — and blocking **purges
+already-cached content** from that domain, rather than only filtering what
+arrives next. Re-federating a domain restores delivery going forward; purged
+content does not come back on its own.
+
+<Callout type="warning" title="Defederation is blunt and visible">
+Blocking a domain cuts off every account on it, including people your users
+follow. Their follows break silently from the remote side. Use it for instances
+you have decided to have no relationship with, not as a substitute for
+per-account blocks.
+</Callout>
+
+## AI-scraper protection
+
+**Admin → Security** enables a proof-of-work challenge on page loads. It is a
+scraping mitigation rather than a moderation tool, but it lives in the same
+place. Off by default; see [Admin panel](/docs/self-hosting/admin-panel/) for the
+trade-offs.
+
+## What moderation cannot do
+
+- **It cannot delete a post from other servers.** Removal federates a `Delete`,
+  which well-behaved servers honour. That is a protocol convention, not an
+  enforcement mechanism.
+- **It cannot prevent screenshots or archiving.** Anything published publicly is
+  public.
+- **It cannot moderate other instances' users on their own instances.** Your
+  reach ends at what your instance serves and who it delivers to.
+
+## A practical policy
+
+1. Publish your instance's rules somewhere readers can find them.
+2. Handle reports promptly — an unattended queue trains people not to report.
+3. Prefer the narrowest tool that works: report → remove post → suspend account →
+   defederate domain.
+4. Keep a note of why each domain block was made. Six months later you will not
+   remember.

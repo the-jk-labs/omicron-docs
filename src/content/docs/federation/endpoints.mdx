@@ -1,0 +1,93 @@
+---
+title: ActivityPub endpoints
+description: Every federation route Omicron exposes, and how to inspect them by hand.
+---
+
+import Callout from "@/components/Callout.astro";
+
+These routes exist **only when federation is enabled**. When it is off, they are
+not mounted at all and return 404.
+
+## Discovery
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /.well-known/webfinger?resource=acct:{user}@{domain}` | Resolves a handle to an actor URI |
+| `GET /.well-known/nodeinfo` | NodeInfo discovery document |
+| `GET /nodeinfo/...` | Instance metadata (software, version, usage) |
+
+WebFinger is the entry point for "search for `@alice@your-domain` on Mastodon".
+
+## Actor
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /users/{identifier}` | The actor document — profile, keys, endpoints |
+| `GET /users/{identifier}/followers` | The followers collection |
+| `GET /users/{identifier}/outbox` | The actor's public activity stream |
+| `GET /users/{identifier}/lists/{listId}` | A public reading list as an object |
+
+The actor document carries the public key remote servers use to verify your
+signatures, and the inbox endpoints they deliver to.
+
+## Inboxes
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /users/{identifier}/inbox` | Personal inbox |
+| `POST /inbox` | Shared inbox for activities addressed to many local users |
+
+Both are public and unauthenticated by protocol design; authenticity comes from
+**HTTP signature verification**, not from a session.
+
+Protections on the inbox path:
+
+- **Rate limited** per source IP (`RL_INBOX_MAX`, default 300/min).
+- **Size capped** (`INBOX_MAX_BODY_BYTES`, default 1 MB) — rejected first by
+  declared `Content-Length` with `413`, then enforced again while buffering so a
+  chunked or spoofed length cannot get around it.
+- The body is buffered and the request rebuilt from the **exact same bytes**, so
+  the HTTP-Signature digest still verifies.
+
+## Inspecting by hand
+
+```bash
+# WebFinger
+curl "https://your-domain/.well-known/webfinger?resource=acct:alice@your-domain"
+
+# Actor document (content negotiation matters)
+curl -H "Accept: application/activity+json" https://your-domain/users/alice
+
+# Outbox
+curl -H "Accept: application/activity+json" https://your-domain/users/alice/outbox
+
+# Is federation on at all?
+curl https://your-domain/.well-known/nodeinfo
+```
+
+<Callout type="warning" title="Send the right Accept header">
+Without `Accept: application/activity+json` you will get the human-readable HTML
+profile instead of the ActivityPub document. A "the actor endpoint returns HTML"
+bug report is almost always a missing header.
+</Callout>
+
+## Non-federation public routes
+
+Not ActivityPub, but part of the public surface:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /healthz` | Liveness — `{"status":"ok"}` |
+| `GET /version` | Name, version, and the federation flag |
+| `GET /@{handle}/feed.xml` | Per-author RSS |
+| `GET /sitemap.xml`, `GET /robots.txt` | SEO surface |
+
+`/healthz` and `/version` are served by the backend, which is published on
+loopback only — reach them on the host, not from the internet.
+
+## What is never exposed
+
+- Drafts.
+- Private reading lists.
+- Content from suspended accounts.
+- Anything from a defederated domain (it is purged, not merely hidden).

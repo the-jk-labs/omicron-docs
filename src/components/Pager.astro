@@ -1,0 +1,38 @@
+---
+import { pagerFor, hrefFor } from "@/lib/nav";
+
+interface Props {
+  slug: string;
+}
+const { prev, next } = pagerFor(Astro.props.slug);
+---
+
+<nav
+  aria-label="Previous and next page"
+  class="mt-14 grid gap-3 border-t border-border pt-6 sm:grid-cols-2"
+>
+  {
+    prev ? (
+      <a
+        href={hrefFor(prev.slug)}
+        class="group flex flex-col rounded-card border border-border bg-background-alt px-4 py-3 shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+      >
+        <span class="text-xxs uppercase tracking-wide text-muted-foreground">Previous</span>
+        <span class="mt-0.5 text-sm font-medium text-foreground">{prev.label}</span>
+      </a>
+    ) : (
+      <span />
+    )
+  }
+  {
+    next && (
+      <a
+        href={hrefFor(next.slug)}
+        class="group flex flex-col rounded-card border border-border bg-background-alt px-4 py-3 text-right shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground sm:col-start-2"
+      >
+        <span class="text-xxs uppercase tracking-wide text-muted-foreground">Next</span>
+        <span class="mt-0.5 text-sm font-medium text-foreground">{next.label}</span>
+      </a>
+    )
+  }
+</nav>

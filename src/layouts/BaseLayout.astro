@@ -1,0 +1,59 @@
+---
+import "@/styles/app.css";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Set on the docs pages so the header can render the mobile nav. */
+  currentSlug?: string;
+}
+
+const { title, description, currentSlug } = Astro.props;
+const siteTitle = title === "Omicron" ? "Omicron Documentation" : `${title} — Omicron Docs`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{siteTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="generator" content={Astro.generator} />
+    {/* Resolve the theme before first paint so the page never flashes light. */}
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem("omicron-docs-theme");
+          const dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", dark);
+        } catch {
+          /* storage unavailable — fall back to the light default */
+        }
+      })();
+    </script>
+  </head>
+  <body class="flex min-h-full flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-input focus:border focus:border-border-input focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground"
+    >
+      Skip to content
+    </a>
+    <Header {currentSlug} />
+    <slot />
+    <Footer />
+  </body>
+</html>

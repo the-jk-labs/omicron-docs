@@ -1,0 +1,95 @@
+---
+title: Enabling federation
+description: Turn on ActivityPub, in the right order, and confirm your instance is really federating.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Federation is **off by default**, so a fresh instance is a private, standalone
+blog. Turning it on lets your posts travel the fediverse and lets people on
+Mastodon and elsewhere follow your writers.
+
+## Order matters
+
+Federation binds your server's identity to your **domain at startup**, so:
+
+1. **Set your public domain first** — in the wizard or **Admin → Instance** — and
+   confirm HTTPS works at `https://your-domain`. Federation effectively requires
+   HTTPS; other servers will refuse plain HTTP.
+2. **Turn on the Federation toggle** in **Admin → Instance** (or set
+   `FEDERATION_ENABLED=true` in `.env`).
+3. **Restart** so the change takes effect:
+
+   ```bash
+   docker compose up -d
+   ```
+
+<Callout type="warning" title="Do not change the domain afterwards">
+Every actor URI, key, and delivered activity is built from the domain. Changing
+it later orphans your existing followers — remote servers keep following an
+identity that no longer answers.
+</Callout>
+
+## Confirm it is active
+
+On the server:
+
+```bash
+curl localhost:8000/version      # -> "federation": true
+```
+
+Publicly:
+
+```bash
+curl https://your-domain/.well-known/nodeinfo    # -> JSON
+```
+
+A 404 there means federation is still off. The backend also logs
+`Federation enabled (ActivityPub)` on boot.
+
+Finally, the real test — search for `@yourusername@your-domain` from a Mastodon
+account and follow it. You should see the follow appear, be auto-accepted, and
+your next published post arrive in that account's timeline.
+
+## What turning it on changes
+
+- Each local account becomes an ActivityPub actor with an inbox and outbox.
+- Inbound `Follow` activities are auto-accepted (unless the account requires
+  approval for followers).
+- Publishing a post enqueues delivery to every remote follower's inbox.
+- Your instance answers WebFinger, actor, followers, outbox, and NodeInfo
+  requests. See [ActivityPub endpoints](/docs/federation/endpoints/).
+- The federation inbox becomes a public, unauthenticated POST endpoint —
+  rate-limited per source IP and capped in body size.
+
+## What it does not change
+
+- **Drafts are never federated.** Only published posts are delivered.
+- **Private accounts still gate their followers** — approval is enforced before
+  anything is delivered.
+- The API and your reading experience are unchanged.
+
+## Turning it back off
+
+Flip the toggle and restart. The ActivityPub code paths stop being loaded
+entirely. Remote followers will simply stop receiving deliveries; they are not
+notified, and their follow records remain on their side.
+
+## Moderation across instances
+
+Once you federate, you inherit the wider network's problems. Two tools:
+
+- **Admin → Federation** defederates (blocks) a domain, and purges already-cached
+  content from it.
+- **Admin → Reports** is the moderation queue for user-reported posts and actors,
+  local or remote.
+
+See [Moderation tools](/docs/using/moderation/).
+
+## Deliverability notes
+
+- Delivery runs through a **queue**, so a slow or down remote server never blocks
+  a user's request. With Redis configured, pending deliveries survive a restart.
+- Fedify handles HTTP signatures and retries.
+- A remote server that has blocked your domain will reject deliveries; that is
+  their decision and there is nothing to fix on your side.

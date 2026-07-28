@@ -1,0 +1,99 @@
+---
+title: Rate limits
+description: Every limiter, its default, what it keys on, and how to tune it safely.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Rate limiting is **on by default** and covers logins, registrations, API writes,
+and the federation inbox.
+
+## The limiters
+
+| Limiter | Variable | Default | Window | Keyed on |
+| --- | --- | --- | --- | --- |
+| Login | `RL_LOGIN_MAX` | 15 | 15 min | Source IP |
+| Registration | `RL_REGISTER_MAX` | 5 | 1 hour | Source IP |
+| API writes | `RL_API_WRITE_MAX` | 120 | 1 min | Signed-in user, else IP |
+| Federation inbox | `RL_INBOX_MAX` | 300 | 1 min | Source IP |
+
+Plus a hard payload cap on the inbox:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `INBOX_MAX_BODY_BYTES` | `1000000` | Maximum accepted inbox POST body, in bytes |
+
+## How the write limiter keys
+
+```ts
+key: (c) => {
+  const user = c.get("user");
+  return user ? `u:${user.id}` : `ip:${clientIp(c)}`;
+}
+```
+
+Session resolution runs **before** the limiter, so a signed-in user gets their
+own budget rather than sharing one with everyone behind the same NAT.
+
+Read methods — `GET`, `HEAD`, `OPTIONS` — skip this limiter entirely. They are
+cheap and safe; the general limiter targets mutations.
+
+Endpoint-specific limiters (login, registration, inbox) layer **stricter** caps
+on top of this backstop.
+
+## The inbox path
+
+The federation inbox accepts unauthenticated POSTs from arbitrary instances, so
+it is defended in three stages:
+
+1. **Declared length** — a `Content-Length` over the cap is rejected with `413`
+   before the body is touched at all.
+2. **Rate limit** — over the per-IP budget returns `429` with `Retry-After`.
+3. **Capped buffering** — the body is read under a hard cap, so a missing,
+   chunked, or spoofed length cannot stream an unbounded payload into the parser.
+   The request is then rebuilt from **the exact same bytes**, so the
+   HTTP-Signature digest still verifies.
+
+The defaults are generous on purpose: a busy instance legitimately delivers many
+activities in a burst.
+
+## Redis changes the semantics
+
+| | Without Redis | With `REDIS_URL` |
+| --- | --- | --- |
+| Counter scope | Per backend process | Shared across processes |
+| Survives restart | No | Yes |
+
+<Callout type="warning">
+Running multiple backend processes without Redis multiplies every effective limit
+by the process count, and a restart clears all counters. The bundled Compose
+stack sets `REDIS_URL` for you.
+</Callout>
+
+## Responses
+
+A limited request returns **429 Too Many Requests** with a `Retry-After` header.
+Clients should honour it rather than retrying immediately.
+
+## Turning it off
+
+```bash
+RATE_LIMIT_ENABLED=false
+```
+
+<Callout type="danger" title="Only behind a trusted throttling upstream">
+Disabling this exposes login and registration to unthrottled brute force, and the
+federation inbox to flooding. The only legitimate reason is a trusted upstream
+proxy that already enforces equivalent limits.
+</Callout>
+
+## Tuning
+
+- **Login too tight for a shared office IP?** Raise `RL_LOGIN_MAX` rather than
+  disabling the limiter.
+- **An import tool hitting the write cap?** Raise `RL_API_WRITE_MAX` temporarily
+  and put it back afterwards.
+- **A large federated instance getting throttled on delivery?** Raise
+  `RL_INBOX_MAX`; the cost is bounded by the body-size cap.
+
+Apply changes with `docker compose up -d`.

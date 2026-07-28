@@ -1,0 +1,100 @@
+---
+title: Local setup
+description: Running the backend and frontend directly, without Docker, for development.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Two options: the full Compose stack (closest to production), or the two apps run
+directly (fastest feedback loop).
+
+## Option A — the Compose stack
+
+```bash
+git clone https://github.com/the-jk-labs/omicron.git
+cd omicron
+docker compose up -d --build
+```
+
+Everything is wired, including Postgres, Redis, and Caddy. Good for testing
+upgrades, migrations, and anything involving the reverse proxy.
+
+## Option B — run the apps directly
+
+You need **Deno**, **Node**, and a running **PostgreSQL** with `DATABASE_URL`
+set.
+
+```bash
+# Backend — http://localhost:8000
+cd apps/backend
+deno task dev
+
+# Frontend — http://localhost:5173
+cd apps/frontend
+npm install
+npm run dev
+```
+
+Migrations run automatically on backend startup, so an empty database is fine.
+
+<Callout type="note" title="No Redis in this mode">
+Without `REDIS_URL`, the queue, Fedify's KV store, and the rate limiter all run
+in-process. That is fine for development; just remember that queued jobs vanish
+on restart. See [Delivery and queues](/docs/federation/delivery/).
+</Callout>
+
+## Checks before you push
+
+```bash
+cd apps/backend  && deno task check && deno lint
+cd apps/frontend && npm run check
+```
+
+`deno task check` type-checks the backend, `deno lint` covers style, and
+`npm run check` runs `svelte-check` against the frontend's TypeScript config.
+
+## Testing federation locally
+
+Federation needs a publicly reachable HTTPS domain, which `localhost` is not. Two
+workable approaches:
+
+1. **A tunnel** (Cloudflare Tunnel, ngrok, tailscale funnel) pointed at your local
+   stack, with `APP_DOMAIN` set to the tunnel hostname.
+2. **A cheap VPS** running the Compose stack on a real subdomain — closest to
+   reality, and worth it before any federation-touching change.
+
+<Callout type="warning">
+Do not test federation against your production domain. Actor URIs are built from
+the domain, so experiments create real identities other servers will remember.
+Use a throwaway subdomain.
+</Callout>
+
+## Useful during development
+
+```bash
+curl localhost:8000/healthz
+curl localhost:8000/version
+
+# Email in console mode prints reset/verification links here:
+docker compose logs -f backend
+```
+
+## Creating a migration
+
+```bash
+cd apps/backend
+# edit src/db/schema.ts, then:
+deno task db:generate     # writes new SQL into ./drizzle — commit it
+```
+
+See [Database and migrations](/docs/development/database/).
+
+## Project layout
+
+```
+apps/backend/      Deno + Hono + Fedify + Drizzle
+apps/frontend/     SvelteKit + Bits UI + Tailwind + Tiptap
+docker-compose.yml The whole stack
+Caddyfile          Public entrypoint config
+install.sh         The one-line installer
+```

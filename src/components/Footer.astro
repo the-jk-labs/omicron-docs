@@ -1,0 +1,38 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-auto border-t border-border bg-background-alt">
+  <div
+    class="mx-auto flex max-w-[100rem] flex-col gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6"
+  >
+    <p>
+      Omicron is free software under the
+      <a
+        href="/docs/reference/license/"
+        class="text-foreground underline decoration-dark-40 underline-offset-4 hover:decoration-foreground"
+        >AGPL-3.0-or-later</a
+      >. &copy; {year} The JK Labs.
+    </p>
+    <nav class="flex items-center gap-4" aria-label="External links">
+      <a
+        href="https://github.com/the-jk-labs/omicron"
+        target="_blank"
+        rel="noreferrer noopener"
+        class="transition-colors hover:text-foreground">Source</a
+      >
+      <a
+        href="https://github.com/the-jk-labs/omicron/issues"
+        target="_blank"
+        rel="noreferrer noopener"
+        class="transition-colors hover:text-foreground">Issues</a
+      >
+      <a
+        href="https://github.com/the-jk-labs/omicron-docs"
+        target="_blank"
+        rel="noreferrer noopener"
+        class="transition-colors hover:text-foreground">Edit the docs</a
+      >
+    </nav>
+  </div>
+</footer>

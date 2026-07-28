@@ -1,0 +1,93 @@
+---
+title: Upgrading
+description: Two commands, automatic migrations, and the guarantee that upgrades never touch your data.
+---
+
+import Callout from "@/components/Callout.astro";
+
+```bash
+git pull
+docker compose up -d --build      # or the equivalent podman command
+```
+
+If you installed with the one-liner, re-running it does the same thing.
+
+## What happens
+
+- **Migrations run automatically** on backend startup and are idempotent — a
+  no-op when the schema is already current.
+- A rebuild recreates the **containers** but never the **volumes**, so your data,
+  secrets, and TLS certificates are preserved.
+- The app version is logged on boot and exposed at `GET /version`.
+
+<Callout type="tip" title="Back up first">
+Take a backup before any significant upgrade. It takes a minute and turns a bad
+release into an inconvenience. See
+[Backups and restore](/docs/self-hosting/backups/).
+</Callout>
+
+## Migration policy
+
+Upgrades must never break a running instance, so schema changes are **additive
+only** within a version:
+
+1. **Add** new columns and tables (nullable or with defaults) and migrate data.
+2. Ship code that works with **both** the old and the new shape.
+3. **Remove** old columns only in a later major release.
+
+Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
+`src/db/migrate.ts`. `drizzle-kit` is **not** required inside the container.
+
+## One-time step: the AI-scraper-shield release
+
+That release changed the bundled **Caddyfile** to open an internal admin API the
+scraper-shield toggle uses. Caddy only reads that file at startup, and a plain
+`up -d` does not recreate an unchanged service — so recreate the containers once:
+
+```bash
+docker compose up -d --build --force-recreate
+```
+
+This recreates **containers**, never volumes, so all data and certificates
+survive. If you skip it nothing breaks: the instance runs normally and protection
+stays off (the default); you simply cannot switch it on in **Admin → Security**
+until Caddy has been recreated. After that release, normal `up -d` upgrades
+resume.
+
+<Callout type="note">
+The same trick applies any time a release changes `Caddyfile` or another file a
+service only reads at startup. Release notes will say so explicitly.
+</Callout>
+
+## Rolling back
+
+Check out the previous tag and rebuild:
+
+```bash
+git checkout <previous-tag>
+docker compose up -d --build
+```
+
+<Callout type="warning" title="Rollbacks are not always safe">
+Migrations run forward automatically; they are not reversed on downgrade. Because
+schema changes are additive within a version, rolling back a **patch** release is
+usually fine — the old code ignores the new columns. Rolling back across a
+**major** release, where columns may have been dropped, is not. Restore from a
+backup instead.
+</Callout>
+
+## Never run this on a live instance
+
+```bash
+docker compose down -v   # deletes every volume: database, uploads, secrets, certs
+```
+
+`down` (without `-v`) is safe — it stops containers and leaves your data alone.
+
+## Checking what you are running
+
+```bash
+curl localhost:8000/version
+docker compose ps
+docker compose logs --since 5m backend
+```

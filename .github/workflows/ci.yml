@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Type-checks .astro/.svelte and validates every page's frontmatter
+      # against the content collection schema.
+      - run: npm run check
+
+      # Also generates the Pagefind index, so a broken search build fails here
+      # rather than in production.
+      - run: npm run build

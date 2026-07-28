@@ -1,0 +1,118 @@
+---
+title: Writer dashboard
+description: What the dashboard shows, how views are counted without tracking readers, and what is never collected.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron gives writers a dashboard at **`/dashboard`** so they can see how their
+work travels. Because the project's north star includes **no surveillance of
+readers**, the analytics are built around one rule:
+
+> **We count what happened. We never track who you are.**
+
+This page is the honest account of what that means. It describes the stock
+software's default behaviour; operators can turn parts of it off, but they cannot
+turn on anything under [What is never collected](#what-is-never-collected)
+without modifying the source — and because Omicron is AGPL, a modified version
+running as a network service must publish its source to its users.
+
+## What the dashboard shows
+
+| Card | Source |
+| --- | --- |
+| **Views** | On-instance page views, deduplicated per reader per post |
+| **Likes** | `Like` activities, local and federated |
+| **Comments** | Replies, local and federated |
+| **Engagement** | Likes plus comments |
+| **Followers** | `Follow` activities |
+
+Plus a daily views chart and per-post breakdowns.
+
+## The two data sources
+
+### 1. Fediverse engagement — public, consensual actions
+
+When someone likes, boosts, replies to, or follows you, that is a **public
+ActivityPub activity they deliberately performed**, addressed to your inbox.
+Counting it is not surveillance; it is reading mail that was sent to you on
+purpose.
+
+Surfaced per post and per account: likes, boosts, replies, new followers, and
+**federated reach** — how many remote inboxes a post was successfully
+**delivered** to. Reach measures *our sending*, not anyone's reading.
+
+What is **not** done with engagement: no per-reader profiles, no correlating one
+person's likes across your posts into a behavioural history, no "who is reading
+you" view. Counts, and the same public interactions any fediverse client shows.
+
+### 2. On-instance views — counted, never tracked
+
+For reads on this instance's own web pages, a simple view count exists. It is
+the only reader-side measurement in the system, built to the standard of
+privacy-preserving analytics.
+
+How a view is counted:
+
+1. **One reader per post, ever** — not once per day. The stored total is an
+   aggregate integer, `(post_id, date, views)`, bucketed by the day a reader was
+   *first* counted, with **no row representing an individual visit**. Refreshing,
+   re-opening, or returning next month never increases it again.
+2. **No IP address is stored. No fingerprint is taken.** Signed-in readers are
+   deduplicated by a one-way hash of their account id. Anonymous readers are
+   deduplicated by a one-way hash of a random, first-party cookie carrying **no
+   IP, user-agent, or fingerprinting signal** — it recognises "the same browser
+   came back", nothing more. A different browser or device is, by design, a
+   different reader.
+3. Both keys are **one-way hashed with a server-side secret** before they touch
+   storage. The raw account id and raw cookie value are never written to disk.
+4. Known bots and crawlers are filtered out; they get neither a view nor a
+   cookie.
+5. Time is bucketed no finer than **one day** — no per-minute or per-visit
+   timestamps, which protects low-traffic instances where a precise timestamp
+   could hint at identity.
+
+A view count **cannot be reversed into "who read this"**: the digest does not
+reverse, and there is no per-visit log, IP, or fingerprint alongside it to
+correlate against.
+
+<Callout type="note" title="Why deduplicated readers, not raw hits">
+Reading requires no account, so a raw hit counter would be trivially inflated by
+refreshing. "Distinct readers per post" is the honest, refresh-proof number. This
+is resistance to casual inflation, not forensic fraud detection — someone
+clearing cookies and rotating networks can still inflate an account-less metric.
+</Callout>
+
+## The federation reality
+
+Your posts are read on Mastodon, other Omicron instances, RSS readers, and
+ActivityPub apps everywhere. Omicron has **no visibility into those reads and does
+not attempt to obtain any.** On-instance view counts cover only pages served by
+*this* instance.
+
+This is a feature, not a gap: surveilling the wider fediverse to inflate a number
+would betray the entire point of the platform. A writer's truest signal of reach
+is therefore **engagement**, not a view count.
+
+## What is never collected
+
+Regardless of operator settings, the stock software does not:
+
+- store IP addresses alongside views,
+- fingerprint browsers or devices,
+- build per-reader behavioural profiles,
+- log per-visit rows or per-visit timestamps,
+- attempt to observe reads happening on other servers,
+- share anything with a third-party analytics service.
+
+## Operator controls
+
+Instance-level analytics behaviour is configurable in the admin settings — an
+operator can turn on-instance view counting off entirely, in which case the
+dashboard simply shows engagement. Nothing in the list above becomes available by
+flipping a setting.
+
+<Callout type="tip" title="Tell your readers">
+If you run an instance, link this page — or your own version of it — from your
+about page. The honesty is the point.
+</Callout>

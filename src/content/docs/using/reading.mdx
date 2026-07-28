@@ -1,0 +1,86 @@
+---
+title: Reading and following
+description: The feed tabs, following local and remote writers, tags, search, and notifications.
+---
+
+import Callout from "@/components/Callout.astro";
+
+## The feed
+
+Three tabs:
+
+| Tab | Shows |
+| --- | --- |
+| **For you** | Posts from accounts and tags you follow |
+| **Local** | Everything published on this instance |
+| **Global** | Local posts plus what has arrived from the wider fediverse |
+
+Pick your default tab in **Settings → Reading**. There is no engagement-ranked
+algorithm — ordering is chronological, and "For you" is simply the union of what
+you chose to follow.
+
+### Language filtering
+
+Also in **Settings → Reading**: choose languages to **hide**, or to **show only**.
+Posts carry the language their author selected in the composer.
+
+## Following
+
+- **Local writers** — follow from their profile.
+- **Remote actors** — paste a handle like `@someone@mastodon.social` into search,
+  or open their profile through a federated post, then follow.
+
+Following a remote actor sends a `Follow` activity; their server decides whether
+to accept it. If their account requires approval, the follow stays pending until
+they act.
+
+<Callout type="note">
+Following someone on a remote server does not import their back catalogue.
+Federation delivers what happens **after** the follow is accepted — plus whatever
+your instance has already cached from other paths.
+</Callout>
+
+## Tags
+
+Tags are the discovery mechanism beyond your follow graph.
+
+- Browse a tag at `/tags/<tag>`.
+- **Follow a tag** and its posts appear in your For you feed.
+- Manage the whole set in **Settings → Followed tags**.
+
+## Search
+
+Search covers posts, local accounts, and tags. Pasting a full remote handle
+(`@user@domain`) resolves that actor over WebFinger and shows their profile, even
+if your instance has never seen them before.
+
+## Notifications
+
+`/notifications` collects likes, comments, new followers, and follow requests —
+local and federated in one list. There is an unread count in the header, and you
+can mark items or the whole list as read.
+
+## Reading lists
+
+Save posts to read later or organise them into named lists. See
+[Lists and read later](/docs/using/lists/).
+
+## RSS
+
+Every author has a feed:
+
+```
+https://your-domain/@handle/feed.xml
+```
+
+Useful if you would rather read in an RSS client than in the web app. Feeds are
+never challenged by the AI-scraper shield.
+
+## Muting and blocking
+
+- **Mute** hides someone's content from you; they are not told.
+- **Block** additionally severs the follow relationship in both directions.
+
+Both work on local and remote accounts, and are managed in
+**Settings → Muted and blocked**. Instance-wide blocking of an entire domain is
+an admin action — see [Moderation tools](/docs/using/moderation/).

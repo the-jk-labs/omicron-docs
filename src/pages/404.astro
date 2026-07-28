@@ -1,0 +1,30 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { hrefFor } from "@/lib/nav";
+---
+
+<BaseLayout title="Page not found" description="That documentation page does not exist.">
+  <main id="main" class="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-24">
+    <p class="text-sm font-medium uppercase tracking-wide text-muted-foreground">404</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight text-foreground">Page not found</h1>
+    <p class="mt-3 text-muted-foreground">
+      That page doesn't exist — it may have been renamed. Try the search (press
+      <kbd
+        class="rounded-5px border border-border bg-background-alt px-1.5 py-0.5 font-mono text-xs text-foreground shadow-kbd"
+        >Ctrl K</kbd
+      >) or start from the beginning.
+    </p>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a
+        href="/"
+        class="inline-flex h-10 items-center rounded-input border border-border-input bg-background-alt px-4 text-sm font-semibold text-foreground shadow-btn transition-colors hover:bg-muted"
+        >Documentation home</a
+      >
+      <a
+        href={hrefFor("introduction")}
+        class="inline-flex h-10 items-center rounded-input border border-border-input bg-background-alt px-4 text-sm font-semibold text-foreground shadow-btn transition-colors hover:bg-muted"
+        >Introduction</a
+      >
+    </div>
+  </main>
+</BaseLayout>
