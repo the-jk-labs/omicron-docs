@@ -30,7 +30,7 @@ const linkClass =
 
 <footer class="mt-auto border-t border-border bg-background-alt">
   <div class="mx-auto max-w-[90rem] px-4 sm:px-6">
-    <div class="flex flex-col gap-10 py-10 sm:flex-row sm:justify-between">
+    <div class="flex flex-col gap-10 pb-8 pt-10 sm:flex-row sm:justify-between">
       <div class="max-w-sm">
         <a
           href="/"
@@ -73,9 +73,10 @@ const linkClass =
     </div>
 
     {/* Licensing sits on its own line: two licences do not fit in a sentence
-        without wrapping into an unreadable run-on. */}
+        without wrapping into an unreadable run-on. Separated by spacing, not a
+        second rule — the footer's own top border is the only divider here. */}
     <div
-      class="flex flex-col gap-2 border-t border-border py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
+      class="flex flex-col gap-2 pb-10 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
     >
       <p>&copy; {year} The JK Labs</p>
       <p class="flex flex-wrap items-center gap-x-2 gap-y-1">
