@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Logo from "@/components/Logo.astro";
-import { nav, hrefFor } from "@/lib/nav";
+import { nav, hrefFor, flatNav } from "@/lib/nav";
 
 const entryPoints = [
   {
@@ -31,73 +31,110 @@ const entryPoints = [
   title="Omicron"
   description="Documentation for Omicron — a minimal, self-hostable, federated blogging platform built on ActivityPub."
 >
-  <main id="main" class="mx-auto w-full max-w-5xl flex-1 px-4 py-16 sm:px-6 sm:py-20">
-    <Logo class="h-20 w-auto sm:h-24" size={96} />
-    <p class="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-      Documentation
-    </p>
-    <h1 class="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-      Own your words.
-    </h1>
-    <p class="mt-4 max-w-2xl text-lg text-muted-foreground">
-      Omicron is a federated blogging platform: write rich-text posts, follow other writers, and
-      federate with the wider fediverse over ActivityPub — self-hosted, with no vendor lock-in.
-      These pages cover running an instance, using it, and building on it.
-    </p>
-
-    <div class="mt-8 flex flex-wrap items-center gap-3">
-      <a
-        href={hrefFor("quick-start")}
-        class="inline-flex h-11 items-center justify-center rounded-input bg-dark px-5 text-[15px] font-semibold text-background shadow-mini transition-all hover:bg-dark/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
-      >
-        Get started
-      </a>
-      <a
-        href={hrefFor("introduction")}
-        class="inline-flex h-11 items-center justify-center rounded-input border border-border-input bg-background-alt px-5 text-[15px] font-semibold text-foreground shadow-btn transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
-      >
-        What is Omicron?
-      </a>
-    </div>
-
-    <div class="mt-14 grid gap-4 sm:grid-cols-2">
-      {
-        entryPoints.map((item) => (
+  <main id="main" class="flex-1">
+    {/* Hero */}
+    <section class="border-b border-border bg-background-alt">
+      <div class="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-24">
+        <Logo class="mx-auto h-16 w-auto sm:h-[4.5rem]" size={72} />
+        <p
+          class="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+        >
+          Documentation
+        </p>
+        <h1 class="mt-3 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          Own your words.
+        </h1>
+        <p class="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          Omicron is a federated blogging platform: write rich-text posts, follow other writers,
+          and federate with the wider fediverse over ActivityPub — self-hosted, with no vendor
+          lock-in.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
           <a
-            href={hrefFor(item.slug)}
-            class="rounded-card border border-border bg-background-alt p-5 shadow-card transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+            href={hrefFor("quick-start")}
+            class="inline-flex h-11 items-center justify-center rounded-input bg-dark px-5 text-[15px] font-semibold text-background shadow-mini transition-all hover:bg-dark/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
           >
-            <h2 class="text-base font-semibold tracking-tight text-foreground">{item.title}</h2>
-            <p class="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
+            Get started
           </a>
-        ))
-      }
-    </div>
+          <a
+            href={hrefFor("introduction")}
+            class="inline-flex h-11 items-center justify-center rounded-input border border-border-input bg-background px-5 text-[15px] font-semibold text-foreground shadow-btn transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
+          >
+            What is Omicron?
+          </a>
+        </div>
+      </div>
+    </section>
 
-    <section class="mt-16">
-      <h2 class="text-sm font-semibold uppercase tracking-wide text-foreground-alt">
-        All pages
+    {/* Entry points */}
+    <section class="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Start here
       </h2>
-      <div class="mt-5 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
         {
-          nav.map((section) => (
-            <div>
-              <p class="text-sm font-semibold text-foreground">{section.label}</p>
-              <ul class="mt-2 flex flex-col gap-1.5">
-                {section.items.map((item) => (
-                  <li>
-                    <a
-                      href={hrefFor(item.slug)}
-                      class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          entryPoints.map((item) => (
+            <a
+              href={hrefFor(item.slug)}
+              class="group flex flex-col rounded-card border border-border bg-background-alt p-5 shadow-card transition-colors hover:border-dark-40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+            >
+              <span class="flex items-center justify-between gap-3">
+                <span class="text-base font-semibold tracking-tight text-foreground">
+                  {item.title}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-4 shrink-0 text-dark-40 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+              <span class="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</span>
+            </a>
           ))
         }
+      </div>
+    </section>
+
+    {/* Full table of contents */}
+    <section class="border-t border-border bg-background-alt">
+      <div class="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+        <div class="flex items-baseline justify-between gap-4">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            All pages
+          </h2>
+          <span class="text-xs text-muted-foreground">{flatNav.length} pages</span>
+        </div>
+        <div class="mt-7 grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            nav.map((section) => (
+              <div>
+                <p class="border-b border-border pb-2 text-sm font-semibold tracking-tight text-foreground">
+                  {section.label}
+                </p>
+                <ul class="mt-3 flex flex-col gap-2">
+                  {section.items.map((item) => (
+                    <li>
+                      <a
+                        href={hrefFor(item.slug)}
+                        class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
       </div>
     </section>
   </main>

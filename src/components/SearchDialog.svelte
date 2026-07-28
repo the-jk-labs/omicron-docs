@@ -90,8 +90,11 @@
 <svelte:window {onkeydown} />
 
 <Dialog.Root bind:open>
+  <!-- Collapses to an icon-only square below `sm`, where a labelled search
+       field would crowd out the nav — never hidden, search always reachable. -->
   <Dialog.Trigger
-    class="inline-flex h-9 w-full items-center gap-2 rounded-input border border-border-input bg-background-alt px-3 text-sm text-muted-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-56"
+    aria-label="Search docs"
+    class="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-input border border-border-input bg-background-alt px-0 text-sm text-muted-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-56 sm:justify-start sm:px-3"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +109,7 @@
     >
       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
     </svg>
-    <span class="flex-1 text-left">Search docs</span>
+    <span class="hidden flex-1 text-left sm:inline">Search docs</span>
     <kbd
       class="hidden shrink-0 rounded-5px border border-border bg-background px-1.5 py-px font-mono text-xxs text-muted-foreground shadow-kbd sm:inline-block"
     >

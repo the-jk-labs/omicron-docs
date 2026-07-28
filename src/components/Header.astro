@@ -35,7 +35,9 @@ const pages = flatNav
   class="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
   style="height: var(--header-height)"
 >
-  <div class="mx-auto flex h-full max-w-[100rem] items-center gap-3 px-4 sm:px-6">
+  {/* Same max width and padding as the docs shell, so the wordmark lines up
+      with the sidebar and the search cluster with the table of contents. */}
+  <div class="mx-auto flex h-full max-w-[90rem] items-center gap-3 px-4 sm:px-6">
     {currentSlug && <MobileNav client:load sections={nav} currentSlug={currentSlug} />}
 
     <a
@@ -48,9 +50,7 @@ const pages = flatNav
     </a>
 
     <div class="ml-auto flex items-center gap-2">
-      <div class="hidden sm:block">
-        <SearchDialog client:load pages={pages} />
-      </div>
+      <SearchDialog client:load pages={pages} />
       <a
         href="https://github.com/the-jk-labs/omicron"
         target="_blank"

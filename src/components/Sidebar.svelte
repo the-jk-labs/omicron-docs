@@ -43,7 +43,10 @@
       <Accordion.Content
         class="overflow-hidden text-sm data-[state=closed]:animate-none data-[state=open]:animate-none"
       >
-        <ul class="mb-2 ml-3 border-l border-dark-10 pl-2">
+        <!-- The rule lives on the list; each link's 2px border sits exactly on
+             top of it (-ml-px), so the active marker reads as part of the rail
+             rather than floating beside it. -->
+        <ul class="mb-2 ml-4 border-l border-dark-10">
           {#each section.items as item (item.slug)}
             {@const active = item.slug === currentSlug}
             <li>
@@ -51,7 +54,7 @@
                 href={hrefFor(item.slug)}
                 onclick={() => onnavigate?.()}
                 aria-current={active ? "page" : undefined}
-                class="-ml-[9px] flex items-center rounded-button border-l-2 py-1.5 pl-4 pr-3 text-[13.5px] transition-colors
+                class="-ml-px flex items-center border-l-2 py-1.5 pl-4 pr-3 text-[13.5px] transition-colors
                   {active
                   ? 'border-foreground font-medium text-foreground'
                   : 'border-transparent text-muted-foreground hover:border-dark-40 hover:text-foreground'}"
