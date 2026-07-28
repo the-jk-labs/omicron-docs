@@ -13,16 +13,21 @@ the product look like one thing.
 ## Develop
 
 ```bash
-npm install
-npm run dev        # http://localhost:4321
+pnpm install
+pnpm dev        # http://localhost:4321
 ```
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Dev server with hot reload |
-| `npm run build` | Static build into `dist/`, then generates the Pagefind index |
-| `npm run preview` | Serve the built site locally |
-| `npm run check` | `astro check` — types and template diagnostics |
+| `pnpm dev` | Dev server with hot reload |
+| `pnpm build` | Static build into `dist/`, then generates the Pagefind index |
+| `pnpm preview` | Serve the built site locally |
+| `pnpm check` | `astro check` — types and template diagnostics |
+
+The package manager is **pnpm**, pinned via `packageManager` in `package.json`;
+`corepack enable` picks up the right version automatically. `pnpm-workspace.yaml`
+allow-lists the one dependency that needs a build script (esbuild links its
+platform binary in a postinstall, and pnpm blocks those by default).
 
 Search uses [Pagefind](https://pagefind.app), whose index only exists after a
 build. In dev the search dialog falls back to matching page titles and
@@ -102,11 +107,11 @@ The site is fully static. On Vercel, the framework preset is Astro:
 
 | Setting | Value |
 | --- | --- |
-| Build command | `npm run build` |
+| Build command | `pnpm build` |
 | Output directory | `dist` |
-| Install command | `npm install` |
+| Install command | `pnpm install --frozen-lockfile` |
 
-`npm run build` runs Pagefind after Astro, so the search index ships with the
+`pnpm build` runs Pagefind after Astro, so the search index ships with the
 site.
 
 ### The canonical domain

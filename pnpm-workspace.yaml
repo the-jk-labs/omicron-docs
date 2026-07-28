@@ -1,0 +1,6 @@
+# esbuild links its platform binary in a postinstall script; pnpm blocks build
+# scripts by default, and the build fails without it. sharp ships prebuilt
+# binaries but is listed for the same reason if it ever needs one.
+allowBuilds:
+  esbuild: true
+  sharp: true

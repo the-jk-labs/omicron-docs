@@ -78,6 +78,6 @@ covered by neither licence.
 ## Checks
 
 ```bash
-npm run check      # astro check — 0 errors expected
-npm run build      # includes the Pagefind index step
+pnpm check      # astro check — 0 errors expected
+pnpm build      # includes the Pagefind index step
 ```

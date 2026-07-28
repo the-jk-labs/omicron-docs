@@ -11,18 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version comes from packageManager in package.json.
+      - uses: pnpm/action-setup@v4
+
       # Astro 7 requires >=22.12; .nvmrc keeps CI, Vercel, and local in step.
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      # Fails if pnpm-lock.yaml is out of date with package.json, rather than
+      # silently resolving something different from local and production.
+      - run: pnpm install --frozen-lockfile
 
       # Type-checks .astro/.svelte and validates every page's frontmatter
       # against the content collection schema.
-      - run: npm run check
+      - run: pnpm run check
 
       # Also generates the Pagefind index, so a broken search build fails here
       # rather than in production.
-      - run: npm run build
+      - run: pnpm run build

@@ -7,6 +7,7 @@
   "engines": {
     "node": ">=22.12.0"
   },
+  "packageManager": "pnpm@11.2.2",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
@@ -14,12 +15,12 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/mdx": "^7.0.4",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/svelte": "^9.0.1",
     "@fontsource-variable/inter": "^5.2.8",
     "@lucide/svelte": "^1.22.0",
-    "astro": "^7.1.5",
+    "astro": "^7.1.4",
     "bits-ui": "^2.18.1",
     "svelte": "^5.1.0",
     "zod": "^4.4.3"
