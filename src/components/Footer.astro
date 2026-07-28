@@ -38,11 +38,15 @@ const linkClass =
 
 <footer class="mt-auto border-t border-border bg-background-alt">
   <div class="mx-auto max-w-[90rem] px-4 sm:px-6">
-    {/* Five columns on a 90rem shell: brand takes two, each link group one.
-        Equal quarters left every column far wider than its content, so the
-        text landed at arbitrary positions with dead space at the right. */}
-    <div class="grid grid-cols-2 gap-x-8 gap-y-10 pb-8 pt-12 md:grid-cols-3 lg:grid-cols-5">
-      <div class="col-span-2 max-w-xs md:col-span-3 lg:col-span-2">
+    {/* At lg the brand takes the slack (1fr) and the three link groups are
+        content-width, so the cluster sits against the right edge — the last
+        column's links end on the same margin as the licence line below. Equal
+        fractions left every column wider than its content, stranding the text
+        mid-column with dead space at the right. */}
+    <div
+      class="grid grid-cols-2 gap-x-8 gap-y-10 pb-8 pt-12 md:grid-cols-3 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16"
+    >
+      <div class="col-span-2 max-w-xs md:col-span-3 lg:col-span-1">
         <a
           href="/"
           class="inline-flex items-center gap-2 text-[15px] font-semibold tracking-tight text-foreground"
@@ -83,11 +87,11 @@ const linkClass =
         without wrapping into an unreadable run-on. Separated by spacing, not a
         second rule — the footer's own top border is the only divider here. */}
     <div
-      class="grid gap-x-8 gap-y-2 pb-10 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-5"
+      class="grid gap-x-8 gap-y-2 pb-10 text-xs text-muted-foreground sm:grid-cols-2"
     >
-      <p class="sm:col-span-1 lg:col-span-2">&copy; {year} The JK Labs</p>
+      <p>&copy; {year} The JK Labs</p>
       <p
-        class="flex flex-wrap items-center gap-x-2 gap-y-1 sm:col-span-1 sm:justify-end sm:text-right lg:col-span-3"
+        class="flex flex-wrap items-center gap-x-2 gap-y-1 sm:justify-end sm:text-right"
       >
         <span>
           Code
