@@ -16,7 +16,7 @@ interface Props {
 }
 
 const { title, description, badge, slug, headings } = Astro.props;
-const editUrl = `https://github.com/the-jk-labs/omicron-docs/edit/main/src/content/docs/${slug}.mdx`;
+const editUrl = `https://github.com/the-jk-labs/omicron-docs/edit/master/src/content/docs/${slug}.mdx`;
 const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
 ---
 
