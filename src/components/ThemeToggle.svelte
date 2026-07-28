@@ -1,4 +1,5 @@
 <script lang="ts">
+  // SPDX-License-Identifier: AGPL-3.0-or-later
   import { Button } from "bits-ui";
 
   // Mirrors the inline no-FOUC script in BaseLayout.astro: the `dark` class on

@@ -1,4 +1,5 @@
 ---
+// SPDX-License-Identifier: AGPL-3.0-or-later
 const year = new Date().getFullYear();
 ---
 
@@ -6,12 +7,19 @@ const year = new Date().getFullYear();
   <div
     class="mx-auto flex max-w-[90rem] flex-col gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6"
   >
-    <p>
+    <p class="max-w-2xl">
       Omicron is free software under the
       <a
         href="/docs/reference/license/"
         class="text-foreground underline decoration-dark-40 underline-offset-4 hover:decoration-foreground"
         >AGPL-3.0-or-later</a
+      >. This documentation is licensed
+      <a
+        href="https://creativecommons.org/licenses/by-sa/4.0/"
+        target="_blank"
+        rel="license noreferrer noopener"
+        class="text-foreground underline decoration-dark-40 underline-offset-4 hover:decoration-foreground"
+        >CC BY-SA 4.0</a
       >. &copy; {year} The JK Labs.
     </p>
     <nav class="flex items-center gap-4" aria-label="External links">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  // SPDX-License-Identifier: AGPL-3.0-or-later
   import { Accordion } from "bits-ui";
   import type { NavSection } from "@/lib/nav";
   import { hrefFor } from "@/lib/nav";

@@ -112,4 +112,18 @@ URLs and the sitemap.
 
 ## License
 
-AGPL-3.0-or-later, the same as Omicron. See [LICENSE](LICENSE).
+Two licences, because code and prose want different things:
+
+| What | Licence |
+| --- | --- |
+| **Site source code** (layouts, components, styles, config) | [AGPL-3.0-or-later](LICENSE) — the same as Omicron |
+| **Documentation text** (everything under `src/content/`) | [CC BY-SA 4.0](LICENSE-DOCS) |
+
+CC BY-SA is copyleft too: share and adapt the text, including commercially, as
+long as you credit the Omicron documentation, note your changes, and license
+your version under CC BY-SA 4.0 as well.
+
+The Omicron logo and the other brand assets in `public/` are trademarks and are
+not covered by either licence.
+
+Full detail, including an attribution example, is in [COPYING.md](COPYING.md).

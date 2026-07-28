@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // The documentation's table of contents. This is the single source of truth for
 // the sidebar, the mobile nav, and the previous/next pager — add a page here and
 // everywhere that lists pages picks it up.

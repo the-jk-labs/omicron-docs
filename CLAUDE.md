@@ -60,6 +60,21 @@ Accuracy comes from the Omicron source, not from memory: verify routes,
 environment variables, and defaults against `apps/backend/src/` and
 `.env.example` before documenting them.
 
+## Licensing (two licences)
+
+| What | Licence |
+| --- | --- |
+| Site source code — layouts, components, styles, config, CI | `AGPL-3.0-or-later` |
+| Documentation text — everything under `src/content/` | `CC-BY-SA-4.0` |
+
+New **source** files carry `// SPDX-License-Identifier: AGPL-3.0-or-later`.
+Content files under `src/content/` carry no per-file header — `COPYING.md` and
+`LICENSE-DOCS` cover that directory. Never relicense either half, and never
+copy text in from a source whose licence is incompatible with CC BY-SA 4.0.
+
+Brand assets in `public/` (logo, favicons, og-image) are trademarks and are
+covered by neither licence.
+
 ## Checks
 
 ```bash

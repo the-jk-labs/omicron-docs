@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Config } from "tailwindcss";
 
 // Theme tokens ported verbatim from the Bits UI docs theme
