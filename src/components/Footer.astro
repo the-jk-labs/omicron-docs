@@ -83,36 +83,34 @@ const linkClass =
       }
     </div>
 
-    {/* Licensing sits on its own line: two licences do not fit in a sentence
-        without wrapping into an unreadable run-on. Separated by spacing, not a
-        second rule — the footer's own top border is the only divider here. */}
-    <div
-      class="grid gap-x-8 gap-y-2 pb-10 text-xs text-muted-foreground sm:grid-cols-2"
+    {/* Copyright and both licences gathered on one centred line, separated by
+        dots — they are footer metadata about the same thing, so splitting them
+        to opposite edges read as two unrelated statements. Wraps to two lines
+        on narrow screens, still centred. */}
+    <p
+      class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-10 text-center text-xs text-muted-foreground"
     >
-      <p>&copy; {year} The JK Labs</p>
-      <p
-        class="flex flex-wrap items-center gap-x-2 gap-y-1 sm:justify-end sm:text-right"
-      >
-        <span>
-          Code
-          <a
-            href="/docs/reference/license/"
-            class="text-foreground-alt underline decoration-dark-40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
-            >AGPL-3.0-or-later</a
-          >
-        </span>
-        <span aria-hidden="true" class="text-dark-40">&middot;</span>
-        <span>
-          Text
-          <a
-            href="https://creativecommons.org/licenses/by-sa/4.0/"
-            target="_blank"
-            rel="license noreferrer noopener"
-            class="text-foreground-alt underline decoration-dark-40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
-            >CC BY-SA 4.0</a
-          >
-        </span>
-      </p>
-    </div>
+      <span>&copy; {year} The JK Labs</span>
+      <span aria-hidden="true" class="hidden text-dark-40 sm:inline">&middot;</span>
+      <span>
+        Code
+        <a
+          href="/docs/reference/license/"
+          class="text-foreground-alt underline decoration-dark-40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
+          >AGPL-3.0-or-later</a
+        >
+      </span>
+      <span aria-hidden="true" class="hidden text-dark-40 sm:inline">&middot;</span>
+      <span>
+        Text
+        <a
+          href="https://creativecommons.org/licenses/by-sa/4.0/"
+          target="_blank"
+          rel="license noreferrer noopener"
+          class="text-foreground-alt underline decoration-dark-40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
+          >CC BY-SA 4.0</a
+        >
+      </span>
+    </p>
   </div>
 </footer>
