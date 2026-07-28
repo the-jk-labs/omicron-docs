@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Logo from "@/components/Logo.astro";
 import { nav, hrefFor } from "@/lib/nav";
 
 const entryPoints = [
@@ -31,7 +32,10 @@ const entryPoints = [
   description="Documentation for Omicron — a minimal, self-hostable, federated blogging platform built on ActivityPub."
 >
   <main id="main" class="mx-auto w-full max-w-5xl flex-1 px-4 py-16 sm:px-6 sm:py-20">
-    <p class="text-sm font-medium uppercase tracking-wide text-muted-foreground">Documentation</p>
+    <Logo class="size-20 text-foreground sm:size-24" />
+    <p class="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+      Documentation
+    </p>
     <h1 class="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
       Own your words.
     </h1>

@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import SearchDialog from "@/components/SearchDialog.svelte";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
 import MobileNav from "@/components/MobileNav.svelte";
+import Logo from "@/components/Logo.astro";
 import { nav, hrefFor, flatNav } from "@/lib/nav";
 
 interface Props {
@@ -41,10 +42,7 @@ const pages = flatNav
       href="/"
       class="flex items-center gap-2 rounded-button text-[15px] font-semibold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <span
-        class="grid size-6 place-items-center rounded-[7px] bg-foreground text-[13px] font-bold text-background"
-        aria-hidden="true">O</span
-      >
+      <Logo class="size-7 shrink-0" />
       Omicron
       <span class="hidden text-muted-foreground sm:inline">docs</span>
     </a>
