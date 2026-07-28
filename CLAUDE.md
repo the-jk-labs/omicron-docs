@@ -8,7 +8,7 @@ Never add product code to this repo, and never edit the Omicron repo from here.
 
 ## Stack
 
-Astro 5 (content collections + MDX) · Svelte 5 islands · Bits UI · Tailwind CSS
+Astro 7 (content collections + MDX) · Svelte 5 islands · Bits UI · Tailwind CSS
 3.4 · Pagefind (search). Fully static output, deployed on Vercel.
 
 ## Adding or editing a page
