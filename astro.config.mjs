@@ -6,9 +6,21 @@ import svelte from "@astrojs/svelte";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 
+// The canonical origin, in order of precedence:
+//   1. SITE_URL — set this to pin a domain explicitly.
+//   2. VERCEL_PROJECT_PRODUCTION_URL — the project's production domain, which
+//      Vercel sets to the custom domain once one is attached. Canonicals,
+//      og:url, the sitemap, and robots.txt then follow it with no code change.
+//   3. localhost, for a local build.
+const site =
+  process.env.SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:4321");
+
 // https://astro.build/config
 export default defineConfig({
-  site: "https://docs.omicron.blog",
+  site,
   integrations: [svelte(), mdx(), sitemap()],
   markdown: {
     shikiConfig: {

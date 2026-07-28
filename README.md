@@ -107,8 +107,21 @@ The site is fully static. On Vercel, the framework preset is Astro:
 | Install command | `npm install` |
 
 `npm run build` runs Pagefind after Astro, so the search index ships with the
-site. Set `site` in `astro.config.mjs` to the final domain — it drives canonical
-URLs and the sitemap.
+site.
+
+### The canonical domain
+
+Canonical tags, `og:url`, the sitemap, and `robots.txt` all derive from one
+value, resolved at build time in this order:
+
+1. **`SITE_URL`** — set it as an environment variable to pin a domain.
+2. **`VERCEL_PROJECT_PRODUCTION_URL`** — set by Vercel automatically. It is the
+   project's production domain, and becomes your custom domain as soon as one
+   is attached, so nothing needs changing when you move to `docs.example.com`.
+3. **`http://localhost:4321`** — for local builds.
+
+So a fresh Vercel import is correct straight away, and stays correct after the
+domain swap. Set `SITE_URL` only if you need to override that.
 
 ## License
 
