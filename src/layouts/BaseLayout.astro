@@ -3,6 +3,11 @@
 import "@/styles/app.css";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+// The Latin subset is the only font every page needs immediately. Importing it
+// as a URL yields the same hashed asset the stylesheet references, so
+// preloading it starts the download with the CSS instead of after it — the
+// font is otherwise discovered only once the stylesheet has parsed.
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 
 interface Props {
   title: string;
@@ -29,6 +34,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <title>{siteTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     {/* Same set, and same order, as the app's app.html: browsers that only
         understand .ico take the first, everything modern takes the SVG. */}
     <link rel="icon" href="/favicon.ico" sizes="any" />

@@ -28,7 +28,7 @@ const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
       style="position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height))"
     >
       <nav aria-label="Documentation" class="no-scrollbar h-full overflow-y-auto py-6 pr-4">
-        <Sidebar client:load sections={nav} currentSlug={slug} />
+        <Sidebar client:idle sections={nav} currentSlug={slug} />
       </nav>
     </aside>
 
