@@ -3,28 +3,24 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Logo from "@/components/Logo.astro";
 import { nav, hrefFor, flatNav } from "@/lib/nav";
 
-const entryPoints = [
-  {
-    slug: "quick-start",
-    title: "Quick start",
-    body: "One command brings the whole stack up. Be running in a few minutes.",
-  },
-  {
-    slug: "self-hosting/requirements",
-    title: "Self-hosting",
-    body: "Requirements, your domain, HTTPS, email, upgrades, and backups.",
-  },
-  {
-    slug: "federation/overview",
-    title: "Federation",
-    body: "How Omicron speaks ActivityPub and what the rest of the fediverse sees.",
-  },
-  {
-    slug: "development/architecture",
-    title: "Development",
-    body: "The layered architecture, local setup, and how to contribute.",
-  },
-];
+// One card per chapter, in nav order — the blurb is the only hand-written part,
+// so a new section in nav.ts shows up here automatically (with a fallback
+// blurb until someone writes one).
+const blurbs: Record<string, string> = {
+  "Getting started": "What Omicron is, how to get an instance running, and the vocabulary the rest of these pages use.",
+  "Self-hosting": "Requirements, your domain and HTTPS, email, the admin panel, upgrades, backups, and security.",
+  "Using Omicron": "Writing and publishing, profiles, feeds and follows, reading lists, moderation, and the writer dashboard.",
+  Federation: "How Omicron speaks ActivityPub, the endpoints it exposes, delivery, and what the rest of the fediverse sees.",
+  Development: "The layered architecture, local setup, the backend and frontend guides, migrations, and contributing.",
+  Reference: "Environment variables, the HTTP and admin API route maps, rate limits, and what the AGPL requires.",
+};
+
+const chapters = nav.map((section) => ({
+  title: section.label,
+  body: blurbs[section.label] ?? `${section.items.length} pages.`,
+  slug: section.items[0].slug,
+  count: section.items.length,
+}));
 ---
 
 <BaseLayout
@@ -69,18 +65,18 @@ const entryPoints = [
     {/* Entry points */}
     <section class="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        Start here
+        Chapters
       </h2>
-      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {
-          entryPoints.map((item) => (
+          chapters.map((chapter) => (
             <a
-              href={hrefFor(item.slug)}
+              href={hrefFor(chapter.slug)}
               class="group flex flex-col rounded-card border border-border bg-background-alt p-5 shadow-card transition-colors hover:border-dark-40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
             >
               <span class="flex items-center justify-between gap-3">
                 <span class="text-base font-semibold tracking-tight text-foreground">
-                  {item.title}
+                  {chapter.title}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +92,10 @@ const entryPoints = [
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </span>
-              <span class="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</span>
+              <span class="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                {chapter.body}
+              </span>
+              <span class="mt-4 text-xs text-muted-foreground">{chapter.count} pages</span>
             </a>
           ))
         }
@@ -112,10 +111,13 @@ const entryPoints = [
           </h2>
           <span class="text-xs text-muted-foreground">{flatNav.length} pages</span>
         </div>
-        <div class="mt-7 grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Multi-column rather than a grid: sections have very different
+            lengths, and a grid leaves a row's worth of dead space under the
+            short ones. Columns pack them. */}
+        <div class="mt-7 gap-x-12 sm:columns-2 lg:columns-3">
           {
             nav.map((section) => (
-              <div>
+              <div class="mb-9 break-inside-avoid">
                 <p class="border-b border-border pb-2 text-sm font-semibold tracking-tight text-foreground">
                   {section.label}
                 </p>
