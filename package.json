@@ -11,17 +11,18 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.7",
-    "@astrojs/sitemap": "^3.7.0",
-    "@astrojs/svelte": "^7.2.0",
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/svelte": "^9.0.1",
     "@fontsource-variable/inter": "^5.2.8",
     "@lucide/svelte": "^1.22.0",
-    "astro": "^5.16.0",
+    "astro": "^7.1.5",
     "bits-ui": "^2.18.1",
-    "svelte": "^5.1.0"
+    "svelte": "^5.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.10",
     "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.20",
     "pagefind": "^1.5.2",
