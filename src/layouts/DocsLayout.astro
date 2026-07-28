@@ -20,7 +20,7 @@ const editUrl = `https://github.com/the-jk-labs/omicron-docs/edit/main/src/conte
 const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
 ---
 
-<BaseLayout {title} {description} currentSlug={slug}>
+<BaseLayout {title} {description} currentSlug={slug} showFooter={false}>
   <div class="mx-auto flex w-full max-w-[90rem] flex-1 px-4 sm:px-6">
     {/* Sidebar — sticky under the header, its own scroll region. */}
     <aside

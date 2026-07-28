@@ -9,9 +9,14 @@ interface Props {
   description: string;
   /** Set on the docs pages so the header can render the mobile nav. */
   currentSlug?: string;
+  /**
+   * Docs pages opt out: they end with the pager and the edit link, and their
+   * sidebar scrolls independently, so a site footer just interrupts reading.
+   */
+  showFooter?: boolean;
 }
 
-const { title, description, currentSlug } = Astro.props;
+const { title, description, currentSlug, showFooter = true } = Astro.props;
 const siteTitle = title === "Omicron" ? "Omicron Documentation" : `${title} — Omicron Docs`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -62,6 +67,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     </a>
     <Header {currentSlug} />
     <slot />
-    <Footer />
+    {showFooter && <Footer />}
   </body>
 </html>
