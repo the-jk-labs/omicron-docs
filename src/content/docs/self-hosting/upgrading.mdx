@@ -59,6 +59,33 @@ The same trick applies any time a release changes `Caddyfile` or another file a
 service only reads at startup. Release notes will say so explicitly.
 </Callout>
 
+## One-time step: the Redis 8 release
+
+That release moved the bundled Redis from 7.4 to 8. Redis 7.4 is offered only
+under RSALv2 and SSPLv1, neither of which is an open-source licence; Redis 8
+restores AGPLv3 as an option, matching Omicron's own licence.
+
+**Nothing is required of you.** Redis 8 reads the files 7.4 wrote, so a normal
+`git pull && docker compose up -d --build` upgrades it in place. The backend logs
+a few seconds of `ENOTFOUND redis` while the container is replaced, then
+reconnects on its own.
+
+<Callout type="warning" title="This step cannot be rolled back">
+Redis 8 writes its snapshot in a format 7.4 cannot read. Once you have upgraded,
+checking out an older tag leaves the `redis` container crash-looping with
+`Can't handle RDB format version 14`. Clear the volume to go back:
+
+```bash
+docker compose down
+docker volume rm omicron_redis_data
+docker compose up -d --build
+```
+
+Only regenerable state lives there — rate-limit counters, queued jobs, and
+federation activities not yet delivered. No posts, accounts, or uploads. Activities
+still queued are lost, so remote instances may never receive them.
+</Callout>
+
 ## Rolling back
 
 Check out the previous tag and rebuild:
@@ -74,6 +101,11 @@ schema changes are additive within a version, rolling back a **patch** release i
 usually fine — the old code ignores the new columns. Rolling back across a
 **major** release, where columns may have been dropped, is not. Restore from a
 backup instead.
+
+A release that raises the version of a bundled service can also block a
+downgrade, because the newer service may leave data the older one refuses to
+read. Rolling back past the Redis 8 release is the current example — see
+[above](#one-time-step-the-redis-8-release). Release notes call these out.
 </Callout>
 
 ## Never run this on a live instance
