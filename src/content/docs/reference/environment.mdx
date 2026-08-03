@@ -65,19 +65,24 @@ and rate-limit counters are not shared across processes.
 
 ## Content ingestion
 
-Off unless you set a secret. Lets an external CMS publish into this instance —
-see [Content webhook](/reference/content-webhook/).
+You normally set **nothing** here. Writers mint their own publishing tokens
+under **Settings → Integrations** and publish under their own names — see
+[Content webhook](/reference/content-webhook/).
+
+The variables below only add an instance-wide fallback credential, for
+publishing without a user token (a migration script, an operator-run pipeline).
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `WEBHOOK_SECRET` | *unset* | Enables `POST /api/webhooks/content`. Minimum 16 characters. |
-| `WEBHOOK_AUTHOR` | oldest account | Username that ingested posts are published as. |
+| `WEBHOOK_SECRET` | *unset* | Instance-wide fallback credential. Minimum 16 characters. |
+| `WEBHOOK_AUTHOR` | oldest account | Username that `WEBHOOK_SECRET` publishes as. |
 | `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject an ingested body larger than this. |
 
 <Callout type="warning">
 `WEBHOOK_SECRET` is a publishing credential — anyone holding it can publish,
-edit, and unpublish posts as that author. Unset, the endpoint answers `503`;
-there is no state in which it accepts an empty secret.
+edit, and unpublish posts as `WEBHOOK_AUTHOR`. Unlike a per-user token it cannot
+be revoked from the UI; changing it needs a restart. Prefer per-user tokens for
+anything ongoing.
 </Callout>
 
 ## Email

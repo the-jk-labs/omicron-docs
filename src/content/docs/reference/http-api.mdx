@@ -16,11 +16,11 @@ Session-based. Signing in sets an **httpOnly cookie** backed by a row in the
 Postgres `sessions` table. Send that cookie with subsequent requests.
 
 <Callout type="warning" title="No API tokens yet">
-There is no personal-access-token or OAuth flow. Programmatic clients
-authenticate the same way the browser does — by signing in and keeping the
-cookie. The one exception is the
-[content webhook](/reference/content-webhook/), which uses a shared secret and
-can only publish posts.
+There is no personal-access-token or OAuth flow for the API at large.
+Programmatic clients authenticate the same way the browser does — by signing in
+and keeping the cookie. The one exception is the
+[content webhook](/reference/content-webhook/), whose per-user tokens can only
+publish posts and nothing else.
 </Callout>
 
 ## Conventions
@@ -156,13 +156,18 @@ Federated equivalents, keyed by handle (`user@domain`):
 
 ## Webhooks — `/api/webhooks`
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `POST` | `/content` | Publish a document from an external CMS |
+| Method | Path | Auth | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/content` | Token | Publish a document from an external CMS |
+| `GET` | `/tokens` | Session | Your live publishing tokens |
+| `POST` | `/tokens` | Session | Mint one (plaintext returned once) |
+| `DELETE` | `/tokens/:id` | Session | Revoke one |
 
-The one endpoint that does **not** use the session cookie: it authenticates with
-a shared secret in `X-Webhook-Secret` or `Authorization: Bearer`, and is
-disabled until `WEBHOOK_SECRET` is set. Full reference in
+`/content` is the one endpoint that does **not** use the session cookie: it
+authenticates with a bearer credential in `X-Webhook-Secret` or
+`Authorization: Bearer`, and publishes as that credential's owner. Managing
+tokens is an ordinary session-authenticated call, so a token cannot mint or
+revoke tokens. Full reference in
 [Content webhook](/reference/content-webhook/).
 
 ## Reports, instance, setup, SEO

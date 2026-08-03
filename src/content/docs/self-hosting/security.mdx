@@ -18,9 +18,10 @@ import Callout from "@/components/Callout.astro";
   httpOnly cookie; there is no session state in the token itself.
 - **Rate limiting is on** for logins, registrations, API writes, the federation
   inbox, and the content webhook.
-- **The content webhook is off.** `POST /api/webhooks/content` answers `503`
-  until you set `WEBHOOK_SECRET`; there is no state in which it accepts an
-  empty secret.
+- **Webhook credentials are stored hashed.** Publishing tokens are SHA-256'd
+  before they touch the database, so a dump cannot be replayed against the
+  endpoint. Unknown or revoked credentials get a flat `401`, and a token can
+  only ever create posts for the account that minted it.
 - **The federation inbox is capped.** Oversized payloads are rejected by declared
   length and again while buffering, so a missing or spoofed `Content-Length`
   cannot stream an unbounded body into the parser.
@@ -38,9 +39,10 @@ public host exposes the API without TLS. There is no reason to do this.
   first person to complete it becomes the admin.
 - **Do not store backups on the same machine**, and remember that Method B
   backups contain your secrets.
-- **Do not paste `WEBHOOK_SECRET` into a CMS template or a shared document.** It
-  is a publishing credential: whoever holds it can publish, edit, and unpublish
-  posts as the configured author. Rotate it by changing the value and restarting.
+- **Do not paste a publishing credential into a CMS template or a shared
+  document.** Whoever holds one can publish, edit, and unpublish posts as its
+  owner. A per-user token is revoked from **Settings → Integrations**;
+  `WEBHOOK_SECRET` is rotated by changing the value and restarting.
 
 ## Rate limits
 

@@ -77,6 +77,19 @@ Readers comment on posts, and comments can be liked. Federated replies from othe
 instances arrive in the same place as local comments. You can edit or delete your
 own comments.
 
+## Publishing from another tool
+
+If you would rather draft somewhere else — Sanity, a folder of Markdown files, a
+static-site build — you can have that system publish into your blog directly.
+
+Open **Settings → Integrations**, create a token, and give it to that system.
+Posts it sends are published under your name and federate like anything you
+write here. Re-sending the same document updates the post instead of duplicating
+it, so a CMS that retries is safe. Revoke the token any time to cut it off.
+
+You do not need to be an admin, and nothing has to be configured on the server.
+See [Content webhook](/reference/content-webhook/) for the request format.
+
 ## Feeds
 
 Every author has an RSS feed at:

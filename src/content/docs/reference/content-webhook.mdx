@@ -6,56 +6,44 @@ description: Publish into your instance from an external CMS over a single authe
 import Callout from "@/components/Callout.astro";
 
 An external system — Sanity, Contentful, a static-site build hook, a script —
-can publish straight into your instance by POSTing a document to one endpoint.
-The result is an ordinary post: it appears in your feeds, is searchable, and
+can publish straight into your blog by POSTing a document to one endpoint. The
+result is an ordinary post: it appears in your feeds, is searchable, and
 federates to your remote followers exactly like something written in the editor.
 
-The endpoint is **off by default**. It exists only once you set a secret.
+Every writer on an instance can use this. You do not need to be an admin, and
+you do not need anything from your instance's operator.
 
-## Enabling it
+## Getting a token
 
-Generate a secret and put it in your `.env` next to `docker-compose.yml`:
+1. Open **Settings → Integrations**.
+2. Type a name you will recognise later — the system you are wiring up, like
+   "Sanity".
+3. Press **Create**.
 
-```bash
-openssl rand -hex 32
-```
+The token is shown **once**. It is stored hashed, so nobody — not you, not your
+instance's admin — can display it again. Copy it straight into the system that
+needs it. Lose it and you revoke it and mint another; that costs you nothing.
 
-```ini
-WEBHOOK_SECRET=<the generated value>
-```
+Tokens do not expire. An integration that publishes for years should not break
+on a timer. Revoking is explicit, immediate, and yours to do from the same page.
 
-```bash
-docker compose up -d
-```
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `WEBHOOK_SECRET` | *unset* | Enables the endpoint. Minimum 16 characters. |
-| `WEBHOOK_AUTHOR` | oldest account | Username that ingested posts are published as. |
-| `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject a request body larger than this. |
-| `RL_WEBHOOK_MAX` | `30` | Requests / min per source IP. |
-
-<Callout type="warning" title="The secret is a publishing credential">
-Anyone holding it can publish, edit, and unpublish posts as the configured
-author. Treat it like a password: send it only over HTTPS, store it in your
-CMS's secret store rather than in a template, and rotate it by changing
-`WEBHOOK_SECRET` and restarting.
+<Callout type="warning" title="A token publishes as you">
+Anyone holding it can publish, edit, and unpublish posts under your name. Treat
+it like a password: give it only to the system that needs it, keep it in that
+system's secret store rather than in a template or a committed file, and revoke
+it the moment you suspect it has leaked.
 </Callout>
-
-A short or malformed `WEBHOOK_SECRET` stops the backend at boot with a
-configuration error rather than starting with a weak one.
 
 ## The request
 
 ```
 POST /api/webhooks/content
-X-Webhook-Secret: <WEBHOOK_SECRET>
+X-Webhook-Secret: <your token>
 Content-Type: application/json
 ```
 
-The secret may travel in either header — `X-Webhook-Secret: <token>` or
-`Authorization: Bearer <token>` — whichever your CMS makes easier. It is
-compared in constant time.
+The token may travel in either header — `X-Webhook-Secret: <token>` or
+`Authorization: Bearer <token>` — whichever your CMS makes easier.
 
 ### Body
 
@@ -77,6 +65,10 @@ and Omicron **updates that post** instead of publishing a second copy — so an
 at-least-once webhook, a manual retry after a timeout, or a CMS republish all
 converge on one post.
 
+Keys are scoped to **you**, not to the instance. Another writer publishing their
+own `hello-world` never collides with yours, and no token can address, read, or
+overwrite a post belonging to a different account.
+
 <Callout type="tip" title="Send a stable slug">
 Without `slug`, the key is derived from the title, so renaming a document
 publishes a **new** post rather than updating the old one. If your CMS has a
@@ -97,22 +89,21 @@ Success returns the post's id and the key it is stored under:
 | Status | Meaning |
 | --- | --- |
 | `201` | A new post was created. |
-| `200` | An existing post with that slug was updated (`"created": false`). |
+| `200` | Your existing post with that slug was updated (`"created": false`). |
 | `400` | Invalid payload. The message names the offending field. |
-| `401` | Missing or wrong secret. |
-| `409` | That slug belongs to a post this webhook does not own. |
-| `413` | Body larger than `WEBHOOK_MAX_BODY_BYTES`. |
+| `401` | Unknown, revoked, or missing credential. |
+| `403` | The owning account is suspended. |
+| `413` | Body larger than `WEBHOOK_MAX_BODY_BYTES` (512 KB by default). |
 | `429` | Over `RL_WEBHOOK_MAX`. `Retry-After` says how long to wait. |
-| `503` | No `WEBHOOK_SECRET` set, or no usable author account. |
 
-Errors never echo the secret, and nothing logs it.
+Errors never echo the credential, and nothing logs it.
 
 ## Example
 
 ```bash
 curl -X POST https://your-domain/api/webhooks/content \
   -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+  -H "X-Webhook-Secret: $OMICRON_TOKEN" \
   -d '{
     "title": "Europe is ditching Visa and Mastercard",
     "body": "## The short version\n\nIt is a **huge** step.",
@@ -124,9 +115,33 @@ curl -X POST https://your-domain/api/webhooks/content \
   }'
 ```
 
-Substitute your own instance's domain — this works on any Omicron instance, not
-just one in particular. Point it at `http://localhost/api/webhooks/content` to
-try it against a local stack.
+Substitute your own instance's domain — this works on any Omicron instance.
+
+Hand-escaping Markdown into JSON is miserable, so for real content let `jq`
+build the payload from a plain `.md` file:
+
+```bash
+jq -n --arg t "My post" --arg s "my-post" --rawfile b post.md \
+      '{title:$t, slug:$s, body:$b}' \
+| curl -X POST https://your-domain/api/webhooks/content \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Secret: $OMICRON_TOKEN" \
+    --data-binary @-
+```
+
+## Managing tokens over the API
+
+The same endpoints the Settings page uses. These are ordinary signed-in API
+calls authenticated by the **session cookie**, not by a webhook token — a token
+cannot mint or revoke tokens.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/webhooks/tokens` | Your live tokens (never the values) |
+| `POST` | `/api/webhooks/tokens` | Mint one; the plaintext is in this response only |
+| `DELETE` | `/api/webhooks/tokens/:id` | Revoke one |
+
+A maximum of **10** live tokens per account.
 
 ## What happens to the content
 
@@ -160,15 +175,34 @@ render it yet, so today it is visible to other fediverse instances rather than
 to readers on your instance.
 </Callout>
 
+## For operators: the instance-wide secret
+
+Setting `WEBHOOK_SECRET` in `.env` enables a second credential that publishes as
+`WEBHOOK_AUTHOR` (or, unset, the oldest account). It is a fallback for
+publishing without a user token — a migration script, an operator-run pipeline —
+and needs a restart to change.
+
+Per-user tokens are the better default for anything ongoing: they identify who
+published, they are revocable from the UI without a restart, and losing one
+affects one account instead of the instance.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `WEBHOOK_SECRET` | *unset* | Instance-wide fallback credential. Minimum 16 characters. |
+| `WEBHOOK_AUTHOR` | oldest account | Username that `WEBHOOK_SECRET` publishes as. |
+| `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject a request body larger than this. |
+| `RL_WEBHOOK_MAX` | `30` | Requests / min per source IP. |
+
 ## Limits and what this is not
 
-- **No signature verification.** Authentication is the shared secret, not an
+- **No signature verification.** Authentication is the bearer credential, not an
   HMAC of the payload. If your CMS signs its webhooks, that signature is not
   checked.
 - **No scheduling.** A document is published when it arrives.
 - **No deletes.** There is no webhook path that removes a post; set
   `"status": "draft"` to unpublish, or delete it from the UI.
-- **One author.** Every ingested post is attributed to `WEBHOOK_AUTHOR`.
+- **Posts only.** A token cannot read, comment, follow, moderate, change your
+  settings, or touch posts you wrote in the editor.
 
 ## Related
 
