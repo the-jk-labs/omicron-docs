@@ -203,6 +203,26 @@ The practical consequence: what you send is what gets published, but exotic raw
 HTML in your Markdown may not survive. Standard Markdown, tables, code fences,
 images and links all do.
 
+### Maths
+
+TeX maths renders: `$…$` inline, `$$…$$` on its own line.
+
+```markdown
+The bound holds for $\varepsilon > 0$:
+
+$$\dot{\Sigma} \ge \frac{k_{\mathrm{B}} \, \mathcal{I}(\varepsilon)}{\tau}$$
+```
+
+Formulas are typeset **on the way in**, like the rest of the Markdown, and stored
+as MathML — which every current browser draws natively. Readers download no maths
+engine, and a remote instance showing your Article gets the finished formula
+rather than raw TeX.
+
+A `$` that is not maths stays a `$`: a delimiter has to sit flush against its
+formula, so prices ("it costs $5, they charge $6") are left alone. A formula that
+does not parse is shown as the TeX you typed, in red, rather than breaking the
+post.
+
 ## What federates
 
 A published post is delivered to your remote followers as a `Create(Article)`.
@@ -224,7 +244,7 @@ on your own instance too:
 
 | Field | In the feed | On the post | In a link preview |
 | --- | --- | --- | --- |
-| `description` | The preview line under the title | A lede under the headline | `og:description` |
+| `description` | The preview line under the title | Not shown — the body is right there | `og:description` |
 | `banner` | A thumbnail beside the title | A full-width image above the body | `og:image` |
 
 A post written in the editor has neither, and its feed preview is clipped from
