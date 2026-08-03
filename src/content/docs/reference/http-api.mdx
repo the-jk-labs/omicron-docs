@@ -18,7 +18,9 @@ Postgres `sessions` table. Send that cookie with subsequent requests.
 <Callout type="warning" title="No API tokens yet">
 There is no personal-access-token or OAuth flow. Programmatic clients
 authenticate the same way the browser does — by signing in and keeping the
-cookie.
+cookie. The one exception is the
+[content webhook](/reference/content-webhook/), which uses a shared secret and
+can only publish posts.
 </Callout>
 
 ## Conventions
@@ -151,6 +153,17 @@ Federated equivalents, keyed by handle (`user@domain`):
 | --- | --- | --- |
 | `POST` | `/` | Upload a file |
 | `GET` | `/:file` | Serve an uploaded file |
+
+## Webhooks — `/api/webhooks`
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/content` | Publish a document from an external CMS |
+
+The one endpoint that does **not** use the session cookie: it authenticates with
+a shared secret in `X-Webhook-Secret` or `Authorization: Bearer`, and is
+disabled until `WEBHOOK_SECRET` is set. Full reference in
+[Content webhook](/reference/content-webhook/).
 
 ## Reports, instance, setup, SEO
 

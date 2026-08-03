@@ -60,7 +60,25 @@ and rate-limit counters are not shared across processes.
 | `RL_REGISTER_MAX` | `5` | Registrations per IP / hour. |
 | `RL_API_WRITE_MAX` | `120` | Writes / min per signed-in user (or per IP). |
 | `RL_INBOX_MAX` | `300` | Federation inbox POSTs / min per source IP. |
+| `RL_WEBHOOK_MAX` | `30` | Content-webhook POSTs / min per source IP. |
 | `INBOX_MAX_BODY_BYTES` | `1000000` | Reject inbox POSTs larger than this. |
+
+## Content ingestion
+
+Off unless you set a secret. Lets an external CMS publish into this instance —
+see [Content webhook](/reference/content-webhook/).
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `WEBHOOK_SECRET` | *unset* | Enables `POST /api/webhooks/content`. Minimum 16 characters. |
+| `WEBHOOK_AUTHOR` | oldest account | Username that ingested posts are published as. |
+| `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject an ingested body larger than this. |
+
+<Callout type="warning">
+`WEBHOOK_SECRET` is a publishing credential — anyone holding it can publish,
+edit, and unpublish posts as that author. Unset, the endpoint answers `503`;
+there is no state in which it accepts an empty secret.
+</Callout>
 
 ## Email
 

@@ -78,6 +78,7 @@ export const nav: NavSection[] = [
       { slug: "reference/environment", label: "Environment variables" },
       { slug: "reference/http-api", label: "HTTP API" },
       { slug: "reference/admin-api", label: "Admin API" },
+      { slug: "reference/content-webhook", label: "Content webhook" },
       { slug: "reference/rate-limits", label: "Rate limits" },
       { slug: "reference/license", label: "License and AGPL" },
     ],

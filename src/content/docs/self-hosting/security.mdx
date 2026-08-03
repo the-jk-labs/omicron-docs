@@ -16,8 +16,11 @@ import Callout from "@/components/Callout.astro";
   Caddy, and only for your saved domain and its `www.` alias.
 - **Sessions are server-side.** Session records live in Postgres behind an
   httpOnly cookie; there is no session state in the token itself.
-- **Rate limiting is on** for logins, registrations, API writes, and the
-  federation inbox.
+- **Rate limiting is on** for logins, registrations, API writes, the federation
+  inbox, and the content webhook.
+- **The content webhook is off.** `POST /api/webhooks/content` answers `503`
+  until you set `WEBHOOK_SECRET`; there is no state in which it accepts an
+  empty secret.
 - **The federation inbox is capped.** Oversized payloads are rejected by declared
   length and again while buffering, so a missing or spoofed `Content-Length`
   cannot stream an unbounded body into the parser.
@@ -35,6 +38,9 @@ public host exposes the API without TLS. There is no reason to do this.
   first person to complete it becomes the admin.
 - **Do not store backups on the same machine**, and remember that Method B
   backups contain your secrets.
+- **Do not paste `WEBHOOK_SECRET` into a CMS template or a shared document.** It
+  is a publishing credential: whoever holds it can publish, edit, and unpublish
+  posts as the configured author. Rotate it by changing the value and restarting.
 
 ## Rate limits
 
@@ -46,7 +52,9 @@ Defaults, tunable in `.env`:
 | `RL_REGISTER_MAX` | 5 | registrations per IP / hour |
 | `RL_API_WRITE_MAX` | 120 | writes / min per signed-in user (or per IP) |
 | `RL_INBOX_MAX` | 300 | federation inbox POSTs / min per source IP |
+| `RL_WEBHOOK_MAX` | 30 | content-webhook POSTs / min per source IP |
 | `INBOX_MAX_BODY_BYTES` | 1000000 | maximum inbox payload size |
+| `WEBHOOK_MAX_BODY_BYTES` | 512000 | maximum content-webhook payload size |
 
 Without Redis these counters are per-process and reset on restart. With
 `REDIS_URL` set they are shared and durable. See
