@@ -49,14 +49,18 @@ The token may travel in either header — `X-Webhook-Secret: <token>` or
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `title` | string | yes | Up to 300 characters. |
-| `body` | string | yes | Markdown. Rendered to sanitized HTML on write. |
+| `title` | string | on create | Up to 300 characters. |
+| `body` | string | on create | Markdown. Rendered to sanitized HTML on write. |
 | `description` | string | no | Up to 500 characters. Defaults to the first ~150 characters of the body. |
 | `banner` | string | no | Absolute `http(s)` URL of a cover image, hosted by you. |
 | `slug` | string | no | Stable key for this document. Defaults to a slug of the title. |
 | `tags` | string[] | no | Up to 5 after normalisation. Omit to leave existing tags alone; `[]` clears them. |
 | `language` | string | no | BCP-47 primary subtag, e.g. `en`, `tr`. Drives the reader's language filter. |
 | `status` | string | no | `published` (default) or `draft`. |
+
+"On create" means the first request that publishes a given document must carry a
+`title` and a `body`. Once the post exists, every field is optional — see
+[Partial updates](#partial-updates).
 
 ## Re-sending is safe
 
@@ -77,6 +81,50 @@ document id, send it as `slug` and retitling works correctly.
 
 A title with no ASCII characters derives to an empty key; those documents must
 send an explicit `slug` and are rejected with `400` otherwise.
+
+## Partial updates
+
+Once a post exists, a request changes **only the fields it carries**. Anything
+you leave out keeps the value it already has, so a CMS that knows one field moved
+sends that field and nothing else — no need to resend an article body you did not
+touch.
+
+```bash
+# Unpublish, leaving the content untouched.
+-d '{"slug": "eu-payments", "status": "draft"}'
+
+# Retitle.
+-d '{"slug": "eu-payments", "title": "Europe ditches the card networks"}'
+
+# Replace the tags, and nothing else.
+-d '{"slug": "eu-payments", "tags": ["payments", "eu"]}'
+```
+
+Because these requests carry no `title`, the `slug` is the only thing naming the
+post — send it, or there is nothing to address.
+
+### Clearing a field
+
+Sending `null` **clears** a field. Leaving it out **keeps** it. The two are
+deliberately different:
+
+```bash
+# Drops the cover image.
+-d '{"slug": "eu-payments", "banner": null}'
+
+# Returns the summary to one derived from the body.
+-d '{"slug": "eu-payments", "description": null}'
+```
+
+`tags` follows the same idea with its own spelling: omit it to keep the current
+tags, send `[]` to clear them.
+
+<Callout type="note" title="How the summary tracks the body">
+`description` is a preview of the body, so it is re-derived whenever the body
+changes and you send no `description` with it. If your CMS writes its own
+descriptions, send `description` alongside each `body` you change and yours is
+kept.
+</Callout>
 
 ## Responses
 
@@ -169,11 +217,19 @@ Re-sending an already-published post delivers an `Update(Article)` so remote
 copies refresh. Flipping a published post to `"status": "draft"` tombstones the
 copies already delivered.
 
-<Callout type="note" title="The banner is not shown on your own site yet">
-`banner` is stored, returned by the API, and federated. The post page does not
-render it yet, so today it is visible to other fediverse instances rather than
-to readers on your instance.
-</Callout>
+## What readers see
+
+`description` and `banner` are not federation-only metadata — they shape the post
+on your own instance too:
+
+| Field | In the feed | On the post | In a link preview |
+| --- | --- | --- | --- |
+| `description` | The preview line under the title | A lede under the headline | `og:description` |
+| `banner` | A thumbnail beside the title | A full-width image above the body | `og:image` |
+
+A post written in the editor has neither, and its feed preview is clipped from
+the body instead. A `banner` that fails to load is dropped rather than left as a
+broken image, since it is hosted by you rather than by the instance.
 
 ## For operators: the instance-wide secret
 
