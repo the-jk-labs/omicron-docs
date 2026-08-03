@@ -40,7 +40,7 @@ Migrations run automatically on backend startup, so an empty database is fine.
 <Callout type="note" title="No Redis in this mode">
 Without `REDIS_URL`, the queue, Fedify's KV store, and the rate limiter all run
 in-process. That is fine for development; just remember that queued jobs vanish
-on restart. See [Delivery and queues](/docs/federation/delivery/).
+on restart. See [Delivery and queues](/federation/delivery/).
 </Callout>
 
 ## Checks before you push
@@ -87,7 +87,7 @@ cd apps/backend
 deno task db:generate     # writes new SQL into ./drizzle — commit it
 ```
 
-See [Database and migrations](/docs/development/database/).
+See [Database and migrations](/development/database/).
 
 ## Project layout
 

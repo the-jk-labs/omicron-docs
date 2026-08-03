@@ -67,7 +67,7 @@ and POSTs the activity. It handles:
 The writer dashboard's "reach" figure counts **successful deliveries to remote
 inboxes**. It measures your instance's sending, not anyone's reading — there is
 no mechanism, and no intention, to observe reads on other servers. See
-[Writer dashboard](/docs/using/analytics/).
+[Writer dashboard](/using/analytics/).
 
 ## Inbound throttling
 
@@ -85,4 +85,4 @@ activities in a burst.
 
 It holds only transient queue state and is deliberately **excluded from backups**
 — Redis re-drains it after a restart, and no durable content lives there. See
-[Backups and restore](/docs/self-hosting/backups/).
+[Backups and restore](/self-hosting/backups/).

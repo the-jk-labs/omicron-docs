@@ -12,7 +12,7 @@ bar is mostly about fitting the existing shape rather than about volume.
 
 - **Open an issue first** for anything beyond a small fix. A short discussion
   about approach saves rewriting.
-- **Read [Architecture](/docs/development/architecture/)**. Most review feedback
+- **Read [Architecture](/development/architecture/)**. Most review feedback
   is a layering rule the contributor had not seen yet.
 - **Check the roadmap** in the repository — a feature may already be planned with
   a particular design in mind.
@@ -40,7 +40,7 @@ Then open a pull request describing **what changes for the user** and why.
 | **UI** | Bits UI primitives and theme tokens only — no ad-hoc colours |
 | **Migrations** | Additive within a version; generated SQL committed |
 | **Federation** | Nothing imported from `federation/` when the flag is off |
-| **Privacy** | No new reader-identifying data. See [Writer dashboard](/docs/using/analytics/) |
+| **Privacy** | No new reader-identifying data. See [Writer dashboard](/using/analytics/) |
 | **Comments** | Explain *why*, at the density of the surrounding code |
 
 <Callout type="tip" title="Match the code you are standing in">
@@ -54,7 +54,7 @@ that does not.
 Include the generated SQL from `deno task db:generate`, and state in the
 description whether the change is additive. A migration that drops or renames a
 column needs to be split across releases — see
-[Database and migrations](/docs/development/database/).
+[Database and migrations](/development/database/).
 
 ## UI changes
 
@@ -100,5 +100,5 @@ project's licence. Every source file carries an SPDX header:
 // SPDX-License-Identifier: AGPL-3.0-or-later
 ```
 
-Keep it on new files. See [License and AGPL](/docs/reference/license/) for what
+Keep it on new files. See [License and AGPL](/reference/license/) for what
 the licence requires of people who deploy modified versions.

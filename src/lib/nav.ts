@@ -93,5 +93,5 @@ export function pagerFor(slug: string): { prev?: NavItem; next?: NavItem } {
   return { prev: flatNav[i - 1], next: flatNav[i + 1] };
 }
 
-/** Absolute path for a docs slug. */
-export const hrefFor = (slug: string) => `/docs/${slug}/`;
+/** Absolute path for a docs slug. Pages live at the site root — no /docs prefix. */
+export const hrefFor = (slug: string) => `/${slug}/`;

@@ -21,7 +21,7 @@ with `docker compose logs -f`.
 **A service keeps restarting.**
 Read its logs specifically. A restarting `backend` is usually a database it cannot
 reach; a restarting `postgres` is usually a `pgdata` volume that does not match
-the password in `secrets` (see [Backups](/docs/self-hosting/backups/)).
+the password in `secrets` (see [Backups](/self-hosting/backups/)).
 
 ## Reaching the site
 
@@ -112,7 +112,7 @@ from a backup; there is no other recovery.
 **The backend cannot connect to Postgres after a restore.**
 The classic pairing failure: a fresh `pgdata` with an old `secrets`, or the
 reverse. See the pairing rule in
-[Backups and restore](/docs/self-hosting/backups/).
+[Backups and restore](/self-hosting/backups/).
 
 ## Still stuck
 

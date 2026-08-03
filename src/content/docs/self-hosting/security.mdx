@@ -50,7 +50,7 @@ Defaults, tunable in `.env`:
 
 Without Redis these counters are per-process and reset on restart. With
 `REDIS_URL` set they are shared and durable. See
-[Rate limits](/docs/reference/rate-limits/).
+[Rate limits](/reference/rate-limits/).
 
 ## Session secret rotation
 
@@ -77,14 +77,14 @@ the inbox is rate-limited and size-capped, but you are now a network participant
 Off by default. When on, it challenges browser-like page traffic with a
 proof-of-work interstitial while leaving federation, the API, feeds, and
 OpenGraph crawlers untouched. It is a bandwidth and scraping mitigation, not a
-security control — see [Admin panel](/docs/self-hosting/admin-panel/).
+security control — see [Admin panel](/self-hosting/admin-panel/).
 
 ## Reader privacy
 
 Omicron does not profile readers. On-instance view counts are aggregate integers
 keyed by a one-way hash, with no IP address, fingerprint, or per-visit row stored
 anywhere. The full account, including what is deliberately never collected, is in
-[Writer dashboard](/docs/using/analytics/).
+[Writer dashboard](/using/analytics/).
 
 ## Keeping up to date
 

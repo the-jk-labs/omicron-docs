@@ -6,6 +6,10 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": true,
+  "redirects": [
+    { "source": "/docs", "destination": "/", "permanent": true },
+    { "source": "/docs/:path*", "destination": "/:path*", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/_astro/(.*)",

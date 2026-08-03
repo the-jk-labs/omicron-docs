@@ -51,7 +51,7 @@ Either works — the stack is engine-agnostic and the installer auto-detects
 - **Docker** with the Compose plugin. Install via
   [docs.docker.com/engine/install](https://docs.docker.com/engine/install/).
 - **Podman** 4+ with `podman compose` or `podman-compose`. See
-  [Running on Podman](/docs/self-hosting/podman/) for the one difference
+  [Running on Podman](/self-hosting/podman/) for the one difference
   (binding ports below 1024 when rootless).
 
 Verify Docker is ready:
@@ -71,7 +71,7 @@ need one to try Omicron locally.
 A public instance uses ports **80** and **443**. Make sure nothing else on the
 host is using them (another web server, another Caddy or nginx). If they are
 taken you can move Omicron to other ports — see
-[Configuration](/docs/self-hosting/configuration/) — but automatic Let's Encrypt
+[Configuration](/self-hosting/configuration/) — but automatic Let's Encrypt
 issuance on non-standard ports is not standard, so for a real public instance
 prefer freeing 80 and 443.
 </Callout>

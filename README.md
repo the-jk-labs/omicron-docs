@@ -36,7 +36,7 @@ descriptions, so it still works.
 ## Writing a page
 
 1. Add an `.mdx` file under `src/content/docs/`. The path becomes the URL:
-   `src/content/docs/self-hosting/backups.mdx` → `/docs/self-hosting/backups/`.
+   `src/content/docs/self-hosting/backups.mdx` → `/self-hosting/backups/`.
 2. Give it frontmatter:
 
    ```yaml
@@ -82,7 +82,7 @@ src/
   styles/app.css       Bits UI theme tokens + prose styling
   pages/
     index.astro        documentation home
-    docs/[...slug].astro
+    [...slug].astro    every documentation page, served at the site root
     404.astro
 ```
 
