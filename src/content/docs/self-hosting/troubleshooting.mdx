@@ -99,9 +99,25 @@ Caddy has not been recreated with the newer Caddyfile. Run once:
 docker compose up -d --build --force-recreate
 ```
 
+**The challenge page is stuck on "Calculating…" and only loads after a refresh.**
+Fixed in the release that added `ANUBIS_REDIRECT_DOMAINS`. The fix is a Caddyfile
+change, so a plain `up -d` does not apply it — recreate once:
+
+```bash
+docker compose up -d --build --force-recreate
+```
+
 **Readers are being challenged again after a restart.**
-Expected — the challenge service's signing key is in memory, so a restart costs
-one extra solve.
+Not expected. The signing key lives in the `secrets` volume and survives
+restarts. If it recurs, the challenge service is failing to read that key —
+check its logs for `ED25519_PRIVATE_KEY_HEX_FILE` or `generating random key`.
+Deleting the `secrets` volume also loses the key, and with it the Postgres
+password and session secret.
+
+**Every page load returns 500 while the shield is on.**
+The challenge service could not determine the client IP. Its logs will say
+`X-Real-Ip header is not set`. Caddy supplies that header, so this means Caddy is
+running an older Caddyfile — recreate once with the command above.
 
 ## Data
 

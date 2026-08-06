@@ -77,8 +77,8 @@ the app through the bundled challenge service via Caddy's internal admin API.
 Per-IP rate limiting stays accurate.
 
 The challenge service always runs but only sits in the request path while the
-toggle is on. Its signing key is held in memory, so a stack restart re-challenges
-readers once — a harmless one-time solve.
+toggle is on. Its signing key is generated once into the `secrets` volume, so
+restarts and upgrades do not re-challenge readers who have already solved one.
 
 <Callout type="note">
 On instances upgraded from before this feature shipped, the toggle needs Caddy to

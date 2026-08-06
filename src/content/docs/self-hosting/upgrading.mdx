@@ -86,6 +86,33 @@ federation activities not yet delivered. No posts, accounts, or uploads. Activit
 still queued are lost, so remote instances may never receive them.
 </Callout>
 
+## One-time step: the scraper-shield fixes release
+
+That release changed the bundled **Caddyfile** again, so it needs the same
+recreate as the original shield release:
+
+```bash
+git pull && docker compose up -d --build --force-recreate
+```
+
+A plain `up -d` leaves Caddy on the old file and the fixes silently do not apply.
+What you get once it is recreated:
+
+- The challenge page no longer hangs on "Calculating…" until the reader
+  refreshes.
+- Page loads no longer fail with a 500 when the reader's IP arrives from a
+  private network.
+- The challenge signing key is generated once into the `secrets` volume, so
+  restarts and upgrades stop re-challenging readers who already solved one.
+
+Containers are recreated, never volumes, so data and certificates survive. If
+the shield is on, it drops for a few seconds while Caddy restarts and the backend
+re-applies it — readers see the site unprotected, not broken.
+
+The release also adds `ANUBIS_REDIRECT_DOMAINS`. Nothing breaks if you leave it
+unset, but a public instance should set it — see
+[Environment variables](/reference/environment/).
+
 ## Rolling back
 
 Check out the previous tag and rebuild:

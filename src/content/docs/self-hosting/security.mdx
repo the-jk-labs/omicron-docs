@@ -89,6 +89,11 @@ proof-of-work interstitial while leaving federation, the API, feeds, and
 OpenGraph crawlers untouched. It is a bandwidth and scraping mitigation, not a
 security control — see [Admin panel](/self-hosting/admin-panel/).
 
+Set `ANUBIS_REDIRECT_DOMAINS` if you turn it on. Without it, the endpoint that
+redeems a solved challenge will forward a reader to any domain, which lets a
+link to your instance land the visitor elsewhere. See
+[Environment variables](/reference/environment/).
+
 ## Reader privacy
 
 Omicron does not profile readers. On-instance view counts are aggregate integers

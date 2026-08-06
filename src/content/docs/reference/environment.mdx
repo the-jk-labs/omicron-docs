@@ -116,8 +116,25 @@ and 443. Change them only when those ports are genuinely unavailable.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `CADDY_ADMIN_URL` | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
+| `ANUBIS_REDIRECT_DOMAINS` | *(empty)* | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain. |
 
-There is nothing else to set — the shield is turned on from **Admin → Security**.
+The shield itself is turned on from **Admin → Security**, not from here.
+
+Set `ANUBIS_REDIRECT_DOMAINS` on a public instance. Left empty, the endpoint that
+redeems a solved challenge will forward a reader to whatever domain a `redir`
+parameter names — so a link to your instance can deposit the visitor somewhere
+else, borrowing your domain for the hop.
+
+List **every** hostname your instance answers on, not only the canonical one:
+
+```bash
+ANUBIS_REDIRECT_DOMAINS=example.com,www.example.com
+```
+
+A reader who arrived on `www.` solves the challenge on `www.` and is refused the
+redirect if it is missing from the list. This is why the value is not derived
+from `APP_DOMAIN` automatically — canonicalisation happens in the app, which
+sits behind the challenge service.
 
 ## Networking and storage
 
