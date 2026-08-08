@@ -4,7 +4,11 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { hrefFor } from "@/lib/nav";
 ---
 
-<BaseLayout title="Page not found" description="That documentation page does not exist.">
+<BaseLayout
+  title="Page not found"
+  description="That documentation page does not exist."
+  noindex
+>
   <main id="main" class="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-24">
     <p class="text-sm font-medium uppercase tracking-wide text-muted-foreground">404</p>
     <h1 class="mt-2 text-3xl font-bold tracking-tight text-foreground">Page not found</h1>
