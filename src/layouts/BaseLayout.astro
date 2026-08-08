@@ -19,11 +19,84 @@ interface Props {
    * sidebar scrolls independently, so a site footer just interrupts reading.
    */
   showFooter?: boolean;
+  /** Keep the page out of the index — the 404, which has no stable content. */
+  noindex?: boolean;
 }
 
-const { title, description, currentSlug, showFooter = true } = Astro.props;
+const {
+  title,
+  description,
+  currentSlug,
+  showFooter = true,
+  noindex = false,
+} = Astro.props;
 const siteTitle = title === "Omicron" ? "Omicron Documentation" : `${title} — Omicron Docs`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og-image.png", Astro.site);
+
+// Structured data. One @graph so the article, the site it belongs to, and the
+// publisher are a single connected object rather than three loose ones — which
+// is what lets a crawler attribute a page to Omicron instead of guessing.
+// Everything here is a fact stated elsewhere on the page; nothing is invented,
+// because markup that disagrees with the visible page is a manual-action risk.
+const websiteId = new URL("#website", Astro.site).href;
+const organizationId = new URL("#organization", Astro.site).href;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": organizationId,
+      name: "Omicron",
+      url: new URL("/", Astro.site).href,
+      logo: new URL("/logo.svg", Astro.site).href,
+      sameAs: ["https://github.com/the-jk-labs/omicron"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": websiteId,
+      url: new URL("/", Astro.site).href,
+      name: "Omicron Documentation",
+      description:
+        "Documentation for Omicron — a minimal, self-hostable, federated blogging platform built on ActivityPub.",
+      publisher: { "@id": organizationId },
+      inLanguage: "en",
+    },
+    // Docs pages only. The home page is the WebSite itself, and marking it up
+    // as an article as well would claim two things about one URL.
+    ...(currentSlug
+      ? [
+          {
+            "@type": "TechArticle",
+            "@id": `${canonical.href}#article`,
+            headline: title,
+            description,
+            url: canonical.href,
+            isPartOf: { "@id": websiteId },
+            publisher: { "@id": organizationId },
+            inLanguage: "en",
+            // The text, not the site source — the two halves are licensed
+            // differently and this markup describes the text.
+            license: "https://creativecommons.org/licenses/by-sa/4.0/",
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": `${canonical.href}#breadcrumb`,
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Documentation",
+                item: new URL("/", Astro.site).href,
+              },
+              { "@type": "ListItem", position: 2, name: title },
+            ],
+          },
+        ]
+      : []),
+  ],
+};
 ---
 
 <!doctype html>
@@ -34,6 +107,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <title>{siteTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {/* max-image-preview/max-snippet lift Google's default caps on how much of
+        a page it may show — worth having for docs, where the useful result is
+        often a paragraph rather than a title. */}
+    <meta
+      name="robots"
+      content={
+        noindex
+          ? "noindex, follow"
+          : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      }
+    />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    {/* Matches --background in app.css for each theme, so the browser chrome
+        does not fight the page. */}
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0d0d" />
     <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     {/* Same set, and same order, as the app's app.html: browsers that only
         understand .ico take the first, everything modern takes the SVG. */}
@@ -41,14 +130,25 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="icon" href="/logo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={currentSlug ? "article" : "website"} />
+    <meta property="og:site_name" content="Omicron Documentation" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={siteTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL("/og-image.png", Astro.site)} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Omicron Documentation" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content={new URL("/og-image.png", Astro.site)} />
+    {/* Twitter falls back to the og:* pair, but only when it parses them —
+        stating both removes the dependency. */}
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="Omicron Documentation" />
     <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
     {/* Resolve the theme before first paint so the page never flashes light. */}
     <script is:inline>
       (() => {

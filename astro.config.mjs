@@ -6,17 +6,13 @@ import svelte from "@astrojs/svelte";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 
-// The canonical origin, in order of precedence:
-//   1. SITE_URL — set this to pin a domain explicitly.
-//   2. VERCEL_PROJECT_PRODUCTION_URL — the project's production domain, which
-//      Vercel sets to the custom domain once one is attached. Canonicals,
-//      og:url, the sitemap, and robots.txt then follow it with no code change.
-//   3. localhost, for a local build.
-const site =
-  process.env.SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:4321");
+// The canonical origin. docs.omicron.blog is the official domain, so it is the
+// default rather than something derived from the environment: a local or
+// preview build then emits the same absolute URLs production does, which is
+// what canonicals, og:url, the sitemap, robots.txt and llms.txt all want. A
+// preview that advertised its own deployment URL would compete with production
+// in the index. Override with SITE_URL only to serve the site somewhere else.
+const site = process.env.SITE_URL ?? "https://docs.omicron.blog";
 
 // https://astro.build/config
 export default defineConfig({
