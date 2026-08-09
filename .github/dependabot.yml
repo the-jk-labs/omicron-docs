@@ -24,13 +24,32 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    # Majors are excluded from every group and from this repository's updates
+    # entirely. A grouped major is the worst of both worlds: it arrives looking
+    # like routine hygiene, and the first run bundled Tailwind 3 -> 4 with two
+    # patch bumps. This project is pinned to Tailwind 3.4 on purpose — the Bits
+    # UI class strings in the docs and the app are written against v3 syntax, so
+    # a v4 upgrade is a design-system migration, not a dependency update.
+    #
+    # Major upgrades are still worth doing; they are just a decision somebody
+    # makes deliberately, not something merged on a Monday because CI was green.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
     groups:
       astro:
         patterns:
           - "astro"
           - "@astrojs/*"
+        update-types:
+          - minor
+          - patch
       dev-tooling:
         dependency-type: development
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
