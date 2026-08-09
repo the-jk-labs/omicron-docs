@@ -47,12 +47,16 @@ What analytics can and cannot be turned on is described in
 The toggle applies live — the backend re-routes traffic through the challenge
 service via Caddy's internal admin API. No restart.
 
-## SEO
+## Discoverability
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/admin/seo` | SEO settings |
-| `PUT` | `/api/admin/seo` | Update them |
+| `GET` | `/api/admin/seo` | Discoverability settings, including the IndexNow key |
+| `PUT` | `/api/admin/seo` | Update `indexingEnabled`, `verification`, `indexNowEnabled` |
+
+Documented in full in [Discoverability](/self-hosting/discoverability/). The
+IndexNow key appears only here — the public `/api/seo` withholds it, since it is
+what authorises submissions for the domain.
 
 ## Email
 
