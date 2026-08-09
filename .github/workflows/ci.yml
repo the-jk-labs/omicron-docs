@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v7
 
       # Version comes from packageManager in package.json.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       # Astro 7 requires >=22.12; .nvmrc keeps CI, Vercel, and local in step.
       - uses: actions/setup-node@v4
