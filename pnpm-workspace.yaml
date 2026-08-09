@@ -4,3 +4,16 @@
 allowBuilds:
   esbuild: true
   sharp: true
+
+# fast-uri below 3.1.5 mistakes a backslash for an authority introducer, so a
+# crafted URL can parse as naming one host while resolving to another.
+#
+# It reaches us only through `@astrojs/check` -> the YAML language server ->
+# ajv, all devDependencies: it runs during `astro check` and is in neither the
+# built site nor anything a reader is served. Pinned rather than dismissed —
+# the fix is a one-line floor, and an advisory left open is indistinguishable
+# from one nobody noticed.
+#
+# Remove once ajv's own range has moved past 3.1.5 on its own.
+overrides:
+  fast-uri: ">=3.1.5"
