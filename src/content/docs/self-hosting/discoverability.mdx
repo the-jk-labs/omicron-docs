@@ -1,0 +1,164 @@
+---
+title: Discoverability
+description: Indexing, sitemaps, robots.txt, search-console verification, and IndexNow.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Everything that decides whether search engines can find, read, and list your
+instance lives on one admin page: **Admin → Discoverability**. It applies live —
+nothing here needs a restart.
+
+## Allow search-engine indexing
+
+The master switch, **on** by default.
+
+| State | What the instance serves |
+| --- | --- |
+| **On** | A permissive `robots.txt`, a sitemap of published posts, and normal indexable pages. |
+| **Off** | `robots.txt` disallowing everything, and `noindex` on every page. |
+
+Turn it off for a private instance, a staging copy, or anything you do not want
+appearing in search results. Private areas — settings, drafts, the dashboard,
+admin, search results — are never indexed either way.
+
+<Callout type="note" title="Turning it off does not remove what is already indexed">
+`noindex` tells an engine to drop a page the next time it fetches it. Pages
+already in an index disappear over days to weeks, not immediately. To remove
+something urgently, use the removal tool in the relevant search console.
+</Callout>
+
+## The sitemap
+
+`/sitemap.xml` is a **sitemap index** — a list of other sitemap files rather than
+a list of URLs.
+
+| File | Contents |
+| --- | --- |
+| `/sitemap.xml` | The index. This is the one you submit to a search console. |
+| `/sitemap/posts-1.xml`, `-2.xml`, … | Published local posts, 40,000 per file. Page 1 also carries the home page. |
+| `/sitemap/pages.xml` | Author profiles, tag pages, and public reading lists. |
+
+You only ever submit the index. Engines read it and fetch the rest themselves.
+
+Every entry carries a `lastmod`. For a post that is the time its content last
+changed — the body, title, tags, cover, or language — so an edited article asks
+to be re-read rather than reporting its publication date forever. For a profile,
+tag, or list it is the newest thing that page lists.
+
+**What is excluded, and why:**
+
+- **Drafts** — not public.
+- **Posts from other instances** — they belong to the instance that published
+  them. Serving them here would compete with the original; those pages are
+  additionally marked `noindex` for the same reason.
+- **Private and suspended accounts** — nothing public to show.
+- **Tags used by only one post** — the page would list a single link and add
+  nothing over the post itself.
+- **Empty reading lists, and every "Read later" list** — a personal queue, not a
+  published collection.
+
+<Callout type="tip" title="Resubmit after upgrading to the split sitemap">
+If you submitted `sitemap.xml` before it became an index, resubmit it. A search
+console keeps polling the shape it first saw and will not notice on its own.
+</Callout>
+
+## robots.txt
+
+Generated from the indexing switch — never a file you edit. When indexing is on
+it allows crawling, points at the sitemap, and disallows the paths that should
+never be indexed: `/compose`, `/drafts`, `/dashboard`, `/settings`, `/admin`,
+`/api/`, `/search`, `/notifications`, `/follow-requests`, and the sign-in and
+setup screens.
+
+`/search` is disallowed deliberately. Every distinct `?q=` is a distinct URL, so
+one discovered search link lets a crawler generate them without end, each
+returning a near-empty page. That spends the crawl budget your articles need.
+
+Public reading lists are **not** disallowed — a robots.txt path is a prefix, and
+blocking `/lists` would take `/lists/<public-list>` with it.
+
+## Search-console verification
+
+Paste the token from each console to claim the site; Omicron renders the matching
+`<meta>` tag on every page. Pick the **HTML meta tag** method in the console and
+copy just the token value, not the whole tag.
+
+| Console | Also covers |
+| --- | --- |
+| [Bing Webmaster Tools](https://www.bing.com/webmasters) | DuckDuckGo, Ecosia, Yahoo |
+| [Google Search Console](https://search.google.com/search-console) | — |
+| [Yandex Webmaster](https://webmaster.yandex.com) | — |
+
+<Callout type="warning" title="Behind the AI-scraper shield, prefer DNS verification">
+If [AI-scraper protection](/self-hosting/security/) is on, a console's HTML-file
+or meta-tag check can land on the challenge page and fail. The DNS/CNAME method
+verifies against your domain records instead and needs nothing from Omicron.
+</Callout>
+
+## IndexNow
+
+**Off by default.** When on, the instance tells participating search engines the
+moment a post is published or edited, instead of waiting to be crawled.
+
+- **Participating:** Bing, Yandex, Seznam, Naver. They share submissions between
+  themselves, so one call reaches all of them.
+- **Not participating:** Google. Its Indexing API is restricted to job postings
+  and livestreams, so it cannot be used for blog posts. Enabling this changes
+  nothing about how Google sees your instance.
+
+It is off by default because enabling it sends your post URLs to those
+companies' servers on every publish. Nothing else is sent — no post content, no
+reader data. Only public posts by public accounts are submitted: never drafts,
+private or suspended accounts, or posts from other instances. Nothing is
+submitted at all while indexing is switched off.
+
+Switching it on generates a key and serves it at
+`/indexnow-<key>.txt`. Engines fetch that file to confirm you control the domain.
+The key is kept once minted — rotating it would invalidate the file the engines
+have already fetched.
+
+<Callout type="note" title="Nothing is submitted from a localhost instance">
+Submission is skipped when `APP_DOMAIN` is a localhost development host, since
+there is no public URL for an engine to fetch.
+</Callout>
+
+Submission runs as a background job, so a slow or unreachable engine never delays
+publishing. Failures are logged and otherwise ignored.
+
+## What the pages themselves declare
+
+Handled automatically, with nothing to configure:
+
+- **One canonical URL per page**, always on the instance's configured domain, so
+  an article reached through an alias hostname still has a single address.
+- **The language a post was written in**, on `<html lang>` and in the structured
+  data, taken from the author's language selection.
+- **Structured data** — `BlogPosting` for a post (with author, dates, language,
+  and tags), `ProfilePage` for a local author, `WebSite` for the instance, and a
+  breadcrumb trail so results read *instance → author → article*.
+- **Link-preview metadata** — Open Graph and Twitter cards, with the fediverse
+  author attribution Mastodon shows above a shared link.
+- **`noindex` on federated posts and cached remote profiles.** Those pages
+  reproduce content published on another instance. Left indexable, an instance
+  that federates well would offer search engines far more copied text than
+  original writing, which reads as a scraper site and costs the instance's own
+  authors their ranking.
+
+## When search traffic disappears
+
+Check these in order.
+
+1. **Is indexing switched on?** Fetch `/robots.txt` — `Disallow: /` on its own
+   means the switch is off.
+2. **Is the scraper shield challenging crawlers?** This is the failure that
+   silently nullifies everything else. In Google Search Console, use **URL
+   Inspection → Test live URL → View crawled page**. If Googlebot receives the
+   challenge page instead of your article, see
+   [Security](/self-hosting/security/).
+3. **Is the sitemap reachable and current?** Open `/sitemap.xml`, then one of the
+   files it lists.
+4. **What does the console say?** In Google Search Console, *Pages → Why pages
+   aren't indexed* distinguishes a technical problem (blocked, redirected) from a
+   judgement about the content (*crawled — currently not indexed*), which no
+   configuration will fix.

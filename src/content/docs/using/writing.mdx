@@ -14,8 +14,19 @@ support — type Markdown and it formats as you go, or use the toolbar.
 | --- | --- |
 | **Title** | Plain text. Used for the page title, share cards, and federated `name`. |
 | **Body** | Rich text: headings, bold, italic, links, lists, quotes, code blocks, images. |
+| **Description** | One line, up to 150 characters. Optional. |
 | **Tags** | Free-form. Readers follow tags, so they are how a post gets discovered beyond your followers. |
-| **Language** | Used by readers' feed language filters. |
+| **Language** | Used by readers' feed language filters, and declared to search engines. |
+
+**Description** is the sentence shown under your title in search results and in
+link previews on the fediverse and elsewhere. Leave it blank and the opening
+lines of the body are used instead — which works, but often cuts mid-sentence.
+It is the one field that decides whether someone clicks a result, so it is worth
+the few seconds.
+
+**Language** defaults to whatever you last published in, falling back to your
+browser's language. It is declared on the page, so a post written in one language
+is not offered to people searching in another.
 
 Two buttons: **Save draft** and **Publish**. The editor tracks unsaved changes
 and warns you before you navigate away with work in progress.
@@ -41,8 +52,19 @@ Three ways to add one:
 - Use the toolbar's image button.
 
 Uploads go to the instance's `uploads` volume and are served from your own
-domain — no third-party image host. Once placed, an image can be **resized by
-dragging its corner**.
+domain — no third-party image host. Images are downscaled and re-encoded to WebP
+in your browser before uploading, so a phone photo does not arrive at full size.
+Once placed, an image can be **resized by dragging its corner**.
+
+### Alt text
+
+Select an image and an **Alt** button appears on it. That description is read
+aloud to people using a screen reader, shown if the image fails to load, and is
+the only thing a search engine can tell about the picture.
+
+The button stays visible and marked while the description is missing, so you can
+see at a glance which images still need one. Leave it empty for an image that is
+purely decorative — that is a valid answer, and the correct markup for it.
 
 <Callout type="tip">
 Cover images and in-body images are part of your instance's disk usage. That is

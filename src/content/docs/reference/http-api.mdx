@@ -179,7 +179,10 @@ revoke tokens. Full reference in
 | `GET` | `/api/instance/tls-check` | Whether a hostname may be issued a certificate |
 | `POST` | `/api/setup` | Complete the first-run wizard |
 | `POST` | `/api/setup/test-email` | Send a test email during setup |
-| `GET` | `/api/seo`, `/api/seo/sitemap-entries` | SEO metadata and sitemap data |
+| `GET` | `/api/seo` | Indexing flag and verification tokens (the IndexNow key is withheld) |
+| `GET` | `/api/seo/sitemap-entries` | Profiles, tags, and public lists for the sitemap, plus the post count |
+| `GET` | `/api/seo/sitemap-posts?page=N` | One page of published local posts for the sitemap |
+| `GET` | `/api/seo/indexnow-key/:key` | Whether `key` is this instance's IndexNow key |
 
 Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).
