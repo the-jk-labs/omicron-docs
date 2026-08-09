@@ -119,6 +119,30 @@ The challenge service could not determine the client IP. Its logs will say
 `X-Real-Ip header is not set`. Caddy supplies that header, so this means Caddy is
 running an older Caddyfile — recreate once with the command above.
 
+## Link previews
+
+**A shared link shows the domain and the raw URL instead of a card.**
+The fetcher never parsed the page. Fetch it the way the app does and compare:
+
+```bash
+curl -sA 'WhatsApp/2.23.20.0 A' https://your-domain/@you/your-post \
+  | grep -o '<meta property="og:[a-z]*" content="[^"]*"'
+```
+
+If the tags are missing and the response is small, the
+[scraper shield](/self-hosting/security/) served a challenge page instead of the
+article — its title is *"Making sure you're not a bot!"*. If the tags are there,
+the fetcher's own cache is the likely culprit: preview caches are keyed by URL,
+so a card built while the site was down or mid-upgrade sticks. Share the link
+with a query string appended (`?v=2`) to force a fresh fetch — if the card is
+correct then, it was cached.
+
+**The card has a title and description but no image.**
+Check the `og:image` URL directly: it must return `200`, an `image/*`
+content-type, and be under about 600 KB. Then check it is not blocked — a
+crawler reads `robots.txt` before fetching an image, and an image under a
+disallowed path is silently skipped.
+
 ## Data
 
 **I ran `docker compose down -v`.**

@@ -86,6 +86,32 @@ have been recreated once with the new Caddyfile — see
 [Upgrading](/self-hosting/upgrading/).
 </Callout>
 
+## Media
+
+Optional. Controls where writers can search for a post banner from inside the
+editor.
+
+**Openverse** is always available and needs nothing configured — no account, no
+key. Every instance has working photo search out of the box.
+
+**Unsplash** is opt-in, and opt-in by necessity: Unsplash issues a key per
+registered application and has no anonymous mode, so unlike Openverse it cannot
+work untouched. Create a free app at
+[unsplash.com/oauth/applications](https://unsplash.com/oauth/applications) and
+paste its **Access Key** here to add Unsplash as a second tab in the picker.
+Their demo tier allows 50 searches an hour **across the whole instance**, shared
+by every writer on it.
+
+The key is **write-only**: the panel reports whether one is set and never reads
+it back to the browser. To change it, enter the new one; to turn Unsplash off,
+remove it — Openverse keeps working either way.
+
+<Callout type="note">
+Searches are proxied through your server, never called from the reader's
+browser. The key does not leave the instance, which is also what Unsplash's API
+terms require.
+</Callout>
+
 ## Analytics and discoverability
 
 The admin settings also cover instance-level analytics behaviour and everything
