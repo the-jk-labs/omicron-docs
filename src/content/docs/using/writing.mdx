@@ -15,6 +15,7 @@ support — type Markdown and it formats as you go, or use the toolbar.
 | **Title** | Plain text. Used for the page title, share cards, and federated `name`. |
 | **Body** | Rich text: headings, bold, italic, links, lists, quotes, code blocks, images. |
 | **Description** | One line, up to 150 characters. Optional. |
+| **Banner** | The image at the top of the post and in link previews. Optional. |
 | **Tags** | Free-form. Readers follow tags, so they are how a post gets discovered beyond your followers. |
 | **Language** | Used by readers' feed language filters, and declared to search engines. |
 
@@ -27,6 +28,57 @@ the few seconds.
 **Language** defaults to whatever you last published in, falling back to your
 browser's language. It is declared on the page, so a post written in one language
 is not offered to people searching in another.
+
+## Banner
+
+The banner is the wide image at the top of a published post. It is also the
+picture that shows when the link is shared — the Open Graph image a chat app or
+social network puts on the card — and the image remote instances render for the
+post in the fediverse.
+
+Picking one is optional. **Leave it alone and the first image in your body is
+used**, which is what most posts want. The picker previews that fallback and
+marks it *From your post*, so you can always see what will be published.
+
+Two ways to set one deliberately:
+
+- **Upload** — your own image, from your machine.
+- **Free photos** — search openly-licensed stock photography without leaving
+  the editor.
+
+**Remove** clears the choice rather than the picture: the body's first image
+takes over again, and the preview updates to show it.
+
+<Callout type="note" title="A fallback is not a choice">
+Because the fallback is resolved when the post is *read*, reordering your images
+later changes the banner to match. Once you pick a banner explicitly it stays
+put, whatever you do to the body.
+</Callout>
+
+### Free photos
+
+**Openverse** is searched by default and needs no setup — it indexes openly
+licensed images from Flickr, Wikimedia Commons, museums and others. Results are
+limited to photos that are **commercially usable and modifiable**, because an
+instance may carry sponsorship and the layout crops every banner to 16:9, which
+is a derivative work. Photos that could not be used on those terms are never
+offered.
+
+If your admin has added an **Unsplash** key ([Admin panel](/self-hosting/admin-panel/#media)),
+Unsplash appears as a second tab.
+
+Whichever you use, **the credit is filled in for you** and printed under the
+banner: the photographer, where the photo came from, and — for a Creative
+Commons image — the licence, each linking out. That attribution is the condition
+these photos are offered under, so it is stored on the post rather than
+reconstructed later, and it travels with the post if you edit it.
+
+<Callout type="tip" title="Uploads are converted for you">
+An uploaded banner is stored as WebP for the page, and served as a JPEG copy to
+link-preview crawlers, several of which quietly refuse WebP. You do not have to
+think about formats — but it is why a shared card and the page can reference
+slightly different files.
+</Callout>
 
 Two buttons: **Save draft** and **Publish**. The editor tracks unsaved changes
 and warns you before you navigate away with work in progress.

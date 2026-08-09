@@ -58,6 +58,18 @@ Documented in full in [Discoverability](/self-hosting/discoverability/). The
 IndexNow key appears only here — the public `/api/seo` withholds it, since it is
 what authorises submissions for the domain.
 
+## Media
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/unsplash` | Whether an Unsplash key is configured |
+| `PUT` | `/api/admin/unsplash` | Set the key, or clear it with `null` |
+
+Both return `{ "configured": boolean }` and nothing more — the key is never read
+back, so it cannot end up in a browser cache or a screenshot. Clearing it turns
+Unsplash off; Openverse needs no key and keeps working. See
+[Admin panel](/self-hosting/admin-panel/#media).
+
 ## Email
 
 | Method | Path | Purpose |

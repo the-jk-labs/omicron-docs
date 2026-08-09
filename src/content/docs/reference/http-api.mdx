@@ -153,6 +153,36 @@ Federated equivalents, keyed by handle (`user@domain`):
 | --- | --- | --- |
 | `POST` | `/` | Upload a file |
 | `GET` | `/:file` | Serve an uploaded file |
+| `GET` | `/og/:id.jpg` | A JPEG copy of an upload, for link-preview crawlers |
+
+`/og/:id.jpg` takes the id of an existing upload — whatever its stored format —
+and returns it as a JPEG fitted inside 1200×630, generated on first request and
+cached on disk. It exists because uploads are stored as WebP, which several
+preview crawlers refuse, and because a share image has to be a format every one
+of them reads. Unauthenticated by necessity: the caller is a crawler with no
+session.
+
+## Photos — `/api/photos`
+
+Free-photo search for the editor's banner picker. **Signed in only** — one
+provider spends an instance-wide quota.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/providers` | Which providers this instance can search, in order |
+| `GET` | `/search?provider=&q=&page=` | Search one provider |
+| `POST` | `/use` | Tell a provider one of its photos was used |
+
+`/providers` is never empty: Openverse needs no credentials, so it is always
+present. Unsplash joins it only when an admin has configured a key. Results from
+either provider come back in one shape, carrying the attribution to store with
+the post.
+
+`/use` exists for Unsplash's API terms, which require a per-photo call when an
+image is actually used; it is a no-op for providers that ask for nothing.
+Search carries its own per-user rate limit on top of the general one, because a
+`GET` is not covered by the write throttle and both providers are shared
+resources.
 
 ## Webhooks — `/api/webhooks`
 
