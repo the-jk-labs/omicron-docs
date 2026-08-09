@@ -1,0 +1,40 @@
+# Dependency updates.
+#
+# Security advisories were being raised against this repository with nothing
+# opening a fix for them, so an alert sat open indefinitely — and an advisory
+# nobody acts on is indistinguishable from one nobody noticed. Dependabot now
+# raises the pull request itself.
+#
+# It runs on GitHub's infrastructure, which matters here: regenerating
+# pnpm-lock.yaml needs registry access that a contributor's sandbox may not
+# have, and the lockfile must be produced by the same pnpm the CI pins
+# (packageManager in package.json) or `pnpm install --frozen-lockfile` rejects
+# it. Dependabot handles both.
+#
+# Security fixes are separate from this file and arrive whether or not a
+# schedule is configured; the weekly run below is for ordinary version drift,
+# grouped so an upgrade is one review rather than a dozen.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      astro:
+        patterns:
+          - "astro"
+          - "@astrojs/*"
+      dev-tooling:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(ci)
