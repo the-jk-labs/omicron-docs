@@ -140,6 +140,10 @@ Handled automatically, with nothing to configure:
 
 - **One canonical URL per page**, always on the instance's configured domain, so
   an article reached through an alias hostname still has a single address.
+- **Permanent redirects to it.** An article's address is built from its title, so
+  retitling one moves it; the address it left `308`s to the new one rather than
+  disappearing, as does any older form of the link. Crawlers follow that and
+  carry the ranking over instead of re-learning the page from nothing.
 - **The language a post was written in**, on `<html lang>` and in the structured
   data, taken from the author's language selection.
 - **Structured data** — `BlogPosting` for a post (with author, dates, language,
