@@ -146,10 +146,36 @@ every instance in the network processes it. Treat publishing as public and
 permanent.
 </Callout>
 
+## The post's URL
+
+A published post lives at your handle plus its title:
+
+```
+https://your-domain/@handle/europe-is-ditching-visa-and-mastercard
+```
+
+The title is lowercased, punctuation becomes dashes, and letters outside ASCII
+are romanised — `Çox yoruldum, dağa daşa sözünüzü` becomes
+`cox-yoruldum-daga-dasa-sozunuzu`. Publish two posts under the same title and
+the second gets a `-2`.
+
+Only the Latin alphabet is romanised. A title written entirely in another script
+— Cyrillic, Greek, Arabic, CJK — leaves nothing to build a readable URL from, so
+the post is addressed by a short id instead (`/@handle/9e962281`). It is a
+working, permanent URL; it just does not spell out the title.
+
+Untitled drafts have no public URL at all.
+
 ## Editing and deleting
 
 Edit a published post and readers on your instance see the change immediately.
 Deleting it removes it locally and federates the deletion.
+
+Editing the **title** changes the post's URL. The old address keeps working — it
+redirects permanently to the new one — so a link you have already shared, or one
+someone else has bookmarked, still arrives. That old address is also retired: no
+later post of yours can be given it, so a link can never quietly start pointing
+at different writing.
 
 ## Comments
 

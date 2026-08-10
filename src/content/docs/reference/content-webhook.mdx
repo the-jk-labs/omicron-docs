@@ -53,7 +53,7 @@ The token may travel in either header — `X-Webhook-Secret: <token>` or
 | `body` | string | on create | Markdown. Rendered to sanitized HTML on write. |
 | `description` | string | no | Up to 500 characters. Defaults to the first ~150 characters of the body. |
 | `banner` | string | no | Absolute `http(s)` URL of a cover image, hosted by you. |
-| `slug` | string | no | Stable key for this document. Defaults to a slug of the title. |
+| `slug` | string | no | Stable key for this document — **not** the post's URL. Defaults to a slug of the title. |
 | `tags` | string[] | no | Up to 5 after normalisation. Omit to leave existing tags alone; `[]` clears them. |
 | `language` | string | no | BCP-47 primary subtag, e.g. `en`, `tr`. Drives the reader's language filter. |
 | `status` | string | no | `published` (default) or `draft`. |
@@ -72,6 +72,14 @@ converge on one post.
 Keys are scoped to **you**, not to the instance. Another writer publishing their
 own `hello-world` never collides with yours, and no token can address, read, or
 overwrite a post belonging to a different account.
+
+<Callout type="note" title="The key is not the URL">
+`slug` names the document inside your CMS and is never shown to a reader. The
+post's public address is built from its **title** — see
+[The post's URL](/using/writing/#the-posts-url). The two are independent: a
+document keyed `doc-42` still gets a readable permalink, and changing one does
+not change the other.
+</Callout>
 
 <Callout type="tip" title="Send a stable slug">
 Without `slug`, the key is derived from the title, so renaming a document
