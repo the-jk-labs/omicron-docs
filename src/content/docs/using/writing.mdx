@@ -80,8 +80,8 @@ think about formats — but it is why a shared card and the page can reference
 slightly different files.
 </Callout>
 
-Two buttons: **Save draft** and **Publish**. The editor tracks unsaved changes
-and warns you before you navigate away with work in progress.
+Two buttons: **Save draft** and **Publish** — though the composer saves on its
+own as you write. See [Drafts](#drafts).
 
 ## Markdown
 
@@ -131,6 +131,34 @@ what the "grows with uploads" note in
 - never publicly readable,
 - never federated,
 - reopenable — saving again updates the same post rather than creating a copy.
+
+### Autosave
+
+The composer saves as you write. A save runs a couple of seconds after you stop
+typing, and at least every half-minute if you never stop, so a closed tab or a
+lost connection costs you seconds of work rather than an afternoon.
+
+The header tells you where you stand: *Saving…*, then *Saved just now*, ageing
+into *Saved 4 minutes ago* and a clock time after a day. It stays quiet until
+the first save — an empty composer has nothing to store, so nothing is written
+until you have given the post a title, some body text, a tag, or a banner.
+
+The first autosave **creates the draft**, and its address changes to
+`/compose?id=…` at that moment. Reload, or reopen the tab tomorrow, and you
+continue that same draft rather than starting a second one.
+
+Leaving the composer by a link saves first, then follows the link. The browser's
+"leave this page?" warning now only appears if you close or reload the tab
+during the couple of seconds before a save has run, or if a save has actually
+failed — in which case the editor tells you, keeps retrying, and asks before
+letting you leave.
+
+<Callout type="note" title="Published posts are not autosaved">
+Autosave is for drafts. Editing a post that is already published keeps its
+explicit **Save** button, because every save of a published post re-delivers it
+to remote followers and re-notifies search engines — you should decide when
+readers see a change, not a timer.
+</Callout>
 
 ## Publishing
 
