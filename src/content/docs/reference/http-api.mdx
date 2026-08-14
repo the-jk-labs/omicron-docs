@@ -69,6 +69,7 @@ These sit at the root, not under `/api`.
 | `PATCH` | `/:id` | Update a post |
 | `DELETE` | `/:id` | Delete a post |
 | `POST` / `DELETE` | `/:id/like` | Like / unlike |
+| `POST` / `DELETE` | `/:id/recommend` | Recommend / un-recommend (federates as `Announce`/`Undo(Announce)`) |
 | `GET` | `/:id/comments` | List comments |
 | `POST` | `/:id/comments` | Add a comment |
 | `PATCH` / `DELETE` | `/:id/comments/:commentId` | Edit / delete a comment |
@@ -98,6 +99,7 @@ These sit at the root, not under `/api`.
 | `GET` | `/suggested` | Suggested accounts |
 | `GET` | `/:username` | A profile |
 | `GET` | `/:username/followers`, `/:username/following`, `/:username/posts` | Their collections |
+| `GET` | `/:username/recommendations` | Posts they've recommended |
 | `POST` / `DELETE` | `/:username/follow` | Follow / unfollow |
 | `POST` / `DELETE` | `/:username/mute` | Mute / unmute |
 | `POST` / `DELETE` | `/:username/block` | Block / unblock |
@@ -110,6 +112,7 @@ Federated equivalents, keyed by handle (`user@domain`):
 | --- | --- | --- |
 | `GET` | `/users/:handle` | Resolve and fetch a remote profile |
 | `GET` | `/users/:handle/posts` | Their posts, as cached locally |
+| `GET` | `/users/:handle/recommendations` | Posts they've recommended (recorded from inbound `Announce`) |
 | `POST` / `DELETE` | `/users/:handle/follow` | Follow / unfollow |
 | `POST` / `DELETE` | `/users/:handle/mute` | Mute / unmute |
 | `POST` / `DELETE` | `/users/:handle/block` | Block / unblock |
