@@ -32,7 +32,9 @@ instance.
 ## What works across the network
 
 - **Follow / Undo Follow** — in both directions.
-- **Like** and **Announce** (boost) — counted in your dashboard.
+- **Recommend / Undo Recommend** — Omicron's product name for `Announce`/`Undo
+  (Announce)` (a "boost" or "repost" elsewhere). Recommending on Omicron shows up
+  as a boost on Mastodon and vice versa; see [Recommending](/using/reading/#recommending).
 - **Replies** — federated replies land alongside local comments.
 - **Delete** — honoured by well-behaved servers.
 - **Profile discovery** — WebFinger resolves your handle from anywhere.
@@ -59,7 +61,8 @@ The honest test is an account on another server:
 2. Confirm the follow is accepted (it should be, immediately, unless you require
    approval).
 3. Publish a post and confirm it arrives.
-4. Like and reply from there, and confirm both appear on your side.
+4. Reply and boost it from there, and confirm both appear on your side (the
+   boost as a recommendation on your reader's profile, credited to them).
 5. Delete the post and confirm it disappears there.
 
 By hand:

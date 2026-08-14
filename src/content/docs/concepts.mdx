@@ -34,10 +34,9 @@ domain must be set first and the change applies on restart.
 | Activity | What it means here |
 | --- | --- |
 | `Follow` | Someone subscribes to one of your writers. Inbound follows are auto-accepted (unless the account requires approval). |
-| `Create(Article/Note)` | A new post is delivered to your followers' inboxes. |
-| `Like` | A like on a post, counted in the writer dashboard. |
-| `Announce` | A boost/repost. |
-| `Undo` | Reverses a previous Follow, Like, or Announce. |
+| `Create(Article)` | A new post is delivered to your followers' inboxes. |
+| `Announce` | A boost/repost — Omicron's UI calls this **Recommend**. |
+| `Undo` | Reverses a previous Follow or Announce. |
 
 See [How federation works](/federation/overview/) for the full picture.
 

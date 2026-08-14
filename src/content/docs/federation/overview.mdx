@@ -44,10 +44,9 @@ Other servers POST activities to an actor's inbox, or to the **shared inbox** at
 | Incoming | What Omicron does |
 | --- | --- |
 | `Follow` | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept` |
-| `Create` (Note/Article) | Stores the post or reply and shows it in the appropriate feed |
-| `Like` | Records the like; it counts in the writer dashboard |
-| `Announce` | Records the boost |
-| `Undo` | Reverses the referenced Follow, Like, or Announce |
+| `Create` (Article) | Stores the post and shows it in the appropriate feed. Microblog `Note`s are ignored — see [Compatibility](/federation/compatibility/) |
+| `Announce` | Records a **recommendation**: caches the boosted Article if not already fetched, and notifies its local author. Surfaces on the booster's local followers' For you feed — see [Recommending](/using/reading/#recommending) |
+| `Undo` | Reverses the referenced Follow or Announce |
 | `Delete` | Removes the referenced remote content |
 
 Inbound requests are signature-verified by Fedify, rate-limited per source IP,
@@ -61,7 +60,8 @@ Publishing a post enqueues a `Create` activity for delivery to each remote
 follower's inbox. Delivery is asynchronous: a slow or unreachable remote server
 never blocks the user's request, and Fedify retries.
 
-The same path carries `Accept`, `Like`, `Undo`, `Delete`, and profile updates.
+The same path carries `Accept`, `Announce` (recommending a post fans it out to
+your own remote followers as a boost), `Undo`, `Delete`, and profile updates.
 
 See [Delivery and queues](/federation/delivery/).
 

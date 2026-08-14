@@ -11,13 +11,36 @@ Three tabs:
 
 | Tab | Shows |
 | --- | --- |
-| **For you** | Posts from accounts and tags you follow |
+| **For you** | Posts from accounts and tags you follow, plus posts they recommend |
 | **Local** | Everything published on this instance |
 | **Global** | Local posts plus what has arrived from the wider fediverse |
 
 Pick your default tab in **Settings → Reading**. There is no engagement-ranked
 algorithm — ordering is chronological, and "For you" is simply the union of what
 you chose to follow.
+
+## Recommending
+
+**Recommend** — the icon next to Like and Comment — reposts a post to your own
+followers. It federates as a standard ActivityPub `Announce`, so it interoperates
+with a boost on Mastodon and similar software in both directions: recommending a
+post notifies your followers on other instances, and someone boosting your post
+from Mastodon shows up as a recommendation here.
+
+A recommended post appears in the recommender's followers' **For you** feed —
+credited to whoever recommended it, sorted by when they recommended it rather
+than when it was originally published — and on the recommender's own profile, in
+a **Recommendations** tab. It never appears on **Local** or **Global**: those two
+list posts by their own publish time and are unaffected by anyone recommending
+them.
+
+<Callout type="note">
+Recommendations are not deduplicated against anything else already reaching a
+follower's feed. If they already see a post because they follow its author, and
+someone else they follow recommends the same post, it appears twice — once for
+each reason, the same way a Mastodon boost of something already in your
+timeline shows up as its own line.
+</Callout>
 
 ### Language filtering
 
@@ -67,9 +90,9 @@ if your instance has never seen them before.
 
 ## Notifications
 
-`/notifications` collects likes, comments, new followers, and follow requests —
-local and federated in one list. There is an unread count in the header, and you
-can mark items or the whole list as read.
+`/notifications` collects likes, recommendations, comments, new followers, and
+follow requests — local and federated in one list. There is an unread count in
+the header, and you can mark items or the whole list as read.
 
 ## Reading lists
 
