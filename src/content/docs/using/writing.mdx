@@ -15,7 +15,7 @@ support — type Markdown and it formats as you go, or use the toolbar.
 | **Title** | Plain text. Used for the page title, share cards, and federated `name`. |
 | **Body** | Rich text: headings, bold, italic, links, lists, quotes, code blocks, images. |
 | **Description** | One line, up to 150 characters. Optional. |
-| **Banner** | The image at the top of the post and in link previews. Optional. |
+| **Banner** | The image in the feed, link previews, and federation — and, if you pick one, at the top of the post itself. Optional. |
 | **Tags** | Free-form. Readers follow tags, so they are how a post gets discovered beyond your followers. |
 | **Language** | Used by readers' feed language filters, and declared to search engines. |
 
@@ -31,14 +31,18 @@ is not offered to people searching in another.
 
 ## Banner
 
-The banner is the wide image at the top of a published post. It is also the
-picture that shows when the link is shared — the Open Graph image a chat app or
-social network puts on the card — and the image remote instances render for the
-post in the fediverse.
+The banner is the picture that shows when the link is shared — the Open Graph
+image a chat app or social network puts on the card — the image remote
+instances render for the post in the fediverse, and the thumbnail readers see
+beside it in the feed. Pick one and it is also the wide image at the top of the
+published post itself.
 
 Picking one is optional. **Leave it alone and the first image in your body is
-used**, which is what most posts want. The picker previews that fallback and
-marks it *From your post*, so you can always see what will be published.
+used** for the feed, link previews, and federation — which is what most posts
+want. The picker previews that fallback and marks it *From your post*, so you
+can always see what will be published. The post's own page is the one place
+that does not fall back: with no banner chosen, it opens straight into your
+body, images and all, rather than promoting one of them to a hero above it.
 
 Two ways to set one deliberately:
 
@@ -46,13 +50,17 @@ Two ways to set one deliberately:
 - **Free photos** — search openly-licensed stock photography without leaving
   the editor.
 
-**Remove** clears the choice rather than the picture: the body's first image
-takes over again, and the preview updates to show it.
+**Remove** clears the choice rather than the picture: the feed, link previews,
+and federation fall back to the body's first image again, and the preview
+updates to show it — but the post's own page goes back to showing no hero at
+all.
 
 <Callout type="note" title="A fallback is not a choice">
 Because the fallback is resolved when the post is *read*, reordering your images
-later changes the banner to match. Once you pick a banner explicitly it stays
-put, whatever you do to the body.
+later changes what the feed, link previews, and federation use. Once you pick a
+banner explicitly it stays put, whatever you do to the body. The post's own
+page never uses the fallback, so this only matters for how the post looks
+elsewhere.
 </Callout>
 
 ### Free photos
