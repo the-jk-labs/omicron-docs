@@ -104,7 +104,7 @@ anywhere. The full account, including what is deliberately never collected, is i
 ## Keeping up to date
 
 ```bash
-git pull && docker compose up -d --build
+git pull && docker compose up -d --build && docker image prune -f && docker builder prune -f
 ```
 
 Pull and rebuild regularly for security fixes, back up before upgrades, and test
