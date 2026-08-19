@@ -19,8 +19,8 @@ The master switch, **on** by default.
 | **Off** | `robots.txt` disallowing everything, and `noindex` on every page. |
 
 Turn it off for a private instance, a staging copy, or anything you do not want
-appearing in search results. Private areas — settings, drafts, the dashboard,
-admin, search results — are never indexed either way.
+appearing in search results. Private areas — settings, your posts, the
+dashboard, admin, search results — are never indexed either way.
 
 <Callout type="note" title="Turning it off does not remove what is already indexed">
 `noindex` tells an engine to drop a page the next time it fetches it. Pages
@@ -48,7 +48,9 @@ tag, or list it is the newest thing that page lists.
 
 **What is excluded, and why:**
 
-- **Drafts** — not public.
+- **Drafts and scheduled posts** — not public. A scheduled post enters the
+  sitemap when it publishes, not when it is scheduled; listing it earlier would
+  hand a crawler the URL, title, and author of something nobody can read yet.
 - **Posts from other instances** — they belong to the instance that published
   them. Serving them here would compete with the original; those pages are
   additionally marked `noindex` for the same reason.
@@ -67,9 +69,9 @@ console keeps polling the shape it first saw and will not notice on its own.
 
 Generated from the indexing switch — never a file you edit. When indexing is on
 it allows crawling, points at the sitemap, and disallows the paths that should
-never be indexed: `/compose`, `/drafts`, `/dashboard`, `/settings`, `/admin`,
-`/api/`, `/search`, `/notifications`, `/follow-requests`, and the sign-in and
-setup screens.
+never be indexed: `/compose`, `/posts/manage`, `/drafts`, `/dashboard`,
+`/settings`, `/admin`, `/api/`, `/search`, `/notifications`,
+`/follow-requests`, and the sign-in and setup screens.
 
 `/search` is disallowed deliberately. Every distinct `?q=` is a distinct URL, so
 one discovered search link lets a crawler generate them without end, each
@@ -117,8 +119,10 @@ moment a post is published or edited, instead of waiting to be crawled.
 
 It is off by default because enabling it sends your post URLs to those
 companies' servers on every publish. Nothing else is sent — no post content, no
-reader data. Only public posts by public accounts are submitted: never drafts,
-private or suspended accounts, or posts from other instances. Nothing is
+reader data. Only public posts by public accounts are submitted: never drafts or
+scheduled posts, private or suspended accounts, or posts from other instances.
+A scheduled post is submitted when it goes live, on the same path as any other
+publish. Nothing is
 submitted at all while indexing is switched off.
 
 Switching it on generates a key and serves it at

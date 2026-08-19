@@ -65,8 +65,10 @@ These sit at the root, not under `/api`.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/` | List posts |
-| `POST` | `/` | Create a post (draft or published) |
+| `POST` | `/` | Create a post (draft, scheduled, or published) |
 | `GET` | `/drafts` | The current user's drafts |
+| `GET` | `/mine?status=` | The current user's posts in one state — `draft`, `scheduled`, or `published` |
+| `GET` | `/mine/counts` | How many the current user holds in each state |
 | `GET` | `/trending` | Trending posts |
 | `GET` | `/by/:username/:slug` | A single post by its public URL |
 | `GET` | `/:id` | A single post |

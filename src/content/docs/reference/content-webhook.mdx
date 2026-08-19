@@ -56,7 +56,7 @@ The token may travel in either header — `X-Webhook-Secret: <token>` or
 | `slug` | string | no | Stable key for this document — **not** the post's URL. Defaults to a slug of the title. |
 | `tags` | string[] | no | Up to 5 after normalisation. Omit to leave existing tags alone; `[]` clears them. |
 | `language` | string | no | BCP-47 primary subtag, e.g. `en`, `tr`. Drives the reader's language filter. |
-| `status` | string | no | `published` (default) or `draft`. |
+| `status` | string | no | `published` (default) or `draft`. Scheduling is not available here — see below. |
 
 "On create" means the first request that publishes a given document must carry a
 `title` and a `body`. Once the post exists, every field is optional — see
@@ -244,6 +244,13 @@ On top of the usual title, body, and tags:
 Re-sending an already-published post delivers an `Update(Article)` so remote
 copies refresh. Flipping a published post to `"status": "draft"` tombstones the
 copies already delivered.
+
+<Callout type="note" title="Scheduling is a composer feature, not a webhook one">
+`status` takes `draft` and `published` only. A sending system already knows what
+time it is, so the useful way to schedule from a CMS is to hold the document and
+send it when it is due — rather than upload it early and ask Omicron to sit on
+it. Posts scheduled in the composer are unaffected by anything sent here.
+</Callout>
 
 ## What readers see
 
