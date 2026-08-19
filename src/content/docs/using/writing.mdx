@@ -1,6 +1,6 @@
 ---
 title: Writing posts
-description: The editor, drafts, tags, images, and what happens when you publish.
+description: The editor, drafts, scheduling, tags, images, and what happens when you publish.
 ---
 
 import Callout from "@/components/Callout.astro";
@@ -89,7 +89,9 @@ slightly different files.
 </Callout>
 
 Two buttons: **Save draft** and **Publish** — though the composer saves on its
-own as you write. See [Drafts](#drafts).
+own as you write. The arrow beside **Publish** also offers **Schedule**, which
+sets a time and lets the instance publish for you. See [Drafts](#drafts) and
+[Scheduling a post](#scheduling-a-post).
 
 ## Markdown
 
@@ -132,9 +134,17 @@ what the "grows with uploads" note in
 [Requirements](/self-hosting/requirements/) refers to.
 </Callout>
 
+## Your posts
+
+Everything you have written lives at **`/posts/manage`**, under three tabs:
+**Drafts**, **Scheduled**, and **Published**. Opening it without naming a tab
+takes you to the first one that has something in it.
+
+`/drafts` still works and redirects here.
+
 ## Drafts
 
-**Save draft** stores the post privately at **`/drafts`**. Drafts are:
+**Save draft** stores the post privately. Drafts are:
 
 - never publicly readable,
 - never federated,
@@ -181,6 +191,59 @@ Once a post is delivered, remote servers hold their own copy. Deleting it sends 
 every instance in the network processes it. Treat publishing as public and
 permanent.
 </Callout>
+
+A post is dated from the moment it goes live, not from when you started its
+draft. A draft begun a fortnight ago and published today is dated today, and
+appears at the top of the timeline rather than a fortnight down it. Editing a
+post that is *already* published does not re-date it — that is what the
+"last updated" date records.
+
+## Scheduling a post
+
+Use the arrow beside **Publish** and choose **Schedule**. Pick a date and a
+time, and the instance publishes the post for you.
+
+Until then it behaves exactly like a draft: private, not federated, absent from
+every feed, tag page, search result, your public profile, and the sitemap. A
+direct link to it returns "not found" for everyone but you.
+
+The picker offers **In an hour**, **Tomorrow 09:00**, and **Next Monday 09:00**
+alongside the calendar, and confirms the choice in full before you commit —
+`Publishes Saturday, August 22, 2026 at 05:25 · in 2 days`.
+
+<Callout type="note" title="Times are in your timezone">
+The time you pick is read in the timezone your browser reports, and the picker
+names it beside your choice. Read the same post from another country and it
+shows the matching local time — the moment it publishes does not move.
+</Callout>
+
+### The rules
+
+| Rule | Detail |
+| --- | --- |
+| **Earliest** | One minute from now. Anything sooner is really "publish now". |
+| **Latest** | Five years out. |
+| **Title** | Required, as it is to publish. Nobody is watching when a scheduled post goes out, so it cannot be left untitled to fail then. |
+| **Timing** | The instance checks every 30 seconds, so a post goes out within about half a minute of its time. |
+
+### Changing your mind
+
+From the **Scheduled** tab, each post offers **Reschedule**, **Publish now**,
+and **Unschedule** — the last returns it to a plain draft. **Edit** reopens it
+in the composer, where the header shows its time and autosave leaves the
+schedule alone.
+
+A post that is already published cannot be scheduled. Publishing is not
+reversible into a future date; turn it back into a draft first if that is what
+you want.
+
+<Callout type="tip" title="A missed slot is not a lost post">
+If the instance is down when a post comes due, it publishes on the next start
+instead of being skipped — dated from when it actually went out, so it still
+arrives at the top of the timeline rather than buried at the time it missed.
+</Callout>
+
+You get a notification when a scheduled post goes live.
 
 ## The post's URL
 
@@ -247,7 +310,7 @@ even with protection enabled.
 
 | Yes | No |
 | --- | --- |
-| Published posts (title, body, images) | Drafts |
+| Published posts (title, body, images) | Drafts and scheduled posts |
 | Edits and deletions of published posts | Your tag list's internal state |
 | Comments and likes on federated posts | Anything from a suspended account |
 

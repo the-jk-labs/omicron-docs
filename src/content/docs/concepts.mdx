@@ -53,8 +53,9 @@ never blocks a user's request.
 ## Posts, drafts, and comments
 
 A **post** is an article: title, optional cover image, and rich body text edited
-in Tiptap with full Markdown support. Unpublished posts are **drafts** and are
-never federated or publicly readable.
+in Tiptap with full Markdown support. Unpublished posts are **drafts**, or
+**scheduled** when they carry a time for the instance to publish them at.
+Neither is federated or publicly readable until it goes live.
 
 **Comments** are replies. Local comments and federated replies land in the same
 place.
