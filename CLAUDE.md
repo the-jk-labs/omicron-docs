@@ -81,3 +81,42 @@ covered by neither licence.
 pnpm check      # astro check — 0 errors expected
 pnpm build      # includes the Pagefind index step
 ```
+
+## Git workflow (STRICT)
+
+**Never push directly to `master`.** Every change — a one-line typo fix
+included — goes through a pull request. Same rule in the Omicron app repo.
+
+```
+git checkout -b docs/short-kebab-description
+```
+
+Prefixes: `docs/`, `fix/`, `feat/`, `refactor/`, `chore/`.
+
+Run `pnpm check` and `pnpm build` before opening one. Both must be clean.
+
+### Commits
+
+One logical change per commit, with a conventional-commit subject
+(`docs: …`, `fix: …`). Split a branch into several commits when the change has
+genuinely separable parts — each one should be revertable on its own. The body
+explains **why**, not what the diff already shows.
+
+Never credit an AI assistant as author, co-author, or contributor. No
+`Co-Authored-By` trailers, no "generated with" footers, in commits or PRs.
+
+### Pull request descriptions
+
+Write them for someone who has not seen the problem. A good one covers:
+
+- **What was wrong or missing** — and where a reader would have hit it.
+- **What changed** — separating corrections of statements that were *wrong*
+  from additions that were merely absent. A doc that actively misleads is a
+  different severity from one that is incomplete; say which this is.
+- **Where the facts came from** — the file in the app repo each variable,
+  default, route, or path was verified against. Never from memory.
+- **Checks** — `pnpm check` and `pnpm build` results.
+- **Ordering** — whether it must merge after a corresponding app PR, so the
+  site never documents behaviour that has not shipped.
+
+Keep it proportionate: a typo fix needs a sentence, not a template.
