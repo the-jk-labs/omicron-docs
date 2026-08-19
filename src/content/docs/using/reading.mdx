@@ -34,6 +34,11 @@ a **Recommendations** tab. It never appears on **Local** or **Global**: those tw
 list posts by their own publish time and are unaffected by anyone recommending
 them.
 
+Recommending cannot widen who may read a post. If the original author requires
+follower approval, the recommendation only reaches the recommender's followers
+who are *also* approved followers of that author; to everyone else it is not
+shown at all. The author's own audience is what decides, not the recommender's.
+
 <Callout type="note">
 Recommendations are not deduplicated against anything else already reaching a
 follower's feed. If they already see a post because they follow its author, and
@@ -68,7 +73,9 @@ your instance has already cached from other paths.
 Tags are the discovery mechanism beyond your follow graph.
 
 - Browse a tag at `/tags/<tag>`.
-- **Follow a tag** and its posts appear in your For you feed.
+- **Follow a tag** and its posts appear in your For you feed — with the same
+  limit as anywhere else: a post by an account requiring follower approval
+  reaches you only if you are an approved follower, whatever tags it carries.
 - Manage the whole set in **Settings → Followed tags**.
 
 ## Read next
