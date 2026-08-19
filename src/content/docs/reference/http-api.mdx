@@ -30,7 +30,11 @@ publish posts and nothing else.
 - **Rate limiting.** Writes are throttled per signed-in user, or per IP when
   anonymous; reads are not throttled by the general limiter. A limited request
   gets `429` with `Retry-After`.
-- **Errors** are JSON with an appropriate status code.
+- **Errors** are JSON, always the same shape — `{"error": "…"}` — with an
+  appropriate status code. A request body that fails validation gets `400` and a
+  message naming the field, for example
+  `{"error":"displayName: Invalid input: expected string, received number"}`. A
+  body that is not valid JSON gets `400` too, not `500`.
 
 ## Health
 
