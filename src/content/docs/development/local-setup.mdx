@@ -47,11 +47,22 @@ on restart. See [Delivery and queues](/federation/delivery/).
 
 ```bash
 cd apps/backend  && deno task check && deno lint
-cd apps/frontend && npm run check
+cd apps/frontend && pnpm check
 ```
 
 `deno task check` type-checks the backend, `deno lint` covers style, and
-`npm run check` runs `svelte-check` against the frontend's TypeScript config.
+`pnpm check` runs `svelte-check` against the frontend's TypeScript config.
+
+<Callout type="note" title="Run the backend once first">
+The frontend typecheck reads the backend's serializers to verify its own API
+types still match them, so it needs the backend's npm dependencies on disk.
+`deno task dev` installs them as a side effect; `deno install` inside
+`apps/backend` does it on its own, without needing Postgres running.
+
+Skip it and `pnpm check` reports `Cannot find module 'drizzle-orm'` against
+files under `apps/backend/` rather than anything you changed. See
+[the type contract](/development/frontend/#api-types-and-the-backend-contract).
+</Callout>
 
 ## Testing federation locally
 

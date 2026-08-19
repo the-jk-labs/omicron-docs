@@ -12,7 +12,7 @@ SvelteKit (Svelte 5), Bits UI, Tailwind CSS 3.4, Tiptap, Lucide.
 | Directory | Responsibility |
 | --- | --- |
 | `src/routes/` | Pages (SSR) plus `/api/[...path]`, the reverse proxy to the backend |
-| `src/lib/api/` | Typed API client |
+| `src/lib/api/` | Typed API client, plus `contract.ts` — the compile-time check that those types still match the backend |
 | `src/lib/components/` | Application components; `Icon.svelte` is the single Lucide wrapper |
 | `src/lib/components/ui/` | Bits UI (headless) wrappers |
 | `src/lib/editor/` | Tiptap integration, lazy-loaded on `/compose` |
@@ -25,6 +25,46 @@ the session cookie is same-origin by construction.
 
 `INTERNAL_API_URL` tells the frontend how to reach the backend inside the
 container network.
+
+## API types and the backend contract
+
+`src/lib/types.ts` declares the shape of every API payload this app consumes.
+They are written by hand, on purpose: they carry the reader's half of the
+documentation — which field to build a link from, which is null and when, which
+endpoint omits which — and a generated type holds none of that.
+
+The risk in writing them by hand is drift. `src/lib/api/contract.ts` removes it.
+It imports the backend's serializers as types only and asserts that each payload
+the backend produces is assignable to the type declared for it here. Change a
+serializer in a way the frontend cannot read, and `pnpm check` fails and names
+the pair, instead of the mismatch surfacing at runtime in whichever component
+read the field.
+
+The check is one-way — backend payload must fit the frontend type:
+
+| Change | Result | |
+| --- | --- | --- |
+| Backend changes a field's type | Fails | The frontend would misread it |
+| Backend stops sending a field | Fails | The frontend expects it |
+| Frontend declares a field never sent | Fails | `undefined` at runtime |
+| Backend adds a field the UI ignores | Passes | Harmless |
+
+Requiring the two to match exactly would reject that last row, which is normal,
+and would break every type that deliberately widens across endpoints — `Post`
+has optional fields precisely because `barePost` returns a subset.
+
+<Callout type="warning" title="Backend imports must be type-only">
+The `@` alias resolves to `apps/backend/src`, and every import through it must
+be `import type`. The backend is Deno; its modules cannot be resolved at runtime
+here. Type-only imports are erased at build time (`verbatimModuleSyntax`), which
+is what keeps backend code out of the bundle — and what lets the frontend image
+build from `apps/frontend` alone, with no `apps/backend` in its context.
+</Callout>
+
+Adding a type to `types.ts` does not require an assertion, and many have none:
+the check covers the payloads a named serializer produces. Shapes built inline
+in a route handler have no named backend type to assert against, and would need
+naming in the backend first.
 
 ## UI rules
 
