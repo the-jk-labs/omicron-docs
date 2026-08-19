@@ -7,10 +7,13 @@ import Callout from "@/components/Callout.astro";
 
 ```bash
 git pull
-docker compose up -d --build      # or the equivalent podman command
+docker compose up -d --build
+docker image prune -f
+docker builder prune -f      # or the equivalent podman commands
 ```
 
-If you installed with the one-liner, re-running it does the same thing.
+If you installed with the one-liner, re-running it does the same thing —
+including the cache cleanup below.
 
 ## What happens
 
@@ -18,6 +21,10 @@ If you installed with the one-liner, re-running it does the same thing.
   no-op when the schema is already current.
 - A rebuild recreates the **containers** but never the **volumes**, so your data,
   secrets, and TLS certificates are preserved.
+- `image prune`/`builder prune` drop the previous build's now-untagged image
+  layers and build cache, so a `--build` upgrade never leaves disk usage
+  creeping up. Both only remove untagged, unused layers — never a named
+  volume — so this is safe to run every time.
 - The app version is logged on boot and exposed at `GET /version`.
 
 <Callout type="tip" title="Back up first">
