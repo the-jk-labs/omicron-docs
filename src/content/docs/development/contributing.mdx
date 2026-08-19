@@ -24,11 +24,33 @@ git clone https://github.com/the-jk-labs/omicron.git
 cd omicron
 git checkout -b your-change
 # … work …
-cd apps/backend  && deno task check && deno lint
-cd apps/frontend && npm run check
+cd apps/backend  && deno task check && deno lint && deno fmt --check && deno task test
+cd apps/frontend && pnpm check
 ```
 
+Each of these is a CI gate, so anything failing here fails the pull request
+too. CI runs more besides — dependency audits and a Docker image build.
+
 Then open a pull request describing **what changes for the user** and why.
+
+### The integration suite
+
+One CI gate is not in the list above, because it needs a database:
+
+```bash
+cd apps/backend
+DATABASE_URL=postgres://… deno task test:integration
+```
+
+It asserts on who can see what — drafts, private accounts, suspended authors —
+across feeds, tag pages, reading lists and the sitemap. Run it if you touched a
+query, a visibility predicate, or anything in `db/repositories/`. CI runs it
+against its own throwaway Postgres either way.
+
+<Callout type="warning" title="Point it at a scratch database">
+The suite truncates every table it touches before each test. Give it a database
+you do not mind losing — never your development instance.
+</Callout>
 
 ## What review looks for
 
@@ -36,6 +58,7 @@ Then open a pull request describing **what changes for the user** and why.
 | --- | --- |
 | **Layering** | Routes stay thin; no SQL outside `db/`; no HTTP inside `services/` |
 | **Repositories** | Every query is a repository function |
+| **Visibility** | A listing that reaches another user's posts applies `isPublished`, `notSuspended`, `notHidden(viewer)` and `visibleToViewer(viewer)` |
 | **Pagination** | Cursor-based on `(created_at, id)`, never `OFFSET` |
 | **UI** | Bits UI primitives and theme tokens only — no ad-hoc colours |
 | **Migrations** | Additive within a version; generated SQL committed |
