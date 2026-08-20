@@ -56,21 +56,40 @@ filter.
 ### AI-scraper protection
 
 A lightweight proof-of-work challenge
-([Anubis](https://anubis.techaro.lol)) for page loads. It is **off by default**.
+([Anubis](https://anubis.techaro.lol)) in front of the interactive half of the
+app. It is **off by default**.
 
-<Callout type="warning" title="Leave it off unless you need it">
-The challenge adds roughly a one-second interstitial for **every reader**,
-including visitors without JavaScript. Turn it on when AI crawlers are actually
-hammering your instance, not pre-emptively.
+<Callout type="note" title="What it buys, and what it does not">
+Reading is never challenged — articles, profiles, tag pages and feeds are served
+the same whether the toggle is on or off, to visitors with JavaScript and
+without. What the challenge guards is the expensive half: composing, search, the
+dashboard, admin and sign-in. So it will not stop a scraper that executes
+JavaScript from reading your posts; it stops automated traffic from spending
+your CPU. Turn it on when that traffic is actually costing you, not pre-emptively.
 </Callout>
 
-When enabled, browser-like traffic to your pages is challenged; real browsers
-solve it in about a second, most scrapers cannot. Deliberately never challenged:
+When enabled, browser-like traffic to these routes is challenged — a real browser
+solves it in about a second, most scrapers cannot:
 
+- `/compose` and `/search`
+- `/dashboard`, `/drafts`, `/posts/manage` and the post editor
+- `/settings`, `/admin`, `/notifications`, `/follow-requests`, `/lists`
+- Sign-in, registration, and password reset
+
+Deliberately never challenged:
+
+- **Reading** — the home feed, profiles, posts, tag pages and public reading
+  lists, for everyone, with or without JavaScript.
 - **Federation** — ActivityPub delivery keeps working.
-- **The API** — API clients are untouched.
-- **Feeds** — RSS keeps working.
+- **The API** — API clients are untouched, and so is everything a page loads for
+  itself: more responses, further pages of a feed, every uploaded image.
+- **Feeds and sitemaps** — RSS readers and search engines keep working.
 - **OpenGraph crawlers** — link-preview cards still render.
+- **URLs that do not exist** — a bad link gets a real 404, not an interstitial,
+  so stale URLs can drop out of search indexes.
+
+A request that does not send a browser-shaped User-Agent is never challenged
+either, on any route.
 
 The toggle applies **live**: no restart, no config file. The backend re-routes
 the app through the bundled challenge service via Caddy's internal admin API.
@@ -78,7 +97,10 @@ Per-IP rate limiting stays accurate.
 
 The challenge service always runs but only sits in the request path while the
 toggle is on. Its signing key is generated once into the `secrets` volume, so
-restarts and upgrades do not re-challenge readers who have already solved one.
+restarts and upgrades do not re-challenge anyone who has already solved one.
+
+Which routes are challenged is set by `botPolicy.yaml` at the repository root.
+It is read once at startup, so an edit needs `docker compose restart anubis`.
 
 <Callout type="note">
 On instances upgraded from before this feature shipped, the toggle needs Caddy to
