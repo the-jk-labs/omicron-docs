@@ -128,6 +128,28 @@ have been recreated once with the new Caddyfile — see
 [Upgrading](/self-hosting/upgrading/).
 </Callout>
 
+### What a visitor without JavaScript sees
+
+Solving the challenge needs JavaScript, so a visitor browsing without it — off in
+the browser, or blocked for your domain by an extension — cannot get past the
+screen. Neither can one whose browser runs JavaScript perfectly well but failed
+to fetch the challenge script.
+
+The challenge screen carries a footer line for both of them: what the screen is,
+that reading needs none of it, and a link to your home page. Beside it is an
+**Imprint** link to a longer page explaining which of the two failures a reload
+will fix.
+
+Nothing they are likely to want is behind the wall. Reading is never challenged,
+so the link out is a real way back into the site rather than an apology.
+
+To add your own support address to that explanation, edit the `impressum.page`
+body in `botPolicy.yaml` and restart:
+
+```bash
+docker compose restart anubis
+```
+
 ## Media
 
 Optional. Controls where writers can search for a post banner from inside the

@@ -144,6 +144,14 @@ check its logs for `ED25519_PRIVATE_KEY_HEX_FILE` or `generating random key`.
 Deleting the `secrets` volume also loses the key, and with it the Postgres
 password and session secret.
 
+**A visitor says the challenge page never finishes loading.**
+Solving it needs JavaScript. Either theirs is off — in the browser, or blocked
+for your domain by an extension — or the challenge script itself failed to load,
+which a reload fixes. The screen's footer says both, and links them back to your
+home page; reading is never challenged, so that link works whatever their browser
+is doing. Put your own support address in the `impressum.page` body of
+`botPolicy.yaml` if you want one on that screen.
+
 **I edited `botPolicy.yaml` and nothing changed.**
 The rules are read once at startup and the file is mounted into the container, so
 it keeps serving the old set until it restarts:
