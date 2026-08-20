@@ -73,6 +73,24 @@ It applies on restart. Run `docker compose up -d`, then check
 **`/.well-known/nodeinfo` returns 404.**
 Federation is still off, or the restart has not happened.
 
+**The instance does not appear in FediDB, instances.social, or
+fediverse.observer.**
+Those crawl `/.well-known/nodeinfo` from the public internet, follow the link in
+it, and read the document it names. Check all three answer from **outside** your
+network:
+
+```bash
+curl https://your-domain/.well-known/nodeinfo   # -> a links array, not an empty one
+curl https://your-domain/nodeinfo/2.1
+curl https://your-domain/nodeinfo/2.0
+```
+
+If all three answer here but the directory still shows nothing, the remaining
+delay is on its side: re-crawls are typically on the order of a day, and a
+directory generally has to have discovered the instance first — either because
+another server federated with it, or because the operator submitted it through
+the directory's own form.
+
 **Nobody can find `@me@my-domain` from Mastodon.**
 Check, from another machine:
 
@@ -84,6 +102,10 @@ curl -H "Accept: application/activity+json" https://your-domain/users/me
 Both must return JSON over **HTTPS on your real domain**. If the domain in the
 returned URIs is wrong, your public domain setting does not match the domain
 being served.
+
+Keep the `Accept` header on the second one. Without it that URL redirects to the
+profile page, by design — so a bare `curl -L` returns HTML and looks like a
+failure when nothing is wrong.
 
 **Posts are not reaching remote followers.**
 Delivery is queued. Check the backend logs for delivery errors, confirm the

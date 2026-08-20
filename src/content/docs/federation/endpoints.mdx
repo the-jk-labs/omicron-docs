@@ -13,12 +13,61 @@ not mounted at all and return 404.
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /.well-known/webfinger?resource=acct:{user}@{domain}` | Resolves a handle to an actor URI |
-| `GET /.well-known/nodeinfo` | NodeInfo discovery document |
-| `GET /nodeinfo/...` | Instance metadata (software, version, usage) |
+| `GET /.well-known/host-meta` | The WebFinger URL template, as XRD |
+| `GET /.well-known/host-meta.json` | The same, as JSON |
+| `GET /.well-known/nodeinfo` | Where the NodeInfo documents live |
+| `GET /nodeinfo/2.0`, `GET /nodeinfo/2.1` | Instance metadata — software, version, usage counts |
 
 WebFinger is the entry point for "search for `@alice@your-domain` on Mastodon".
+host-meta is the older step in front of it: some software asks for the WebFinger
+template rather than assuming the well-known path.
+
+**NodeInfo is what puts the instance on the map** — FediDB, instances.social and
+fediverse.observer all start at `/.well-known/nodeinfo`, read the link out of it,
+and fetch the document it names. Both schema versions are served: 2.1 is the
+current one, and 2.0 is there because a crawler written against Mastodon (which
+only ever exposed 2.0) asks for that one by name.
+
+The document is aggregate counts and nothing else — total accounts, accounts that
+signed in within the last 30 and 180 days, published local posts, responses —
+plus the software name, version, and the instance's display name. No handle,
+title, or address is in it.
+
+<Callout type="note" title="What the counts leave out">
+`localPosts` is published local posts only: no drafts, nothing waiting for a
+scheduled time, nothing from another instance, and nothing from a suspended
+account. A private account's posts **are** counted — they are still this
+instance's output, and only the number leaves. Sign-in counts are read from
+session records, so they err low rather than high: signing out deletes the row,
+and that visit is no longer remembered.
+</Callout>
 
 ## Actor
+
+An account has **two addresses**, and they are not interchangeable:
+
+| Address | For | Serves |
+| --- | --- | --- |
+| `https://your-domain/users/alice` | Software | The actor document, as JSON-LD |
+| `https://your-domain/@alice` | People | The profile page, as HTML |
+
+`/users/alice` is the identity: it is the actor's `id`, the `self` link WebFinger
+returns, and what every remote server stores and addresses. It never changes.
+`/@alice` is what a person opens, and it is what the actor publishes as its `url`
+and what WebFinger returns as `rel="profile-page"` — so a Mastodon user clicking
+through to a local author lands on the page rather than on a document meant for
+their server.
+
+Each address answers for the other rather than refusing:
+
+- `/users/alice` asked for HTML redirects to `/@alice`.
+- `/@alice` asked for `application/activity+json` (or `application/ld+json`)
+  redirects to `/users/alice`. The page also carries a
+  `<link rel="alternate" type="application/activity+json">` pointing there.
+
+The redirect on `/@alice` only fires for an unambiguous ActivityPub request —
+one where an ActivityPub type is the client's *first* preference. A browser, a
+crawler sending `*/*`, and anything ranking `text/html` first all get the page.
 
 | Endpoint | Purpose |
 | --- | --- |
@@ -29,6 +78,10 @@ WebFinger is the entry point for "search for `@alice@your-domain` on Mastodon".
 
 The actor document carries the public key remote servers use to verify your
 signatures, and the inbox endpoints they deliver to.
+
+The collections under `/users/{identifier}` are JSON-LD only. Ask one of them for
+HTML and you get `406 Not Acceptable` — there is no page equivalent of an outbox
+to redirect you to.
 
 ## Inboxes
 
@@ -61,14 +114,28 @@ curl -H "Accept: application/activity+json" https://your-domain/users/alice
 # Outbox
 curl -H "Accept: application/activity+json" https://your-domain/users/alice/outbox
 
-# Is federation on at all?
+# Is federation on at all? Also: what a directory sees first
 curl https://your-domain/.well-known/nodeinfo
+
+# The document itself — software, version, usage counts
+curl https://your-domain/nodeinfo/2.1
+```
+
+A working `/.well-known/nodeinfo` names both documents:
+
+```json
+{"links":[
+  {"rel":"http://nodeinfo.diaspora.software/ns/schema/2.0","href":"https://your-domain/nodeinfo/2.0","type":"..."},
+  {"rel":"http://nodeinfo.diaspora.software/ns/schema/2.1","href":"https://your-domain/nodeinfo/2.1","type":"..."}
+]}
 ```
 
 <Callout type="warning" title="Send the right Accept header">
-Without `Accept: application/activity+json` you will get the human-readable HTML
-profile instead of the ActivityPub document. A "the actor endpoint returns HTML"
-bug report is almost always a missing header.
+Without `Accept: application/activity+json`, `/users/alice` redirects to the
+human-readable profile page — that is deliberate, so a link someone pasted still
+lands somewhere readable. If you are inspecting the actor document, send the
+header, or `curl -L` will follow the redirect and hand you HTML. A "the actor
+endpoint returns HTML" bug report is almost always a missing header.
 </Callout>
 
 ## Non-federation public routes

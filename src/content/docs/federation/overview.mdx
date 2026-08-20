@@ -19,7 +19,14 @@ handle:  @alice@your-domain
 actor:   https://your-domain/users/alice
 inbox:   https://your-domain/users/alice/inbox
 outbox:  https://your-domain/users/alice/outbox
+profile: https://your-domain/@alice
 ```
+
+The actor URI is the identity other servers store and address. The profile is
+where the actor sends *people* — it is the actor's `url`, and the page a Mastodon
+user reaches by clicking a byline. See
+[two addresses](/federation/endpoints/#actor) for how each one answers for the
+other.
 
 Discovery starts at **WebFinger**: a remote server asked to find
 `@alice@your-domain` queries
