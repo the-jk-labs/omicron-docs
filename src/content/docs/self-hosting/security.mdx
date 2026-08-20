@@ -92,6 +92,11 @@ bandwidth and abuse mitigation, not a security control, and it does not stop a
 scraper that executes JavaScript from reading your posts — see
 [Admin panel](/self-hosting/admin-panel/).
 
+A challenged request is answered with `503` and `Retry-After`, not `200`, so an
+automated client is told the truth about what happened. Expect it in your
+monitoring; see
+[what a challenged request gets back](/self-hosting/admin-panel/#what-a-challenged-request-gets-back).
+
 Set `ANUBIS_REDIRECT_DOMAINS` if you turn it on. Without it, the endpoint that
 redeems a solved challenge will forward a reader to any domain, which lets a
 link to your instance land the visitor elsewhere. See
