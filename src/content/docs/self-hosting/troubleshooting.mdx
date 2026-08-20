@@ -152,6 +152,17 @@ home page; reading is never challenged, so that link works whatever their browse
 is doing. Put your own support address in the `impressum.page` body of
 `botPolicy.yaml` if you want one on that screen.
 
+**The challenge screen looks nothing like my site.**
+Caddy serves `anubis-theme.css` at the path the challenge page asks for; when
+that file is missing, or the Caddy container predates it, the challenge service
+answers with its own stylesheet instead and the screen reverts to its stock
+look. `git pull` restores the file, and Caddy picks it up on the next request —
+unless the container is older than the mount, in which case recreate it:
+
+```bash
+docker compose up -d --force-recreate caddy
+```
+
 **I edited `botPolicy.yaml` and nothing changed.**
 The rules are read once at startup and the file is mounted into the container, so
 it keeps serving the old set until it restarts:

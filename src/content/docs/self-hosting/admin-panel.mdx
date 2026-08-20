@@ -150,6 +150,37 @@ body in `botPolicy.yaml` and restart:
 docker compose restart anubis
 ```
 
+### What the challenge screen looks like
+
+The screen is drawn by the challenge service, not by Omicron — it answers before
+the request reaches the app — so it is not a page the admin panel can change.
+Left alone it arrives in that project's own colours, which look nothing like the
+rest of your site.
+
+Omicron replaces its stylesheet instead. `anubis-theme.css` at the repository
+root carries the app's palette, typography and dark mode, and Caddy serves it at
+the path the challenge page asks for. Edit that file to restyle the screen for
+your instance; the change shows up on the next page load, with nothing to
+restart.
+
+<Callout type="note">
+If an edit does not show up, your editor replaced the file rather than writing
+into it, and the container is still holding the old one. `docker compose up -d
+--force-recreate caddy` picks it up.
+</Callout>
+
+The mascot, the wording and the "Protected by Anubis" footer are left as the
+upstream project ships them. Custom images and custom titles are what its authors
+sell as [BotStopper](https://anubis.techaro.lol/docs/admin/botstopper).
+
+The wording is already translated, and by the challenge service rather than by
+Omicron: it reads the visitor's `Accept-Language` header and renders in whichever
+of its 25 languages matches — Polish, Italian, Turkish, Ukrainian, Chinese and
+others — falling back to English. Azerbaijani is not among them. The one part
+that stays English whatever it picks is the footer line and imprint page above,
+which are your instance's own words; translate them in `botPolicy.yaml` if your
+readers need it.
+
 ## Media
 
 Optional. Controls where writers can search for a post banner from inside the
