@@ -80,13 +80,19 @@ returning a near-empty page. That spends the crawl budget your articles need.
 Public reading lists are **not** disallowed — a robots.txt path is a prefix, and
 blocking `/lists` would take `/lists/<public-list>` with it.
 
-For the same reason `/api/uploads/` is explicitly **allowed** back, ahead of the
-`/api/` disallow. It is the one path under `/api/` that serves files rather than
-endpoints — every image an author uploads, avatars included. A post's share image
-is one of them, and the crawlers that build link cards check `robots.txt` before
-fetching an `og:image`: without the carve-out, a banner would be declared
-off-limits to the very fetchers it exists for, and cards would come out blank
-however correct the tag was.
+For the same reason two paths under `/api/` are explicitly **allowed** back,
+ahead of the `/api/` disallow:
+
+| Path | What it serves |
+| --- | --- |
+| `/api/uploads/` | Every image an author uploads, avatars included |
+| `/api/og/` | The card drawn for a post that has no image of its own |
+
+Both hold files rather than endpoints, and both are fetched by the crawlers that
+build link cards — which read `robots.txt` before fetching an `og:image`.
+Without the carve-outs a post's share image would be declared off-limits to the
+very fetchers it exists for, and cards would come out blank however correct the
+tag was.
 
 ## Search-console verification
 
@@ -149,8 +155,9 @@ Handled automatically, with nothing to configure:
   breadcrumb trail so results read *instance → author → article*.
 - **Link-preview metadata** — Open Graph and Twitter cards, with the fediverse
   author attribution Mastodon shows above a shared link. The share image is the
-  post's banner, or the first image in its body when no banner was chosen, always
-  as an absolute URL and served to crawlers as JPEG — several of them, WhatsApp
+  post's banner, or the first image in its body when no banner was chosen, or —
+  for a post with no picture at all — a card drawn from its title. Always an
+  absolute URL, and always served to crawlers as JPEG: several of them, WhatsApp
   among them, quietly show nothing for a WebP.
 - **`noindex` on federated posts and cached remote profiles.** Those pages
   reproduce content published on another instance. Left indexable, an instance
