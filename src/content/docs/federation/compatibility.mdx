@@ -77,8 +77,8 @@ curl -H "Accept: application/activity+json" https://your-domain/users/you
 Work through, in order:
 
 1. Is federation actually on? `curl localhost:8000/version` → `"federation": true`.
-2. Does `https://your-domain/.well-known/nodeinfo` return JSON from **outside**
-   your network?
+2. Does `https://your-domain/.well-known/nodeinfo` return a **non-empty** links
+   array from **outside** your network, and does the URL it names answer?
 3. Do the URIs in the actor document use `https://` and your real domain?
 4. Has the remote instance defederated your domain?
 5. Are there delivery errors in `docker compose logs backend`?

@@ -41,11 +41,16 @@ curl localhost:8000/version      # -> "federation": true
 Publicly:
 
 ```bash
-curl https://your-domain/.well-known/nodeinfo    # -> JSON
+curl https://your-domain/.well-known/nodeinfo    # -> a links array
+curl https://your-domain/nodeinfo/2.1            # -> software, version, usage
 ```
 
-A 404 there means federation is still off. The backend also logs
+A 404 on either means federation is still off. The backend also logs
 `Federation enabled (ActivityPub)` on boot.
+
+The first of those is what fediverse directories fetch, so a working answer is
+also how the instance gets listed — see
+[NodeInfo](/federation/endpoints/#discovery).
 
 Finally, the real test — search for `@yourusername@your-domain` from a Mastodon
 account and follow it. You should see the follow appear, be auto-accepted, and
@@ -57,8 +62,14 @@ your next published post arrive in that account's timeline.
 - Inbound `Follow` activities are auto-accepted (unless the account requires
   approval for followers).
 - Publishing a post enqueues delivery to every remote follower's inbox.
-- Your instance answers WebFinger, actor, followers, outbox, and NodeInfo
-  requests. See [ActivityPub endpoints](/federation/endpoints/).
+- Your instance answers WebFinger, host-meta, actor, followers, outbox, and
+  NodeInfo requests. See [ActivityPub endpoints](/federation/endpoints/).
+- It becomes visible to fediverse directories — FediDB, instances.social,
+  fediverse.observer. They read NodeInfo, which publishes aggregate counts only:
+  accounts, sign-ins in the last 30 and 180 days, published local posts, and
+  responses.
+- Each account gains a second, machine-facing address at `/users/{username}`
+  alongside its `/@{username}` profile page.
 - The federation inbox becomes a public, unauthenticated POST endpoint —
   rate-limited per source IP and capped in body size.
 
