@@ -114,6 +114,14 @@ check its logs for `ED25519_PRIVATE_KEY_HEX_FILE` or `generating random key`.
 Deleting the `secrets` volume also loses the key, and with it the Postgres
 password and session secret.
 
+**I edited `botPolicy.yaml` and nothing changed.**
+The rules are read once at startup and the file is mounted into the container, so
+it keeps serving the old set until it restarts:
+
+```bash
+docker compose restart anubis
+```
+
 **Every page load returns 500 while the shield is on.**
 The challenge service could not determine the client IP. Its logs will say
 `X-Real-Ip header is not set`. Caddy supplies that header, so this means Caddy is
@@ -129,9 +137,10 @@ curl -sA 'WhatsApp/2.23.20.0 A' https://your-domain/@you/your-post \
   | grep -o '<meta property="og:[a-z]*" content="[^"]*"'
 ```
 
-If the tags are missing and the response is small, the
-[scraper shield](/self-hosting/security/) served a challenge page instead of the
-article — its title is *"Making sure you're not a bot!"*. If the tags are there,
+If the tags are missing and the response is small, check the title: if it is
+*"Making sure you're not a bot!"*, the [scraper shield](/self-hosting/security/)
+answered instead of the article. That should not happen — post URLs are not
+challenged — so look at whether `botPolicy.yaml` has been customised. If the tags are there,
 the fetcher's own cache is the likely culprit: preview caches are keyed by URL,
 so a card built while the site was down or mid-upgrade sticks. Share the link
 with a query string appended (`?v=2`) to force a fresh fetch — if the card is

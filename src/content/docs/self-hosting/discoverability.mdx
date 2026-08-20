@@ -100,12 +100,6 @@ copy just the token value, not the whole tag.
 | [Google Search Console](https://search.google.com/search-console) | — |
 | [Yandex Webmaster](https://webmaster.yandex.com) | — |
 
-<Callout type="warning" title="Behind the AI-scraper shield, prefer DNS verification">
-If [AI-scraper protection](/self-hosting/security/) is on, a console's HTML-file
-or meta-tag check can land on the challenge page and fail. The DNS/CNAME method
-verifies against your domain records instead and needs nothing from Omicron.
-</Callout>
-
 ## IndexNow
 
 **Off by default.** When on, the instance tells participating search engines the
@@ -170,10 +164,11 @@ Check these in order.
 
 1. **Is indexing switched on?** Fetch `/robots.txt` — `Disallow: /` on its own
    means the switch is off.
-2. **Is the scraper shield challenging crawlers?** This is the failure that
-   silently nullifies everything else. In Google Search Console, use **URL
-   Inspection → Test live URL → View crawled page**. If Googlebot receives the
-   challenge page instead of your article, see
+2. **Is the scraper shield challenging crawlers?** It should not be — article
+   pages are not challenged whether the shield is on or off — so this is only
+   worth checking on an instance whose `botPolicy.yaml` has been customised. In
+   Google Search Console, use **URL Inspection → Test live URL → View crawled
+   page**. If Googlebot receives the challenge page instead of your article, see
    [Security](/self-hosting/security/).
 3. **Is the sitemap reachable and current?** Open `/sitemap.xml`, then one of the
    files it lists.

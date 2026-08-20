@@ -84,10 +84,13 @@ the inbox is rate-limited and size-capped, but you are now a network participant
 
 ## AI-scraper protection
 
-Off by default. When on, it challenges browser-like page traffic with a
-proof-of-work interstitial while leaving federation, the API, feeds, and
-OpenGraph crawlers untouched. It is a bandwidth and scraping mitigation, not a
-security control — see [Admin panel](/self-hosting/admin-panel/).
+Off by default. When on, it puts a proof-of-work interstitial in front of the
+interactive routes — composing, search, the dashboard, settings, admin, sign-in —
+and leaves alone everything a reader or a crawler fetches: articles, profiles,
+tag pages, feeds, sitemaps, the API, federation and OpenGraph crawlers. It is a
+bandwidth and abuse mitigation, not a security control, and it does not stop a
+scraper that executes JavaScript from reading your posts — see
+[Admin panel](/self-hosting/admin-panel/).
 
 Set `ANUBIS_REDIRECT_DOMAINS` if you turn it on. Without it, the endpoint that
 redeems a solved challenge will forward a reader to any domain, which lets a
