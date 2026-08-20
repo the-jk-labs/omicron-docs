@@ -172,6 +172,28 @@ preview crawlers refuse, and because a share image has to be a format every one
 of them reads. Unauthenticated by necessity: the caller is a crawler with no
 session.
 
+## Share cards — `/api/og`
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/posts/:id.jpg` | The card drawn for a post that has no image of its own |
+
+A 1200×630 JPEG carrying the post's title, its author, and the instance —
+generated on first request and cached on disk. What a link-preview crawler
+fetches as `og:image` when the post has neither a chosen banner nor an image in
+its body. Unauthenticated, like the media route above, and built from the same
+visibility check a signed-out reader gets: a draft's card is a `404`, exactly
+like the draft.
+
+Answers `302` to the instance's brand image when no card can be drawn — a
+federated copy of someone else's post, an untitled one, or a title in a script
+the bundled font has no glyphs for. A redirect rather than a `404` because an
+`og:image` that fails puts no picture on the card at all.
+
+Its own prefix rather than a path under `/api/posts/` so `robots.txt` can allow
+it by name — see [Discoverability](/self-hosting/discoverability/#robotstxt).
+Nothing but share images belongs here.
+
 ## Photos — `/api/photos`
 
 Free-photo search for the editor's banner picker. **Signed in only** — one
