@@ -173,8 +173,9 @@ Check these in order.
    means the switch is off.
 2. **Is the scraper shield challenging crawlers?** It should not be — article
    pages are not challenged whether the shield is on or off — so this is only
-   worth checking on an instance whose `botPolicy.yaml` has been customised. In
-   Google Search Console, use **URL Inspection → Test live URL → View crawled
+   worth checking on an instance whose `botPolicy.yaml` has been customised. A
+   challenged URL answers `503`, so `curl -I` on the article is the quick check;
+   in Google Search Console, use **URL Inspection → Test live URL → View crawled
    page**. If Googlebot receives the challenge page instead of your article, see
    [Security](/self-hosting/security/).
 3. **Is the sitemap reachable and current?** Open `/sitemap.xml`, then one of the

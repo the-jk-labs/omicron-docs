@@ -129,6 +129,14 @@ change, so a plain `up -d` does not apply it — recreate once:
 docker compose up -d --build --force-recreate
 ```
 
+**My uptime monitor started reporting 503.**
+Check what it is fetching. A challenged request is answered with `503` and
+`Retry-After` by design — see
+[what a challenged request gets back](/self-hosting/admin-panel/#what-a-challenged-request-gets-back).
+Nothing a reader loads is challenged, so a monitor pointed at `/`, an article, or
+`/healthz` will never see one; a monitor pointed at `/login` or `/admin` will see
+one on every check. Point it at a page rather than at the sign-in form.
+
 **Readers are being challenged again after a restart.**
 Not expected. The signing key lives in the `secrets` volume and survives
 restarts. If it recurs, the challenge service is failing to read that key —
@@ -159,10 +167,11 @@ curl -sA 'WhatsApp/2.23.20.0 A' https://your-domain/@you/your-post \
   | grep -o '<meta property="og:[a-z]*" content="[^"]*"'
 ```
 
-If the tags are missing and the response is small, check the title: if it is
-*"Making sure you're not a bot!"*, the [scraper shield](/self-hosting/security/)
-answered instead of the article. That should not happen — post URLs are not
-challenged — so look at whether `botPolicy.yaml` has been customised. If the tags are there,
+If the tags are missing and the response is small, check the status: a `503`
+whose title is *"Making sure you're not a bot!"* means the
+[scraper shield](/self-hosting/security/) answered instead of the article. That
+should not happen — post URLs are not challenged — so look at whether
+`botPolicy.yaml` has been customised. If the tags are there,
 the fetcher's own cache is the likely culprit: preview caches are keyed by URL,
 so a card built while the site was down or mid-upgrade sticks. Share the link
 with a query string appended (`?v=2`) to force a fresh fetch — if the card is

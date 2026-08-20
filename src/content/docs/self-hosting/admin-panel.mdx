@@ -91,6 +91,26 @@ Deliberately never challenged:
 A request that does not send a browser-shaped User-Agent is never challenged
 either, on any route.
 
+### What a challenged request gets back
+
+**`503 Service Unavailable`**, with `Retry-After: 3600` and
+`<meta name="robots" content="noindex,nofollow">` on the page.
+
+This is deliberate, and worth knowing before your monitoring tells you about it.
+A challenge is a temporary refusal to serve, and 503 is the code that says so: a
+search engine keeps the URL and comes back, a link checker does not report a dead
+link, and an archive does not store an interstitial as the page. Answering 200 —
+which is what the challenge service does by default — tells every automated
+client the request succeeded while handing it a page that is not the one asked
+for, which a search engine reads as a soft 404 and, since every challenged URL
+returns the same interstitial, as a set of duplicates of one another.
+
+A denial (no rule issues one in the shipped policy) answers **`403 Forbidden`**.
+
+None of this changes anything for a reader: browsers render an error page and run
+its scripts exactly as they would a 200, so the challenge is solved and the page
+loads as before.
+
 The toggle applies **live**: no restart, no config file. The backend re-routes
 the app through the bundled challenge service via Caddy's internal admin API.
 Per-IP rate limiting stays accurate.

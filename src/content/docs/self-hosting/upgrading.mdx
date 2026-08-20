@@ -120,6 +120,25 @@ The release also adds `ANUBIS_REDIRECT_DOMAINS`. Nothing breaks if you leave it
 unset, but a public instance should set it — see
 [Environment variables](/reference/environment/).
 
+## One-time step: the challenge status-code release
+
+The release that made a challenge answer `503` instead of `200` touches two
+files the containers only read at startup — `botPolicy.yaml` and the
+`Caddyfile` — so it needs the same recreate:
+
+```bash
+git pull && docker compose up -d --build --force-recreate
+```
+
+A plain `up -d` leaves the challenge answering `200` with no `Retry-After`.
+Nothing breaks either way; the point of the change is that automated clients —
+search engines, uptime monitors, link checkers — stop being told a refusal
+succeeded. See
+[what a challenged request gets back](/self-hosting/admin-panel/#what-a-challenged-request-gets-back).
+
+If you only edited `botPolicy.yaml` yourself and want it picked up without
+recreating anything else, `docker compose restart anubis` is enough.
+
 ## Rolling back
 
 Check out the previous tag and rebuild:
