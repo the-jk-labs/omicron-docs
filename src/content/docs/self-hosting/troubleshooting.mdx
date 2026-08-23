@@ -64,6 +64,12 @@ requires a verified sender. Fix and press **send test** again.
 With `direct`, check SPF, DKIM, DMARC, and especially the PTR record. With any
 mode, a brand-new IP or domain has no reputation yet.
 
+**A visitor reports "This instance can't send email".**
+That is the `console`-mode notice, not a fault: the instance is still on its
+default transport and only prints mail to the backend log. Configure `smtp`,
+`relay`, or `direct`, press **send test email**, and the notice disappears for
+visitors.
+
 ## Federation
 
 **The federation toggle did not take effect.**
