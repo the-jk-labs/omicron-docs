@@ -36,6 +36,14 @@ docker compose logs -f backend
 This is the default. It is genuinely usable for a single-user instance: when you
 need a password reset, you read the link out of the logs.
 
+<Callout type="note" title="What visitors see in console mode">
+The instance tells signed-out visitors that it cannot send email: password reset
+and email verification show a notice pointing them to the administrator instead
+of a form, so nobody is told to check an inbox that will never receive anything.
+Fine for local development and single-user instances; pick another mode before
+inviting readers.
+</Callout>
+
 ## `smtp` — any mail server or provider
 
 Paste the host, port, username, and password of an SMTP server — your own, or a
