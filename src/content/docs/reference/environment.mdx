@@ -59,6 +59,7 @@ and rate-limit counters are not shared across processes.
 | `RL_LOGIN_MAX` | `15` | Login attempts per IP / 15 min. |
 | `RL_REGISTER_MAX` | `5` | Registrations per IP / hour. |
 | `RL_API_WRITE_MAX` | `120` | Writes / min per signed-in user (or per IP). |
+| `RL_UPLOAD_MAX` | `10` | Media uploads / min per signed-in user (or per IP). |
 | `RL_INBOX_MAX` | `300` | Federation inbox POSTs / min per source IP. |
 | `RL_WEBHOOK_MAX` | `30` | Content-webhook POSTs / min per source IP. |
 | `INBOX_MAX_BODY_BYTES` | `1000000` | Reject inbox POSTs larger than this. |
@@ -144,6 +145,32 @@ sits behind the challenge service.
 | `INTERNAL_API_URL` | `http://backend:8000` | How the frontend reaches the backend. |
 | `UPLOADS_DIR` | `/data/uploads` | Where uploaded media is written. |
 | `STATE_DIR` | `/data/state` | Where generated secrets are persisted when not supplied via env or files. |
+
+## Upload storage
+
+Uploaded media — post images, avatars, the instance banner — is bounded three
+ways: a per-account upload rate limit (`RL_UPLOAD_MAX`, above), storage quotas,
+and garbage collection.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `UPLOAD_QUOTA_USER_MB` | `200` | Upload storage per account, in MB. `0` disables. |
+| `UPLOAD_QUOTA_TOTAL_MB` | `2048` | Upload storage for the whole instance, in MB. `0` disables. |
+| `UPLOAD_GC_GRACE_DAYS` | `30` | Days an unreferenced upload survives before the daily sweep deletes it. |
+
+A quota breach answers an upload with HTTP 413 naming the cap that was hit.
+Quota checks are transactional, so concurrent uploads cannot slip past a cap.
+
+Nothing is deleted the moment a reference disappears. A daily sweep reaps a
+file only once nothing has referenced it for `UPLOAD_GC_GRACE_DAYS` — long
+enough that other instances which cached the URL have moved on. Replacing an
+avatar or deleting a post therefore leaves the old file on disk for up to a
+month before the sweep collects it. That delay is what keeps images working on
+the fediverse; it is not a bug.
+
+`BODY_SIZE_LIMIT` (the frontend proxy's request-body cap) is set to match the
+backend's 5 MB image limit by `docker-compose.yml`; you only need to touch it
+if you raise `MAX_IMAGE_BYTES` in the backend source.
 
 ## Applying changes
 

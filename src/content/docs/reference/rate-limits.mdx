@@ -6,7 +6,7 @@ description: Every limiter, its default, what it keys on, and how to tune it saf
 import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
-the federation inbox, and the content webhook.
+media uploads, the federation inbox, and the content webhook.
 
 ## The limiters
 
@@ -15,6 +15,7 @@ the federation inbox, and the content webhook.
 | Login | `RL_LOGIN_MAX` | 15 | 15 min | Source IP |
 | Registration | `RL_REGISTER_MAX` | 5 | 1 hour | Source IP |
 | API writes | `RL_API_WRITE_MAX` | 120 | 1 min | Signed-in user, else IP |
+| Media uploads | `RL_UPLOAD_MAX` | 10 | 1 min | Signed-in user, else IP |
 | Federation inbox | `RL_INBOX_MAX` | 300 | 1 min | Source IP |
 | Content webhook | `RL_WEBHOOK_MAX` | 30 | 1 min | Source IP |
 
@@ -113,5 +114,10 @@ proxy that already enforces equivalent limits.
   and put it back afterwards.
 - **A large federated instance getting throttled on delivery?** Raise
   `RL_INBOX_MAX`; the cost is bounded by the body-size cap.
+- **A writer hitting the upload cap mid-article?** Raise `RL_UPLOAD_MAX`
+  temporarily; the per-file size caps are separate and unchanged.
+
+Beyond the rate limit, upload *storage* is bounded by quotas and garbage
+collection — see [Upload storage](/reference/environment/#upload-storage).
 
 Apply changes with `docker compose up -d`.
