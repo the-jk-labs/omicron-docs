@@ -53,6 +53,7 @@ Defaults, tunable in `.env`:
 | `RL_LOGIN_MAX` | 15 | login attempts per IP / 15 min |
 | `RL_REGISTER_MAX` | 5 | registrations per IP / hour |
 | `RL_API_WRITE_MAX` | 120 | writes / min per signed-in user (or per IP) |
+| `RL_UPLOAD_MAX` | 10 | media uploads / min per signed-in user (or per IP) |
 | `RL_INBOX_MAX` | 300 | federation inbox POSTs / min per source IP |
 | `RL_WEBHOOK_MAX` | 30 | content-webhook POSTs / min per source IP |
 | `INBOX_MAX_BODY_BYTES` | 1000000 | maximum inbox payload size |
@@ -61,6 +62,17 @@ Defaults, tunable in `.env`:
 Without Redis these counters are per-process and reset on restart. With
 `REDIS_URL` set they are shared and durable. See
 [Rate limits](/reference/rate-limits/).
+
+## Upload storage
+
+Uploaded media is bounded by the upload rate limit above plus two storage
+quotas, enforced when the upload happens: `UPLOAD_QUOTA_USER_MB` (default 200
+MB per account) and `UPLOAD_QUOTA_TOTAL_MB` (default 2048 MB per instance).
+`0` disables a cap; a breach answers the upload with HTTP 413. Unreferenced
+files are garbage-collected by a daily sweep after `UPLOAD_GC_GRACE_DAYS`
+(default 30) days, which is also why replacing an avatar does not free disk
+space immediately. Details in
+[Environment → Upload storage](/reference/environment/#upload-storage).
 
 ## Session secret rotation
 
