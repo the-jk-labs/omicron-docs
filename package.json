@@ -15,12 +15,12 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/mdx": "^7.0.8",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/svelte": "^9.0.1",
     "@fontsource-variable/inter": "^5.2.8",
     "@lucide/svelte": "^1.31.0",
-    "astro": "^7.2.1",
+    "astro": "^7.2.8",
     "bits-ui": "^2.18.1",
     "svelte": "^5.56.9",
     "zod": "^4.4.3"
