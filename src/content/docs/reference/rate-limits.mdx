@@ -106,6 +106,18 @@ bounds cap the *damage*, but a hostile host is best blocked outright rather than
 merely throttled.
 </Callout>
 
+### Storage: the remote cache is pruned
+
+Rate limiting and the outbound bounds stop *one* actor from being repeatedly
+abused, but a hostile server serving many distinct, valid actors could still
+grow `remote_actors` and `posts` on every accepted lookup. The counterweight is
+a daily sweep that forgets cached actors which no local user references (via a
+follow, mute, block, recommendation, or notification) and which nothing has
+re-fetched within `REMOTE_CACHE_RETENTION_DAYS` (default 30). Deleting an actor
+cascades to its posts, so the two grow and shrink together. Set the variable to
+`0` to keep the cache forever — see
+[Environment → Rate limiting](/reference/environment/#rate-limiting).
+
 ## Redis changes the semantics
 
 | | Without Redis | With `REDIS_URL` |

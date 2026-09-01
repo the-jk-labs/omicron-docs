@@ -63,6 +63,7 @@ Defaults, tunable in `.env`:
 | `RL_REMOTE_MAX_PER_ORIGIN` | 3 | concurrent outbound lookups per remote host |
 | `REMOTE_LOOKUP_TIMEOUT_MS` | 10000 | deadline for one WebFinger + actor + outbox lookup |
 | `REMOTE_NEGATIVE_CACHE_TTL_MS` | 60000 | negative-cache time for failed/not-found lookups |
+| `REMOTE_CACHE_RETENTION_DAYS` | 30 | days a cached remote actor survives unreferenced (`0` disables pruning) |
 
 <Callout type="note">
 Remote discovery (`GET /api/remote/…`) is treated separately because, unlike the
@@ -73,6 +74,10 @@ per-lookup deadline — see
 [Rate limits → Remote discovery](/reference/rate-limits/#remote-discovery-outbound-bounds).
 A slow or hostile origin is still best handled by defederating it outright.
 </Callout>
+
+Cached remote actors and their posts are also pruned daily once they are stale
+and unreferenced — see `REMOTE_CACHE_RETENTION_DAYS` above — so a hostile
+instance serving many distinct actors cannot grow the database without bound.
 
 Without Redis these counters are per-process and reset on restart. With
 `REDIS_URL` set they are shared and durable. See

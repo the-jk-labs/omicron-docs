@@ -68,6 +68,7 @@ and rate-limit counters are not shared across processes.
 | `RL_REMOTE_MAX_PER_ORIGIN` | `3` | Concurrent lookups per remote host. |
 | `REMOTE_LOOKUP_TIMEOUT_MS` | `10000` | Deadline for one WebFinger + actor + outbox lookup. |
 | `REMOTE_NEGATIVE_CACHE_TTL_MS` | `60000` | How long a failed/not-found lookup is negatively cached. |
+| `REMOTE_CACHE_RETENTION_DAYS` | `30` | Days a cached remote actor survives once nothing re-fetches it and no local user references it; `0` disables pruning. |
 
 ## Content ingestion
 
