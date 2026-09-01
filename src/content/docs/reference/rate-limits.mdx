@@ -6,7 +6,8 @@ description: Every limiter, its default, what it keys on, and how to tune it saf
 import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
-media uploads, the federation inbox, and the content webhook.
+media uploads, the federation inbox, remote-discovery browsing, and the content
+webhook.
 
 ## The limiters
 
@@ -17,6 +18,7 @@ media uploads, the federation inbox, and the content webhook.
 | API writes | `RL_API_WRITE_MAX` | 120 | 1 min | Signed-in user, else IP |
 | Media uploads | `RL_UPLOAD_MAX` | 10 | 1 min | Signed-in user, else IP |
 | Federation inbox | `RL_INBOX_MAX` | 300 | 1 min | Source IP |
+| Remote discovery | `RL_REMOTE_MAX` | 30 | 1 min | Source IP (anonymous only) |
 | Content webhook | `RL_WEBHOOK_MAX` | 30 | 1 min | Source IP |
 
 Plus hard payload caps on the two endpoints that accept unauthenticated or
@@ -41,6 +43,13 @@ own budget rather than sharing one with everyone behind the same NAT.
 
 Read methods — `GET`, `HEAD`, `OPTIONS` — skip this limiter entirely. They are
 cheap and safe; the general limiter targets mutations.
+
+One exception: remote-discovery browsing (`GET /api/remote/users/:handle`,
+including its `/posts` and `/recommendations` sub-resources) is *not* cheap — a
+cache miss triggers outbound WebFinger, actor, and outbox fetches and writes the
+results into your database. Because those requests are unauthenticated read
+methods, they would otherwise bypass every limiter. A dedicated `RL_REMOTE_MAX`
+per-IP budget sits on them instead (signed-in users are exempt).
 
 Endpoint-specific limiters (login, registration, inbox) layer **stricter** caps
 on top of this backstop.
@@ -75,6 +84,27 @@ an unbounded payload into the JSON parser.
 
 A CMS publishing a batch is bursty but never fast, so 30/min leaves room for a
 bulk re-sync while staying far below what a brute-force attempt would need.
+
+## Remote discovery (outbound bounds)
+
+Beyond the per-IP `RL_REMOTE_MAX` budget, the outbound work itself is bounded so
+one caller cannot monopolise your instance even within their quota:
+
+- **Concurrency** — `RL_REMOTE_MAX_OUTBOUND` caps total in-flight federation
+  lookups; `RL_REMOTE_MAX_PER_ORIGIN` caps how many a single remote host can
+  occupy, so one slow server cannot starve the rest.
+- **Deadline** — `REMOTE_LOOKUP_TIMEOUT_MS` aborts a lookup that runs too long,
+  so a slow origin cannot pin a request handler indefinitely.
+- **Coalescing + negative cache** — concurrent requests for the same uncached
+  handle share one lookup, and a failed/not-found resolution is remembered for
+  `REMOTE_NEGATIVE_CACHE_TTL_MS` so repeated requests for a missing handle stop
+  re-hitting the origin.
+
+<Callout type="note">
+A slow origin is still an availability risk you should defederate from — these
+bounds cap the *damage*, but a hostile host is best blocked outright rather than
+merely throttled.
+</Callout>
 
 ## Redis changes the semantics
 
@@ -116,6 +146,11 @@ proxy that already enforces equivalent limits.
   `RL_INBOX_MAX`; the cost is bounded by the body-size cap.
 - **A writer hitting the upload cap mid-article?** Raise `RL_UPLOAD_MAX`
   temporarily; the per-file size caps are separate and unchanged.
+- **Legitimate remote browsing being throttled?** Raise `RL_REMOTE_MAX` before
+  touching the outbound bounds; `RL_REMOTE_MAX_OUTBOUND` /
+  `RL_REMOTE_MAX_PER_ORIGIN` / `REMOTE_LOOKUP_TIMEOUT_MS` are ceilings on
+  *outbound work*, not per-viewer budgets, and raising them lifts the load a
+  single slow origin can impose on your instance.
 
 Beyond the rate limit, upload *storage* is bounded by quotas and garbage
 collection — see [Upload storage](/reference/environment/#upload-storage).
