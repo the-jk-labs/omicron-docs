@@ -19,6 +19,7 @@ webhook.
 | Media uploads | `RL_UPLOAD_MAX` | 10 | 1 min | Signed-in user, else IP |
 | Federation inbox | `RL_INBOX_MAX` | 300 | 1 min | Source IP |
 | Remote discovery | `RL_REMOTE_MAX` | 30 | 1 min | Source IP (anonymous only) |
+| Remote cache-miss | `RL_REMOTE_MISS_MAX` | 20 | 1 min | Signed-in user, else IP |
 | Content webhook | `RL_WEBHOOK_MAX` | 30 | 1 min | Source IP |
 
 Plus hard payload caps on the two endpoints that accept unauthenticated or
@@ -90,6 +91,10 @@ bulk re-sync while staying far below what a brute-force attempt would need.
 Beyond the per-IP `RL_REMOTE_MAX` budget, the outbound work itself is bounded so
 one caller cannot monopolise your instance even within their quota:
 
+- **Stricter miss budget** — a lookup that actually *misses the local cache*
+  (and so performs outbound work) also counts against `RL_REMOTE_MISS_MAX`, a
+  tighter per-caller cap. A plain cached read never reaches it; exhausting it
+  is answered with `429` before any network work starts.
 - **Concurrency** — `RL_REMOTE_MAX_OUTBOUND` caps total in-flight federation
   lookups; `RL_REMOTE_MAX_PER_ORIGIN` caps how many a single remote host can
   occupy, so one slow server cannot starve the rest.
