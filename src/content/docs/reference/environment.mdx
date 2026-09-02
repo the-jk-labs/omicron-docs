@@ -64,6 +64,7 @@ and rate-limit counters are not shared across processes.
 | `RL_WEBHOOK_MAX` | `30` | Content-webhook POSTs / min per source IP. |
 | `INBOX_MAX_BODY_BYTES` | `1000000` | Reject inbox POSTs larger than this. |
 | `RL_REMOTE_MAX` | `30` | Anonymous remote-discovery GETs / min per IP. |
+| `RL_REMOTE_MISS_MAX` | `20` | Cache-miss (outbound) remote lookups / min per caller. |
 | `RL_REMOTE_MAX_OUTBOUND` | `10` | Global concurrent outbound federation lookups. |
 | `RL_REMOTE_MAX_PER_ORIGIN` | `3` | Concurrent lookups per remote host. |
 | `REMOTE_LOOKUP_TIMEOUT_MS` | `10000` | Deadline for one WebFinger + actor + outbox lookup. |

@@ -59,6 +59,7 @@ Defaults, tunable in `.env`:
 | `INBOX_MAX_BODY_BYTES` | 1000000 | maximum inbox payload size |
 | `WEBHOOK_MAX_BODY_BYTES` | 512000 | maximum content-webhook payload size |
 | `RL_REMOTE_MAX` | 30 | anonymous remote-discovery GETs / min per IP |
+| `RL_REMOTE_MISS_MAX` | 20 | cache-miss (outbound) remote lookups / min per caller |
 | `RL_REMOTE_MAX_OUTBOUND` | 10 | global concurrent outbound federation lookups |
 | `RL_REMOTE_MAX_PER_ORIGIN` | 3 | concurrent outbound lookups per remote host |
 | `REMOTE_LOOKUP_TIMEOUT_MS` | 10000 | deadline for one WebFinger + actor + outbox lookup |
