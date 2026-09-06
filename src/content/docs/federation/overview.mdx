@@ -51,9 +51,11 @@ Other servers POST activities to an actor's inbox, or to the **shared inbox** at
 | Incoming | What Omicron does |
 | --- | --- |
 | `Follow` | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept` |
-| `Create` (Article) | Stores the post and shows it in the appropriate feed. Microblog `Note`s are ignored — see [Compatibility](/federation/compatibility/) |
+| `Create` (Article) | Stores the post and shows it in the appropriate feed |
+| `Create` (Note) | Stores it as a **response** when it replies to one of your posts (or to a known response) — see [Compatibility](/federation/compatibility/). Any other microblog `Note` is ignored |
 | `Announce` | Records a **recommendation**: caches the boosted Article if not already fetched, and notifies its local author. Surfaces on the booster's local followers' For you feed — see [Recommending](/using/reading/#recommending) |
 | `Undo` | Reverses the referenced Follow or Announce |
+| `Update` | Refreshes the cached copy of a remote post or response, when the editor wrote it |
 | `Delete` | Removes the referenced remote content |
 
 Inbound requests are signature-verified by Fedify, rate-limited per source IP,
@@ -69,6 +71,11 @@ never blocks the user's request, and Fedify retries.
 
 The same path carries `Accept`, `Announce` (recommending a post fans it out to
 your own remote followers as a boost), `Undo`, `Delete`, and profile updates.
+
+Responses travel the same way: a comment on a public post goes out as a `Note`
+threaded under it, and each public post advertises a Replies collection so
+remote servers render the whole thread. Replies on a private author's posts
+stay local-only. See [Compatibility](/federation/compatibility/).
 
 See [Delivery and queues](/federation/delivery/).
 

@@ -35,7 +35,13 @@ instance.
 - **Recommend / Undo Recommend** — Omicron's product name for `Announce`/`Undo
   (Announce)` (a "boost" or "repost" elsewhere). Recommending on Omicron shows up
   as a boost on Mastodon and vice versa; see [Recommending](/using/reading/#recommending).
-- **Replies** — federated replies land alongside local comments.
+- **Replies** — in both directions. A Mastodon reply to your post lands under
+  Responses alongside local comments (and notifies you); your responses go out
+  as `Note`s threaded under the post, and each public post advertises a Replies
+  collection so remote servers render the whole thread. Edits and deletions
+  propagate the same way. Replies on a private author's posts stay local-only,
+  and only replies addressed publicly are accepted — a followers-only or direct
+  reply is never stored.
 - **Delete** — honoured by well-behaved servers.
 - **Profile discovery** — WebFinger resolves your handle from anywhere.
 - **Link previews** — the actor document carries Mastodon's

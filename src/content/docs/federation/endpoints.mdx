@@ -74,6 +74,8 @@ crawler sending `*/*`, and anything ranking `text/html` first all get the page.
 | `GET /users/{identifier}` | The actor document — profile, keys, endpoints |
 | `GET /users/{identifier}/followers` | The followers collection |
 | `GET /users/{identifier}/outbox` | The actor's public activity stream |
+| `GET /users/{identifier}/comments/{commentId}` | One local response as a `Note` |
+| `GET /users/{identifier}/posts/{postId}/replies` | The post's responses as a collection |
 | `GET /users/{identifier}/lists/{listId}` | A public reading list as an object |
 
 The actor document carries the public key remote servers use to verify your
