@@ -1,9 +1,68 @@
 ---
 title: Backups and restore
-description: Two verified backup strategies — a portable logical dump, or a full volume snapshot. Pick one, don't mix them.
+description: Automatic daily encrypted snapshots are built in. Two manual methods cover migrations and pre-upgrade snapshots.
 ---
 
 import Callout from "@/components/Callout.astro";
+
+## Automatic backups (built in, on by default)
+
+Every instance ships a `backup` service (pg_dump + restic) that needs no
+configuration: daily at 02:00 UTC it snapshots the database, uploads, state,
+and secrets into the encrypted `backups` volume, keeping the last 3 daily
+snapshots plus 1 weekly and pruning the rest. Snapshots are encrypted at rest
+(AES-256) with a password generated into the `secrets` volume on first boot.
+
+| What | Default |
+| --- | --- |
+| Schedule | Daily 02:00 UTC (`BACKUP_SCHEDULE`) |
+| Destination | Local `backups` volume (`BACKUP_REPOSITORY`) |
+| Retention | 3 daily + 1 weekly (`BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`) |
+| Contents | Database dump, uploads, state, secrets, Caddyfile, bot policy |
+
+```bash
+docker compose exec backup backup-now       # run one now (e.g. before upgrading)
+docker compose exec backup restic snapshots # list snapshots
+./backup/restore.sh                         # restore the latest snapshot
+./backup/restore.sh 562229b2                # restore a specific snapshot
+```
+
+<Callout type="danger" title="Save the encryption password offline">
+Backups cannot be restored without it:
+
+```bash
+docker compose exec backup cat /run/secrets/backup_password
+```
+
+Store that value in a password manager. A local-only repository also dies with
+the host's disk — see off-site below.
+
+Secrets are restored by hand, never automatically: overwriting a live
+`db_password` would lock Postgres out. `restore.sh` prints the exact commands.
+</Callout>
+
+### Going off-site (R2, S3, MinIO, B2)
+
+Point the repository at any S3-compatible endpoint — only the endpoint and keys
+change, nothing else. No vendor SDK is involved and the format stays restic's
+open one, so moving providers later is the same one-line change.
+
+```bash
+BACKUP_REPOSITORY=s3:https://<account-id>.r2.cloudflarestorage.com/omicron-backups
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+`BACKUP_S3_REGION` defaults to `auto` (what R2 wants); set a real region for
+AWS. Then `docker compose up -d` and one `backup-now` to confirm a snapshot
+lands. All variables are listed under [Environment variables](/reference/environment/).
+
+## Manual methods
+
+The automatic snapshots cover routine protection. The two manual methods below
+remain useful for host migrations and for a byte-for-byte copy before a risky
+upgrade. Both are verified end to end: seed, back up, destroy, restore, data
+intact.
 
 All state lives in named volumes; nothing important is inside a container image.
 
@@ -15,6 +74,7 @@ All state lives in named volumes; nothing important is inside a container image.
 | `state` | UI-rotated session secret, if any | Method B only |
 | `caddy_data` | Let's Encrypt certificates | Optional |
 | `redis_data` | Transient queue state | **Never** |
+| `backups` | Automatic restic snapshots (above) | N/A — this *is* the backup |
 
 `redis_data` is deliberately excluded: it holds only pending jobs and in-flight
 federation deliveries, which Redis re-drains after a restart. No durable content
@@ -116,7 +176,9 @@ byte-for-byte snapshot before a risky upgrade.
 
 ## Automating it
 
-Run Method A from cron and ship the files off the box:
+The built-in daily snapshots above are the automation — no cron to write. If
+you disabled the sidecar (`BACKUP_ENABLED=false`), Method A from host cron is
+the fallback:
 
 ```bash
 0 4 * * * cd /opt/omicron && docker compose exec -T postgres \
@@ -124,9 +186,10 @@ Run Method A from cron and ship the files off the box:
 ```
 
 <Callout type="danger" title="Store backups privately">
-Method B backups contain your database password and session secret. Method A
-backups contain every account's data. Encrypt them, and keep them off the same
-machine.
+Automatic snapshots are encrypted at rest, but the manual files below are
+**not**: Method B tarballs contain your database password and session secret,
+and Method A dumps contain every account's data. Encrypt them, and keep every
+kind of backup off the same machine.
 </Callout>
 
 ## Test your restores

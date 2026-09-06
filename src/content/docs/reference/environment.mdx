@@ -154,6 +154,27 @@ sits behind the challenge service.
 | `UPLOADS_DIR` | `/data/uploads` | Where uploaded media is written. |
 | `STATE_DIR` | `/data/state` | Where generated secrets are persisted when not supplied via env or files. |
 
+## Backups
+
+Daily encrypted snapshots (database + uploads + state + secrets) via the
+built-in `backup` service. All optional — unset means the default, and the
+defaults already protect a fresh instance locally.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `BACKUP_ENABLED` | `true` | Set `false` to disable the sidecar entirely. |
+| `BACKUP_SCHEDULE` | `0 2 * * *` | 5-field cron, UTC. Daily at 02:00. |
+| `BACKUP_REPOSITORY` | `/backups/restic` | Snapshot destination. Local path by default; `s3:<endpoint>/<bucket>` for R2, S3, MinIO, B2. |
+| `BACKUP_S3_REGION` | `auto` | Region for S3-compatible backends (`auto` is what R2 wants; set a real region for AWS). Ignored locally. `AWS_DEFAULT_REGION` wins if set. |
+| `AWS_ACCESS_KEY_ID` | — | Key for the off-site backend. Unused locally. |
+| `AWS_SECRET_ACCESS_KEY` | — | Secret for the off-site backend. Unused locally. |
+| `BACKUP_KEEP_DAILY` | `3` | Daily snapshots to keep; older ones are pruned after each run. |
+| `BACKUP_KEEP_WEEKLY` | `1` | Weekly snapshots to keep. |
+| `BACKUP_KEEP_MONTHLY` | `0` | Monthly snapshots to keep. |
+
+Verified against `.env.example` and `docker-compose.yml` in the app repo. See
+[Backups and restore](/self-hosting/backups/) for operations.
+
 ## Upload storage
 
 Uploaded media — post images, avatars, the instance banner — is bounded three
