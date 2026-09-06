@@ -25,6 +25,7 @@ values. Environment variables are defaults, not overrides.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `FEDERATION_ENABLED` | `false` | `true` enables ActivityPub (WebFinger, actor, inbox/outbox). Applied on restart. Needs a real domain and HTTPS to be useful. |
+| `ALLOW_PRIVATE_FEDERATION` | `false` | `true` lets remote discovery talk to private hosts (loopback, RFC1918, `.local`, …) for testing against a LAN instance. Applied on restart. Never enable on an internet-reachable host. |
 
 ## Secrets
 
