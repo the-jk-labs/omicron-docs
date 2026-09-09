@@ -37,7 +37,7 @@ admin panel wins. Environment values are defaults, not overrides.
 | `DATABASE_URL` | *(bundled Postgres)* | Point at an **external** Postgres. |
 | `REDIS_URL` | *(bundled Redis)* | Durable queues and shared rate limits. |
 | `RATE_LIMIT_ENABLED` | `true` | Leave on unless a trusted upstream throttles. |
-| `EMAIL_VERIFICATION_REQUIRED` | `false` | Require email confirmation before sign-in. |
+| `EMAIL_VERIFICATION_REQUIRED` | `true` | New accounts must confirm their email before they can sign in (`"false"` disables). |
 
 The complete annotated list is in
 [Environment variables](/reference/environment/) and in

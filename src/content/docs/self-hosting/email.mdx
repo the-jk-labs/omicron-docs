@@ -120,12 +120,19 @@ Common failures:
 | TLS handshake error | 587 with implicit TLS on, or 465 with it off |
 | Sender not verified | The provider requires a verified sender or domain |
 
-## Requiring verified email
+## Email confirmation before sign-in
 
-Set `EMAIL_VERIFICATION_REQUIRED=true` to require email confirmation before a new
-account can sign in. This is useful for closed or invite-only instances. Do not
-turn it on while email is still in `console` mode, or new users will be unable to
-complete registration on their own.
+New accounts must confirm their email before they can sign in: registration
+creates the account but no session, and sign-in stays blocked until the
+confirmation link is clicked. Links expire after 24 hours; signing in with an
+unconfirmed address re-sends the link, and clicking it signs the user straight
+in.
+
+This is the default (`EMAIL_VERIFICATION_REQUIRED` defaults to `true`). Set it
+to `"false"` only for local development without working email. Do not invite
+readers while email is still in `console` mode with confirmation required, or
+new users will be unable to complete registration on their own — the link only
+ever reaches the backend log.
 
 ## Environment fallbacks
 
@@ -140,5 +147,5 @@ SMTP_PORT=587
 SMTP_USERNAME=
 SMTP_PASSWORD=
 SMTP_TLS=false            # implicit TLS (465); false = STARTTLS (587)
-EMAIL_VERIFICATION_REQUIRED=false
+EMAIL_VERIFICATION_REQUIRED=true    # "false" disables; local dev without SMTP only
 ```
