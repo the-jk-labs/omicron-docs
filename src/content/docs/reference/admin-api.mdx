@@ -92,6 +92,8 @@ See [Email](/self-hosting/email/).
 | --- | --- | --- |
 | `GET` | `/api/admin/users` | List local accounts |
 | `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
+| `GET` | `/api/admin/users/:id` | One account with counts, latest posts and reports against it |
+| `POST` | `/api/admin/users/:id/role` | Grant or revoke the admin role (confirm with your password) |
 | `POST` | `/api/admin/users/:id/delete` | Delete an account (confirm with username + your password) |
 | `POST` | `/api/admin/users/:id/restore` | Restore a deleted account within 30 days |
 | `GET` | `/api/admin/users/deleted` | Recently deleted accounts, with expiry |
