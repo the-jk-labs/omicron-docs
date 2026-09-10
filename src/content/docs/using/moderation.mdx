@@ -39,6 +39,17 @@ stop serving it locally.
 **Admin → Users** suspends or reinstates local accounts. A suspended account
 cannot sign in and its content stops being served.
 
+Deleting an account goes further: it signs the account out immediately and
+hides the account, its posts and its profile everywhere. Deletion is guarded
+like deleting a repository — you must type the account's exact username and
+re-enter your own password. You cannot delete your own account or another
+admin's.
+
+A deleted account is kept for **30 days** and can be restored from the
+**Recently deleted** list on the same page, which shows who deleted it and when
+the window ends. After 30 days the row is erased for good; **Erase** does the
+same immediately. Erasing cannot be undone, and it frees the username.
+
 ### Federation and defederation
 
 **Admin → Federation** blocks a domain outright — and blocking **purges
@@ -75,6 +86,6 @@ trade-offs.
 1. Publish your instance's rules somewhere readers can find them.
 2. Handle reports promptly — an unattended queue trains people not to report.
 3. Prefer the narrowest tool that works: report → remove post → suspend account →
-   defederate domain.
+   delete account → defederate domain.
 4. Keep a note of why each domain block was made. Six months later you will not
    remember.
