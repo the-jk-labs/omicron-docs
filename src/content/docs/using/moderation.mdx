@@ -64,6 +64,15 @@ A deleted account is kept for **30 days** and can be restored from the
 the window ends. After 30 days the row is erased for good; **Erase** does the
 same immediately. Erasing cannot be undone, and it frees the username.
 
+**Edit** changes how an account appears — display name, bio, public email,
+custom section, tags, links — or its login email. Profile edits apply
+immediately and federate like the owner's own edits. Changing the login email
+stores it unverified: a verification link goes to the new address, and a
+security notice goes to the previous one. Until the new address is confirmed,
+sign-in is gated the same way as a fresh unverified registration (when email
+verification is required, which is the default). If the link never arrives,
+resend it from the same place.
+
 ### Federation and defederation
 
 **Admin → Federation** blocks a domain outright — and blocking **purges

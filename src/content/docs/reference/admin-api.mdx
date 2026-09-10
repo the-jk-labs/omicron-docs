@@ -93,6 +93,7 @@ See [Email](/self-hosting/email/).
 | `GET` | `/api/admin/users` | List local accounts (`?q=`, `?suspended=`, `?admin=`, `?verified=`) |
 | `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
 | `GET` | `/api/admin/users/:id` | One account with counts, latest posts and reports against it |
+| `PATCH` | `/api/admin/users/:id` | Edit profile fields and the login email |
 | `POST` | `/api/admin/users/:id/role` | Grant or revoke the admin role (confirm with your password) |
 | `POST` | `/api/admin/users/:id/verification-email` | Resend the verification email |
 | `POST` | `/api/admin/users/:id/verify` | Manually mark the address verified |
@@ -105,6 +106,11 @@ Deleting takes `{ "username", "password" }`: the account's exact username plus
 your own password, both re-verified server-side. A deleted account is kept for
 30 days and comes back with `/restore`; the expiry and `/deleted/:id` erase it
 for good and free the username.
+
+`PATCH` takes any subset of `displayName`, `bio`, `publicEmail`,
+`customSection`, `tags`, `links`, and `email`. Editing `email` stores it
+unverified: the verification mail goes to the new address and a security notice
+to the previous one.
 
 ## Content and reports
 
