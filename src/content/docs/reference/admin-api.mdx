@@ -91,7 +91,13 @@ See [Email](/self-hosting/email/).
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/admin/users` | List local accounts |
+| `PATCH` | `/api/admin/users/:id` | Edit profile fields and the login email |
 | `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
+
+`PATCH` takes any subset of `displayName`, `bio`, `publicEmail`,
+`customSection`, `tags`, `links`, and `email`. Editing `email` stores it
+unverified: the verification mail goes to the new address and a security notice
+to the previous one.
 
 ## Content and reports
 
