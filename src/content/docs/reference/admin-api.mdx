@@ -94,6 +94,8 @@ See [Email](/self-hosting/email/).
 | `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
 | `GET` | `/api/admin/users/:id` | One account with counts, latest posts and reports against it |
 | `PATCH` | `/api/admin/users/:id` | Edit profile fields and the login email |
+| `POST` | `/api/admin/users/:id/avatar` | Replace another account's avatar (raw image body) |
+| `DELETE` | `/api/admin/users/:id/avatar` | Clear another account's avatar back to initials |
 | `POST` | `/api/admin/users/:id/role` | Grant or revoke the admin role (confirm with your password) |
 | `POST` | `/api/admin/users/:id/verification-email` | Resend the verification email |
 | `POST` | `/api/admin/users/:id/verify` | Manually mark the address verified |
