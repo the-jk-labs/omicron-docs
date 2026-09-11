@@ -99,7 +99,7 @@ See [Email](/self-hosting/email/).
 | `POST` | `/api/admin/users/:id/verify` | Manually mark the address verified |
 | `POST` | `/api/admin/users/:id/delete` | Delete an account (confirm with username + your password) |
 | `POST` | `/api/admin/users/:id/restore` | Restore a deleted account within 30 days |
-| `GET` | `/api/admin/users/deleted` | Recently deleted accounts, with expiry |
+| `GET` | `/api/admin/users/deleted` | Recently deleted accounts, with expiry (`?cursor=` + `?limit=`, `nextCursor` + `total` in the response) |
 | `DELETE` | `/api/admin/users/deleted/:id` | Erase a deleted account permanently |
 
 Deleting takes `{ "username", "password" }`: the account's exact username plus
@@ -109,7 +109,8 @@ for good and free the username.
 
 Listing is keyset-paginated: `?limit=` sizes the page (1–100, default 50) and
 the response carries `nextCursor` (pass back as `?cursor=`) plus `total`
-(unfiltered) and `filteredTotal` (matching the current filter).
+(unfiltered) and `filteredTotal` (matching the current filter). The deleted
+listing paginates the same way, minus the filter (it carries `total` only).
 
 `PATCH` takes any subset of `displayName`, `bio`, `publicEmail`,
 `customSection`, `tags`, `links`, and `email`. Editing `email` stores it
