@@ -9,13 +9,13 @@ SvelteKit (Svelte 5), Bits UI, Tailwind CSS 3.4, Tiptap, Lucide.
 
 ## Directory map
 
-| Directory | Responsibility |
-| --- | --- |
-| `src/routes/` | Pages (SSR) plus `/api/[...path]`, the reverse proxy to the backend |
-| `src/lib/api/` | Typed API client, plus `contract.ts` — the compile-time check that those types still match the backend |
-| `src/lib/components/` | Application components; `Icon.svelte` is the single Lucide wrapper |
-| `src/lib/components/ui/` | Bits UI (headless) wrappers |
-| `src/lib/editor/` | Tiptap integration, lazy-loaded on `/compose` |
+| Directory                | Responsibility                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `src/routes/`            | Pages (SSR) plus `/api/[...path]`, the reverse proxy to the backend                                    |
+| `src/lib/api/`           | Typed API client, plus `contract.ts` — the compile-time check that those types still match the backend |
+| `src/lib/components/`    | Application components; `Icon.svelte` is the single Lucide wrapper                                     |
+| `src/lib/components/ui/` | Bits UI (headless) wrappers                                                                            |
+| `src/lib/editor/`        | Tiptap integration, lazy-loaded on `/compose`                                                          |
 
 ## The reverse proxy
 
@@ -42,23 +42,22 @@ read the field.
 
 The check is one-way — backend payload must fit the frontend type:
 
-| Change | Result | |
-| --- | --- | --- |
-| Backend changes a field's type | Fails | The frontend would misread it |
-| Backend stops sending a field | Fails | The frontend expects it |
-| Frontend declares a field never sent | Fails | `undefined` at runtime |
-| Backend adds a field the UI ignores | Passes | Harmless |
+| Change                               | Result |                               |
+| ------------------------------------ | ------ | ----------------------------- |
+| Backend changes a field's type       | Fails  | The frontend would misread it |
+| Backend stops sending a field        | Fails  | The frontend expects it       |
+| Frontend declares a field never sent | Fails  | `undefined` at runtime        |
+| Backend adds a field the UI ignores  | Passes | Harmless                      |
 
 Requiring the two to match exactly would reject that last row, which is normal,
 and would break every type that deliberately widens across endpoints — `Post`
 has optional fields precisely because `barePost` returns a subset.
 
 <Callout type="warning" title="Backend imports must be type-only">
-The `@` alias resolves to `apps/backend/src`, and every import through it must
-be `import type`. The backend is Deno; its modules cannot be resolved at runtime
-here. Type-only imports are erased at build time (`verbatimModuleSyntax`), which
-is what keeps backend code out of the bundle — and what lets the frontend image
-build from `apps/frontend` alone, with no `apps/backend` in its context.
+  The `@` alias resolves to `apps/backend/src`, and every import through it must be `import type`. The backend is Deno;
+  its modules cannot be resolved at runtime here. Type-only imports are erased at build time (`verbatimModuleSyntax`),
+  which is what keeps backend code out of the bundle — and what lets the frontend image build from `apps/frontend`
+  alone, with no `apps/backend` in its context.
 </Callout>
 
 Adding a type to `types.ts` does not require an assertion, and many have none:
@@ -80,16 +79,15 @@ has no such component.
 ### 2. Style with the ported theme tokens, never ad-hoc colours
 
 <Callout type="danger" title="No default-palette colours">
-`text-neutral-*`, `bg-gray-*`, `text-red-600`, and raw `bg-white` are all
-violations. Use `text-foreground`, `bg-muted`, `text-destructive`,
-`bg-background`.
+  `text-neutral-*`, `bg-gray-*`, `text-red-600`, and raw `bg-white` are all violations. Use `text-foreground`,
+  `bg-muted`, `text-destructive`, `bg-background`.
 </Callout>
 
-| Kind | Tokens |
-| --- | --- |
+| Kind    | Tokens                                                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Colours | `foreground`, `foreground-alt`, `muted`, `muted-foreground`, `background`, `background-alt`, `dark`, `dark-10`, `accent`, `destructive`, `border` / `border-input` |
-| Radii | `rounded-input`, `rounded-card`, `rounded-9px`, `rounded-button`, … |
-| Shadows | `shadow-mini`, `shadow-popover`, `shadow-btn`, `shadow-card` |
+| Radii   | `rounded-input`, `rounded-card`, `rounded-9px`, `rounded-button`, …                                                                                                |
+| Shadows | `shadow-mini`, `shadow-popover`, `shadow-btn`, `shadow-card`                                                                                                       |
 
 ### 3. Copy the docs' class strings verbatim
 
@@ -97,10 +95,10 @@ The [Bits UI docs](https://bits-ui.com/docs/) are the single source of truth for
 appearance. Copy each component page's example classes as-is, adapting only for
 Tailwind v3 (the docs are v4):
 
-| Docs (v4) | This project (v3) |
-| --- | --- |
-| `outline-hidden` | `outline-none` |
-| `ring-0!` | `!ring-0` |
+| Docs (v4)           | This project (v3)     |
+| ------------------- | --------------------- |
+| `outline-hidden`    | `outline-none`        |
+| `ring-0!`           | `!ring-0`             |
 | `data-highlighted:` | `data-[highlighted]:` |
 
 ### Where the theme lives

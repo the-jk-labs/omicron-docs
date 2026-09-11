@@ -1,37 +1,42 @@
 {
   "name": "omicron-docs",
-  "type": "module",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
   "license": "AGPL-3.0-or-later",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "packageManager": "pnpm@11.2.2",
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "check": "astro check"
+    "astro-check": "astro check",
+    "check": "greenly",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.8",
-    "@astrojs/sitemap": "^3.7.4",
-    "@astrojs/svelte": "^9.0.1",
-    "@fontsource-variable/inter": "^5.2.8",
-    "@lucide/svelte": "^1.42.0",
-    "astro": "^7.3.1",
-    "bits-ui": "^2.19.0",
-    "svelte": "^5.57.0",
-    "zod": "^4.5.4"
+    "@astrojs/mdx": "8.0.1",
+    "@astrojs/sitemap": "3.7.4",
+    "@astrojs/svelte": "9.0.1",
+    "@fontsource-variable/inter": "5.3.0",
+    "astro": "7.3.2",
+    "bits-ui": "2.19.2",
+    "svelte": "5.57.0",
+    "zod": "4.6.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@tailwindcss/typography": "^0.5.15",
-    "autoprefixer": "^10.4.20",
-    "pagefind": "^1.5.2",
-    "postcss": "^8.5.28",
-    "tailwindcss": "^3.4.15",
-    "typescript": "^5.7.0"
+    "@astrojs/check": "0.9.10",
+    "autoprefixer": "10.4.20",
+    "greenly": "1.1.6",
+    "oxfmt": "0.67.0",
+    "oxlint": "1.82.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "pagefind": "1.5.2",
+    "postcss": "8.5.28",
+    "tailwindcss": "3.4.15",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

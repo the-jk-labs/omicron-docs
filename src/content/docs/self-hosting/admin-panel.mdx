@@ -70,12 +70,10 @@ A lightweight proof-of-work challenge
 app. It is **off by default**.
 
 <Callout type="note" title="What it buys, and what it does not">
-Reading is never challenged — articles, profiles, tag pages and feeds are served
-the same whether the toggle is on or off, to visitors with JavaScript and
-without. What the challenge guards is the expensive half: composing, search, the
-dashboard, admin and sign-in. So it will not stop a scraper that executes
-JavaScript from reading your posts; it stops automated traffic from spending
-your CPU. Turn it on when that traffic is actually costing you, not pre-emptively.
+  Reading is never challenged — articles, profiles, tag pages and feeds are served the same whether the toggle is on or
+  off, to visitors with JavaScript and without. What the challenge guards is the expensive half: composing, search, the
+  dashboard, admin and sign-in. So it will not stop a scraper that executes JavaScript from reading your posts; it stops
+  automated traffic from spending your CPU. Turn it on when that traffic is actually costing you, not pre-emptively.
 </Callout>
 
 When enabled, browser-like traffic to these routes is challenged — a real browser
@@ -133,9 +131,8 @@ Which routes are challenged is set by `botPolicy.yaml` at the repository root.
 It is read once at startup, so an edit needs `docker compose restart anubis`.
 
 <Callout type="note">
-On instances upgraded from before this feature shipped, the toggle needs Caddy to
-have been recreated once with the new Caddyfile — see
-[Upgrading](/self-hosting/upgrading/).
+  On instances upgraded from before this feature shipped, the toggle needs Caddy to have been recreated once with the
+  new Caddyfile — see [Upgrading](/self-hosting/upgrading/).
 </Callout>
 
 ### What a visitor without JavaScript sees
@@ -174,9 +171,8 @@ your instance; the change shows up on the next page load, with nothing to
 restart.
 
 <Callout type="note">
-If an edit does not show up, your editor replaced the file rather than writing
-into it, and the container is still holding the old one. `docker compose up -d
---force-recreate caddy` picks it up.
+  If an edit does not show up, your editor replaced the file rather than writing into it, and the container is still
+  holding the old one. `docker compose up -d --force-recreate caddy` picks it up.
 </Callout>
 
 The mascot, the wording and the "Protected by Anubis" footer are left as the
@@ -212,9 +208,8 @@ it back to the browser. To change it, enter the new one; to turn Unsplash off,
 remove it — Openverse keeps working either way.
 
 <Callout type="note">
-Searches are proxied through your server, never called from the reader's
-browser. The key does not leave the instance, which is also what Unsplash's API
-terms require.
+  Searches are proxied through your server, never called from the reader's browser. The key does not leave the instance,
+  which is also what Unsplash's API terms require.
 </Callout>
 
 ## Analytics and discoverability

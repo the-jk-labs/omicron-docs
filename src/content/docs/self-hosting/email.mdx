@@ -12,17 +12,16 @@ every step.
 
 ## Which mode should I use?
 
-| Mode | Setup | Use it when |
-| --- | --- | --- |
-| `console` | None | Local testing, or a single-user instance where you never need real mail |
-| `smtp` | Host, port, username, password | You have any mail server or provider SMTP endpoint — **the usual answer** |
-| `relay` | One API key | You want provider delivery with no SMTP settings at all |
-| `direct` | Port 25 + DNS records + PTR | You want no third party and your host allows outbound port 25 |
+| Mode      | Setup                          | Use it when                                                               |
+| --------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `console` | None                           | Local testing, or a single-user instance where you never need real mail   |
+| `smtp`    | Host, port, username, password | You have any mail server or provider SMTP endpoint — **the usual answer** |
+| `relay`   | One API key                    | You want provider delivery with no SMTP settings at all                   |
+| `direct`  | Port 25 + DNS records + PTR    | You want no third party and your host allows outbound port 25             |
 
 <Callout type="tip" title="Recommendation">
-For most people, `relay` (one API key) or `smtp` (a provider's endpoint) is the
-least-friction path to email that actually lands in inboxes. Reach for `direct`
-only if you specifically want no third party.
+  For most people, `relay` (one API key) or `smtp` (a provider's endpoint) is the least-friction path to email that
+  actually lands in inboxes. Reach for `direct` only if you specifically want no third party.
 </Callout>
 
 ## `console` — no email, just logs
@@ -37,11 +36,9 @@ This is the default. It is genuinely usable for a single-user instance: when you
 need a password reset, you read the link out of the logs.
 
 <Callout type="note" title="What visitors see in console mode">
-The instance tells signed-out visitors that it cannot send email: password reset
-and email verification show a notice pointing them to the administrator instead
-of a form, so nobody is told to check an inbox that will never receive anything.
-Fine for local development and single-user instances; pick another mode before
-inviting readers.
+  The instance tells signed-out visitors that it cannot send email: password reset and email verification show a notice
+  pointing them to the administrator instead of a form, so nobody is told to check an inbox that will never receive
+  anything. Fine for local development and single-user instances; pick another mode before inviting readers.
 </Callout>
 
 ## `smtp` — any mail server or provider
@@ -51,10 +48,10 @@ provider's endpoint (SendGrid, Mailgun, Postmark, Brevo, Resend, Gmail, and so
 on). The admin page has **presets** that fill in host, port, and TLS for common
 providers; you add your key.
 
-| Port | TLS setting |
-| --- | --- |
+| Port    | TLS setting                                               |
+| ------- | --------------------------------------------------------- |
 | **587** | STARTTLS — leave "implicit TLS" **off** (the common case) |
-| **465** | Implicit TLS — turn "implicit TLS" **on** |
+| **465** | Implicit TLS — turn "implicit TLS" **on**                 |
 
 Getting this pair wrong is the single most common cause of a failed test send.
 
@@ -90,9 +87,8 @@ hostname, forward-confirmed. This is the most commonly missed step, and mail fro
 fresh IPs is routinely spam-filtered without it.
 
 <Callout type="warning">
-A brand-new IP address has no sending reputation. Even with SPF, DKIM, DMARC, and
-PTR all correct, early messages may land in spam. This is a property of email,
-not of Omicron.
+  A brand-new IP address has no sending reputation. Even with SPF, DKIM, DMARC, and PTR all correct, early messages may
+  land in spam. This is a property of email, not of Omicron.
 </Callout>
 
 ## The sender address
@@ -113,12 +109,12 @@ error message, not a generic one.
 
 Common failures:
 
-| Message | Cause |
-| --- | --- |
-| Authentication failed | Wrong username or password/API key |
-| Connection timed out | Wrong host or port, or the port is blocked outbound |
-| TLS handshake error | 587 with implicit TLS on, or 465 with it off |
-| Sender not verified | The provider requires a verified sender or domain |
+| Message               | Cause                                               |
+| --------------------- | --------------------------------------------------- |
+| Authentication failed | Wrong username or password/API key                  |
+| Connection timed out  | Wrong host or port, or the port is blocked outbound |
+| TLS handshake error   | 587 with implicit TLS on, or 465 with it off        |
+| Sender not verified   | The provider requires a verified sender or domain   |
 
 ## Email confirmation before sign-in
 

@@ -49,8 +49,8 @@ IP could trigger unbounded certificate requests against Let's Encrypt's rate
 limits.
 
 <Callout type="note">
-You can also set `APP_DOMAIN` up front in `.env`, but it is not required. Web
-settings (wizard or admin panel) take precedence over the environment variable.
+  You can also set `APP_DOMAIN` up front in `.env`, but it is not required. Web settings (wizard or admin panel) take
+  precedence over the environment variable.
 </Callout>
 
 ## Ports
@@ -83,9 +83,9 @@ docker compose up -d
 ```
 
 <Callout type="warning" title="Changing the domain breaks federation identity">
-An actor's ActivityPub identity is built from the domain. Remote servers already
-following `@you@old-domain` will not automatically follow `@you@new-domain` —
-existing followers are effectively lost. Choose your domain before you federate.
+  An actor's ActivityPub identity is built from the domain. Remote servers already following `@you@old-domain` will not
+  automatically follow `@you@new-domain` — existing followers are effectively lost. Choose your domain before you
+  federate.
 </Callout>
 
 ## Troubleshooting

@@ -3,10 +3,10 @@
 This repository is under **two licences**: one for the software that renders the
 site, one for the documentation it renders.
 
-| What | Licence | Full text |
-| --- | --- | --- |
-| **Site source code** — layouts, components, styles, config, build and CI files | `AGPL-3.0-or-later` | [LICENSE](LICENSE) |
-| **Documentation text** — everything under `src/content/`, plus `README.md` and this file | `CC-BY-SA-4.0` | [LICENSE-DOCS](LICENSE-DOCS) |
+| What                                                                                     | Licence             | Full text                    |
+| ---------------------------------------------------------------------------------------- | ------------------- | ---------------------------- |
+| **Site source code** — layouts, components, styles, config, build and CI files           | `AGPL-3.0-or-later` | [LICENSE](LICENSE)           |
+| **Documentation text** — everything under `src/content/`, plus `README.md` and this file | `CC-BY-SA-4.0`      | [LICENSE-DOCS](LICENSE-DOCS) |
 
 The Omicron logo and other brand assets in `public/` are **not** covered by
 either licence. They are trademarks of The JK Labs; see

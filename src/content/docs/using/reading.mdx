@@ -9,11 +9,11 @@ import Callout from "@/components/Callout.astro";
 
 Three tabs:
 
-| Tab | Shows |
-| --- | --- |
+| Tab         | Shows                                                              |
+| ----------- | ------------------------------------------------------------------ |
 | **For you** | Posts from accounts and tags you follow, plus posts they recommend |
-| **Local** | Everything published on this instance |
-| **Global** | Local posts plus what has arrived from the wider fediverse |
+| **Local**   | Everything published on this instance                              |
+| **Global**  | Local posts plus what has arrived from the wider fediverse         |
 
 Pick your default tab in **Settings → Reading**. There is no engagement-ranked
 algorithm — ordering is chronological, and "For you" is simply the union of what
@@ -49,15 +49,13 @@ them.
 
 Recommending cannot widen who may read a post. If the original author requires
 follower approval, the recommendation only reaches the recommender's followers
-who are *also* approved followers of that author; to everyone else it is not
+who are _also_ approved followers of that author; to everyone else it is not
 shown at all. The author's own audience is what decides, not the recommender's.
 
 <Callout type="note">
-Recommendations are not deduplicated against anything else already reaching a
-follower's feed. If they already see a post because they follow its author, and
-someone else they follow recommends the same post, it appears twice — once for
-each reason, the same way a Mastodon boost of something already in your
-timeline shows up as its own line.
+  Recommendations are not deduplicated against anything else already reaching a follower's feed. If they already see a
+  post because they follow its author, and someone else they follow recommends the same post, it appears twice — once
+  for each reason, the same way a Mastodon boost of something already in your timeline shows up as its own line.
 </Callout>
 
 ### Language filtering
@@ -76,9 +74,8 @@ to accept it. If their account requires approval, the follow stays pending until
 they act.
 
 <Callout type="note">
-Following someone on a remote server does not import their back catalogue.
-Federation delivers what happens **after** the follow is accepted — plus whatever
-your instance has already cached from other paths.
+  Following someone on a remote server does not import their back catalogue. Federation delivers what happens **after**
+  the follow is accepted — plus whatever your instance has already cached from other paths.
 </Callout>
 
 ## Tags

@@ -28,10 +28,9 @@ Tokens do not expire. An integration that publishes for years should not break
 on a timer. Revoking is explicit, immediate, and yours to do from the same page.
 
 <Callout type="warning" title="A token publishes as you">
-Anyone holding it can publish, edit, and unpublish posts under your name. Treat
-it like a password: give it only to the system that needs it, keep it in that
-system's secret store rather than in a template or a committed file, and revoke
-it the moment you suspect it has leaked.
+  Anyone holding it can publish, edit, and unpublish posts under your name. Treat it like a password: give it only to
+  the system that needs it, keep it in that system's secret store rather than in a template or a committed file, and
+  revoke it the moment you suspect it has leaked.
 </Callout>
 
 ## The request
@@ -47,16 +46,16 @@ The token may travel in either header — `X-Webhook-Secret: <token>` or
 
 ### Body
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `title` | string | on create | Up to 300 characters. |
-| `body` | string | on create | Markdown. Rendered to sanitized HTML on write. |
-| `description` | string | no | Up to 500 characters. Defaults to the first ~150 characters of the body. |
-| `banner` | string | no | Absolute `http(s)` URL of a cover image, hosted by you. |
-| `slug` | string | no | Stable key for this document — **not** the post's URL. Defaults to a slug of the title. |
-| `tags` | string[] | no | Up to 5 after normalisation. Omit to leave existing tags alone; `[]` clears them. |
-| `language` | string | no | BCP-47 primary subtag, e.g. `en`, `tr`. Drives the reader's language filter. |
-| `status` | string | no | `published` (default) or `draft`. Scheduling is not available here — see below. |
+| Field         | Type     | Required  | Notes                                                                                   |
+| ------------- | -------- | --------- | --------------------------------------------------------------------------------------- |
+| `title`       | string   | on create | Up to 300 characters.                                                                   |
+| `body`        | string   | on create | Markdown. Rendered to sanitized HTML on write.                                          |
+| `description` | string   | no        | Up to 500 characters. Defaults to the first ~150 characters of the body.                |
+| `banner`      | string   | no        | Absolute `http(s)` URL of a cover image, hosted by you.                                 |
+| `slug`        | string   | no        | Stable key for this document — **not** the post's URL. Defaults to a slug of the title. |
+| `tags`        | string[] | no        | Up to 5 after normalisation. Omit to leave existing tags alone; `[]` clears them.       |
+| `language`    | string   | no        | BCP-47 primary subtag, e.g. `en`, `tr`. Drives the reader's language filter.            |
+| `status`      | string   | no        | `published` (default) or `draft`. Scheduling is not available here — see below.         |
 
 "On create" means the first request that publishes a given document must carry a
 `title` and a `body`. Once the post exists, every field is optional — see
@@ -74,17 +73,14 @@ own `hello-world` never collides with yours, and no token can address, read, or
 overwrite a post belonging to a different account.
 
 <Callout type="note" title="The key is not the URL">
-`slug` names the document inside your CMS and is never shown to a reader. The
-post's public address is built from its **title** — see
-[The post's URL](/using/writing/#the-posts-url). The two are independent: a
-document keyed `doc-42` still gets a readable permalink, and changing one does
-not change the other.
+  `slug` names the document inside your CMS and is never shown to a reader. The post's public address is built from its
+  **title** — see [The post's URL](/using/writing/#the-posts-url). The two are independent: a document keyed `doc-42`
+  still gets a readable permalink, and changing one does not change the other.
 </Callout>
 
 <Callout type="tip" title="Send a stable slug">
-Without `slug`, the key is derived from the title, so renaming a document
-publishes a **new** post rather than updating the old one. If your CMS has a
-document id, send it as `slug` and retitling works correctly.
+  Without `slug`, the key is derived from the title, so renaming a document publishes a **new** post rather than
+  updating the old one. If your CMS has a document id, send it as `slug` and retitling works correctly.
 </Callout>
 
 A title with no ASCII characters derives to an empty key; those documents must
@@ -128,10 +124,9 @@ deliberately different:
 tags, send `[]` to clear them.
 
 <Callout type="note" title="How the summary tracks the body">
-`description` is a preview of the body, so it is re-derived whenever the body
-changes and you send no `description` with it. If your CMS writes its own
-descriptions, send `description` alongside each `body` you change and yours is
-kept.
+  `description` is a preview of the body, so it is re-derived whenever the body changes and you send no `description`
+  with it. If your CMS writes its own descriptions, send `description` alongside each `body` you change and yours is
+  kept.
 </Callout>
 
 ## Responses
@@ -142,15 +137,15 @@ Success returns the post's id and the key it is stored under:
 { "id": "9e962281-…", "slug": "eu-payments", "status": "published", "created": true }
 ```
 
-| Status | Meaning |
-| --- | --- |
-| `201` | A new post was created. |
-| `200` | Your existing post with that slug was updated (`"created": false`). |
-| `400` | Invalid payload. The message names the offending field. |
-| `401` | Unknown, revoked, or missing credential. |
-| `403` | The owning account is suspended. |
-| `413` | Body larger than `WEBHOOK_MAX_BODY_BYTES` (512 KB by default). |
-| `429` | Over `RL_WEBHOOK_MAX`. `Retry-After` says how long to wait. |
+| Status | Meaning                                                             |
+| ------ | ------------------------------------------------------------------- |
+| `201`  | A new post was created.                                             |
+| `200`  | Your existing post with that slug was updated (`"created": false`). |
+| `400`  | Invalid payload. The message names the offending field.             |
+| `401`  | Unknown, revoked, or missing credential.                            |
+| `403`  | The owning account is suspended.                                    |
+| `413`  | Body larger than `WEBHOOK_MAX_BODY_BYTES` (512 KB by default).      |
+| `429`  | Over `RL_WEBHOOK_MAX`. `Retry-After` says how long to wait.         |
 
 Errors never echo the credential, and nothing logs it.
 
@@ -191,11 +186,11 @@ The same endpoints the Settings page uses. These are ordinary signed-in API
 calls authenticated by the **session cookie**, not by a webhook token — a token
 cannot mint or revoke tokens.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/webhooks/tokens` | Your live tokens (never the values) |
-| `POST` | `/api/webhooks/tokens` | Mint one; the plaintext is in this response only |
-| `DELETE` | `/api/webhooks/tokens/:id` | Revoke one |
+| Method   | Path                       | Purpose                                          |
+| -------- | -------------------------- | ------------------------------------------------ |
+| `GET`    | `/api/webhooks/tokens`     | Your live tokens (never the values)              |
+| `POST`   | `/api/webhooks/tokens`     | Mint one; the plaintext is in this response only |
+| `DELETE` | `/api/webhooks/tokens/:id` | Revoke one                                       |
 
 A maximum of **10** live tokens per account.
 
@@ -236,20 +231,19 @@ post.
 A published post is delivered to your remote followers as a `Create(Article)`.
 On top of the usual title, body, and tags:
 
-| Field | Federates as | Seen by remote instances as |
-| --- | --- | --- |
+| Field         | Federates as      | Seen by remote instances as             |
+| ------------- | ----------------- | --------------------------------------- |
 | `description` | Article `summary` | The preview line above a long-form link |
-| `banner` | Article `image` | The link card's image |
+| `banner`      | Article `image`   | The link card's image                   |
 
 Re-sending an already-published post delivers an `Update(Article)` so remote
 copies refresh. Flipping a published post to `"status": "draft"` tombstones the
 copies already delivered.
 
 <Callout type="note" title="Scheduling is a composer feature, not a webhook one">
-`status` takes `draft` and `published` only. A sending system already knows what
-time it is, so the useful way to schedule from a CMS is to hold the document and
-send it when it is due — rather than upload it early and ask Omicron to sit on
-it. Posts scheduled in the composer are unaffected by anything sent here.
+  `status` takes `draft` and `published` only. A sending system already knows what time it is, so the useful way to
+  schedule from a CMS is to hold the document and send it when it is due — rather than upload it early and ask Omicron
+  to sit on it. Posts scheduled in the composer are unaffected by anything sent here.
 </Callout>
 
 ## What readers see
@@ -257,10 +251,10 @@ it. Posts scheduled in the composer are unaffected by anything sent here.
 `description` and `banner` are not federation-only metadata — they shape the post
 on your own instance too:
 
-| Field | In the feed | On the post | In a link preview |
-| --- | --- | --- | --- |
-| `description` | The preview line under the title | Not shown — the body is right there | `og:description` |
-| `banner` | A thumbnail beside the title | A full-width image above the body | `og:image` |
+| Field         | In the feed                      | On the post                         | In a link preview |
+| ------------- | -------------------------------- | ----------------------------------- | ----------------- |
+| `description` | The preview line under the title | Not shown — the body is right there | `og:description`  |
+| `banner`      | A thumbnail beside the title     | A full-width image above the body   | `og:image`        |
 
 A post written in the editor has neither, and its feed preview is clipped from
 the body instead. A `banner` that fails to load is dropped rather than left as a
@@ -277,12 +271,12 @@ Per-user tokens are the better default for anything ongoing: they identify who
 published, they are revocable from the UI without a restart, and losing one
 affects one account instead of the instance.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `WEBHOOK_SECRET` | *unset* | Instance-wide fallback credential. Minimum 16 characters. |
-| `WEBHOOK_AUTHOR` | oldest account | Username that `WEBHOOK_SECRET` publishes as. |
-| `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject a request body larger than this. |
-| `RL_WEBHOOK_MAX` | `30` | Requests / min per source IP. |
+| Variable                 | Default        | Purpose                                                   |
+| ------------------------ | -------------- | --------------------------------------------------------- |
+| `WEBHOOK_SECRET`         | _unset_        | Instance-wide fallback credential. Minimum 16 characters. |
+| `WEBHOOK_AUTHOR`         | oldest account | Username that `WEBHOOK_SECRET` publishes as.              |
+| `WEBHOOK_MAX_BODY_BYTES` | `512000`       | Reject a request body larger than this.                   |
+| `RL_WEBHOOK_MAX`         | `30`           | Requests / min per source IP.                             |
 
 ## Limits and what this is not
 

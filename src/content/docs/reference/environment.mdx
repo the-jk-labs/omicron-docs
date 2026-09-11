@@ -9,68 +9,68 @@ You do **not** need a `.env` file. `docker compose up -d --build` works with non
 at all. Create one next to `docker-compose.yml` only to override a default.
 
 <Callout type="note">
-Web settings (setup wizard and admin panel) **take precedence** over these
-values. Environment variables are defaults, not overrides.
+  Web settings (setup wizard and admin panel) **take precedence** over these values. Environment variables are defaults,
+  not overrides.
 </Callout>
 
 ## Instance identity
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `APP_DOMAIN` | `localhost:5173` | Public domain, no scheme, no trailing slash. Usually set via the wizard. |
-| `PUBLIC_APP_NAME` | `Omicron` | Instance name shown in the UI. |
+| Variable          | Default          | Purpose                                                                  |
+| ----------------- | ---------------- | ------------------------------------------------------------------------ |
+| `APP_DOMAIN`      | `localhost:5173` | Public domain, no scheme, no trailing slash. Usually set via the wizard. |
+| `PUBLIC_APP_NAME` | `Omicron`        | Instance name shown in the UI.                                           |
 
 ## Federation
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `FEDERATION_ENABLED` | `false` | `true` enables ActivityPub (WebFinger, actor, inbox/outbox). Applied on restart. Needs a real domain and HTTPS to be useful. |
+| Variable                   | Default | Purpose                                                                                                                                                                                 |
+| -------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FEDERATION_ENABLED`       | `false` | `true` enables ActivityPub (WebFinger, actor, inbox/outbox). Applied on restart. Needs a real domain and HTTPS to be useful.                                                            |
 | `ALLOW_PRIVATE_FEDERATION` | `false` | `true` lets remote discovery talk to private hosts (loopback, RFC1918, `.local`, …) for testing against a LAN instance. Applied on restart. Never enable on an internet-reachable host. |
 
 ## Secrets
 
 Normally auto-generated into the `secrets` volume on first boot — leave unset.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `SESSION_SECRET` | *(generated)* | Pin your own: `openssl rand -hex 32`. Takes precedence over a UI-rotated secret. |
-| `POSTGRES_USER` | `omicron` | Bundled database user. |
-| `POSTGRES_DB` | `omicron` | Bundled database name. |
-| `DATABASE_URL` | *(bundled)* | Point at an **external** Postgres. Takes precedence over the generated password. |
+| Variable         | Default       | Purpose                                                                          |
+| ---------------- | ------------- | -------------------------------------------------------------------------------- |
+| `SESSION_SECRET` | _(generated)_ | Pin your own: `openssl rand -hex 32`. Takes precedence over a UI-rotated secret. |
+| `POSTGRES_USER`  | `omicron`     | Bundled database user.                                                           |
+| `POSTGRES_DB`    | `omicron`     | Bundled database name.                                                           |
+| `DATABASE_URL`   | _(bundled)_   | Point at an **external** Postgres. Takes precedence over the generated password. |
 
 ## Redis
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `REDIS_URL` | *(bundled `redis` service)* | Backs the rate limiter, Fedify's KV + message queue, and the app job queue. Unset it to run entirely in-process. |
+| Variable    | Default                     | Purpose                                                                                                          |
+| ----------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `REDIS_URL` | _(bundled `redis` service)_ | Backs the rate limiter, Fedify's KV + message queue, and the app job queue. Unset it to run entirely in-process. |
 
 The Compose stack sets this to its bundled `redis` service automatically. Leave
 it unset for local `deno task dev`, or point it at your own Redis.
 
 <Callout type="warning">
-In-process mode loses queued jobs and pending federation deliveries on restart,
-and rate-limit counters are not shared across processes.
+  In-process mode loses queued jobs and pending federation deliveries on restart, and rate-limit counters are not shared
+  across processes.
 </Callout>
 
 ## Rate limiting
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `RATE_LIMIT_ENABLED` | `true` | Disable only behind a trusted upstream that already throttles. |
-| `RL_LOGIN_MAX` | `15` | Login attempts per IP / 15 min. |
-| `RL_REGISTER_MAX` | `5` | Registrations per IP / hour. |
-| `RL_API_WRITE_MAX` | `120` | Writes / min per signed-in user (or per IP). |
-| `RL_UPLOAD_MAX` | `10` | Media uploads / min per signed-in user (or per IP). |
-| `RL_INBOX_MAX` | `300` | Federation inbox POSTs / min per source IP. |
-| `RL_WEBHOOK_MAX` | `30` | Content-webhook POSTs / min per source IP. |
-| `INBOX_MAX_BODY_BYTES` | `1000000` | Reject inbox POSTs larger than this. |
-| `RL_REMOTE_MAX` | `30` | Anonymous remote-discovery GETs / min per IP. |
-| `RL_REMOTE_MISS_MAX` | `20` | Cache-miss (outbound) remote lookups / min per caller. |
-| `RL_REMOTE_MAX_OUTBOUND` | `10` | Global concurrent outbound federation lookups. |
-| `RL_REMOTE_MAX_PER_ORIGIN` | `3` | Concurrent lookups per remote host. |
-| `REMOTE_LOOKUP_TIMEOUT_MS` | `10000` | Deadline for one WebFinger + actor + outbox lookup. |
-| `REMOTE_NEGATIVE_CACHE_TTL_MS` | `60000` | How long a failed/not-found lookup is negatively cached. |
-| `REMOTE_CACHE_RETENTION_DAYS` | `30` | Days a cached remote actor survives once nothing re-fetches it and no local user references it; `0` disables pruning. |
+| Variable                       | Default   | Purpose                                                                                                               |
+| ------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------- |
+| `RATE_LIMIT_ENABLED`           | `true`    | Disable only behind a trusted upstream that already throttles.                                                        |
+| `RL_LOGIN_MAX`                 | `15`      | Login attempts per IP / 15 min.                                                                                       |
+| `RL_REGISTER_MAX`              | `5`       | Registrations per IP / hour.                                                                                          |
+| `RL_API_WRITE_MAX`             | `120`     | Writes / min per signed-in user (or per IP).                                                                          |
+| `RL_UPLOAD_MAX`                | `10`      | Media uploads / min per signed-in user (or per IP).                                                                   |
+| `RL_INBOX_MAX`                 | `300`     | Federation inbox POSTs / min per source IP.                                                                           |
+| `RL_WEBHOOK_MAX`               | `30`      | Content-webhook POSTs / min per source IP.                                                                            |
+| `INBOX_MAX_BODY_BYTES`         | `1000000` | Reject inbox POSTs larger than this.                                                                                  |
+| `RL_REMOTE_MAX`                | `30`      | Anonymous remote-discovery GETs / min per IP.                                                                         |
+| `RL_REMOTE_MISS_MAX`           | `20`      | Cache-miss (outbound) remote lookups / min per caller.                                                                |
+| `RL_REMOTE_MAX_OUTBOUND`       | `10`      | Global concurrent outbound federation lookups.                                                                        |
+| `RL_REMOTE_MAX_PER_ORIGIN`     | `3`       | Concurrent lookups per remote host.                                                                                   |
+| `REMOTE_LOOKUP_TIMEOUT_MS`     | `10000`   | Deadline for one WebFinger + actor + outbox lookup.                                                                   |
+| `REMOTE_NEGATIVE_CACHE_TTL_MS` | `60000`   | How long a failed/not-found lookup is negatively cached.                                                              |
+| `REMOTE_CACHE_RETENTION_DAYS`  | `30`      | Days a cached remote actor survives once nothing re-fetches it and no local user references it; `0` disables pruning. |
 
 ## Content ingestion
 
@@ -81,17 +81,16 @@ under **Settings → Integrations** and publish under their own names — see
 The variables below only add an instance-wide fallback credential, for
 publishing without a user token (a migration script, an operator-run pipeline).
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `WEBHOOK_SECRET` | *unset* | Instance-wide fallback credential. Minimum 16 characters. |
-| `WEBHOOK_AUTHOR` | oldest account | Username that `WEBHOOK_SECRET` publishes as. |
-| `WEBHOOK_MAX_BODY_BYTES` | `512000` | Reject an ingested body larger than this. |
+| Variable                 | Default        | Purpose                                                   |
+| ------------------------ | -------------- | --------------------------------------------------------- |
+| `WEBHOOK_SECRET`         | _unset_        | Instance-wide fallback credential. Minimum 16 characters. |
+| `WEBHOOK_AUTHOR`         | oldest account | Username that `WEBHOOK_SECRET` publishes as.              |
+| `WEBHOOK_MAX_BODY_BYTES` | `512000`       | Reject an ingested body larger than this.                 |
 
 <Callout type="warning">
-`WEBHOOK_SECRET` is a publishing credential — anyone holding it can publish,
-edit, and unpublish posts as `WEBHOOK_AUTHOR`. Unlike a per-user token it cannot
-be revoked from the UI; changing it needs a restart. Prefer per-user tokens for
-anything ongoing.
+  `WEBHOOK_SECRET` is a publishing credential — anyone holding it can publish, edit, and unpublish posts as
+  `WEBHOOK_AUTHOR`. Unlike a per-user token it cannot be revoked from the UI; changing it needs a restart. Prefer
+  per-user tokens for anything ongoing.
 </Callout>
 
 ## Email
@@ -99,33 +98,33 @@ anything ongoing.
 Normally set in the wizard or admin panel, where there is a live test button.
 These are fallbacks.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `EMAIL_TRANSPORT` | `console` | `console`, `smtp`, `relay`, or `direct`. |
-| `EMAIL_FROM` | `Omicron <no-reply@localhost>` | Sender address. |
-| `SMTP_HOST` | — | SMTP server hostname. |
-| `SMTP_PORT` | `587` | 587 for STARTTLS, 465 for implicit TLS. |
-| `SMTP_USERNAME` | — | SMTP username. |
-| `SMTP_PASSWORD` | — | SMTP password or API key. |
-| `SMTP_TLS` | `false` | `true` = implicit TLS (465); `false` = STARTTLS (587). |
-| `EMAIL_VERIFICATION_REQUIRED` | `true` | New accounts must confirm their email before they can sign in (`"false"` disables). |
+| Variable                      | Default                        | Purpose                                                                             |
+| ----------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
+| `EMAIL_TRANSPORT`             | `console`                      | `console`, `smtp`, `relay`, or `direct`.                                            |
+| `EMAIL_FROM`                  | `Omicron <no-reply@localhost>` | Sender address.                                                                     |
+| `SMTP_HOST`                   | —                              | SMTP server hostname.                                                               |
+| `SMTP_PORT`                   | `587`                          | 587 for STARTTLS, 465 for implicit TLS.                                             |
+| `SMTP_USERNAME`               | —                              | SMTP username.                                                                      |
+| `SMTP_PASSWORD`               | —                              | SMTP password or API key.                                                           |
+| `SMTP_TLS`                    | `false`                        | `true` = implicit TLS (465); `false` = STARTTLS (587).                              |
+| `EMAIL_VERIFICATION_REQUIRED` | `true`                         | New accounts must confirm their email before they can sign in (`"false"` disables). |
 
 ## Public entrypoint
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `HTTP_PORT` | `80` | Host HTTP port for Caddy. |
-| `HTTPS_PORT` | `443` | Host HTTPS port for Caddy. |
+| Variable     | Default | Purpose                    |
+| ------------ | ------- | -------------------------- |
+| `HTTP_PORT`  | `80`    | Host HTTP port for Caddy.  |
+| `HTTPS_PORT` | `443`   | Host HTTPS port for Caddy. |
 
 Changing these breaks standard automatic HTTPS — Let's Encrypt validates over 80
 and 443. Change them only when those ports are genuinely unavailable.
 
 ## AI-scraper protection
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `CADDY_ADMIN_URL` | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
-| `ANUBIS_REDIRECT_DOMAINS` | *(empty)* | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain. |
+| Variable                  | Default             | Purpose                                                                                               |
+| ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `CADDY_ADMIN_URL`         | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
+| `ANUBIS_REDIRECT_DOMAINS` | _(empty)_           | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain.     |
 
 The shield itself is turned on from **Admin → Security**, not from here.
 
@@ -147,12 +146,12 @@ sits behind the challenge service.
 
 ## Networking and storage
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `8000` | Backend listen port. |
-| `INTERNAL_API_URL` | `http://backend:8000` | How the frontend reaches the backend. |
-| `UPLOADS_DIR` | `/data/uploads` | Where uploaded media is written. |
-| `STATE_DIR` | `/data/state` | Where generated secrets are persisted when not supplied via env or files. |
+| Variable           | Default               | Purpose                                                                   |
+| ------------------ | --------------------- | ------------------------------------------------------------------------- |
+| `PORT`             | `8000`                | Backend listen port.                                                      |
+| `INTERNAL_API_URL` | `http://backend:8000` | How the frontend reaches the backend.                                     |
+| `UPLOADS_DIR`      | `/data/uploads`       | Where uploaded media is written.                                          |
+| `STATE_DIR`        | `/data/state`         | Where generated secrets are persisted when not supplied via env or files. |
 
 ## Backups
 
@@ -160,17 +159,17 @@ Daily encrypted snapshots (database + uploads + state + secrets) via the
 built-in `backup` service. All optional — unset means the default, and the
 defaults already protect a fresh instance locally.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `BACKUP_ENABLED` | `true` | Set `false` to disable the sidecar entirely. |
-| `BACKUP_SCHEDULE` | `0 2 * * *` | 5-field cron, UTC. Daily at 02:00. |
-| `BACKUP_REPOSITORY` | `/backups/restic` | Snapshot destination. Local path by default; `s3:<endpoint>/<bucket>` for R2, S3, MinIO, B2. |
-| `BACKUP_S3_REGION` | `auto` | Region for S3-compatible backends (`auto` is what R2 wants; set a real region for AWS). Ignored locally. `AWS_DEFAULT_REGION` wins if set. |
-| `AWS_ACCESS_KEY_ID` | — | Key for the off-site backend. Unused locally. |
-| `AWS_SECRET_ACCESS_KEY` | — | Secret for the off-site backend. Unused locally. |
-| `BACKUP_KEEP_DAILY` | `3` | Daily snapshots to keep; older ones are pruned after each run. |
-| `BACKUP_KEEP_WEEKLY` | `1` | Weekly snapshots to keep. |
-| `BACKUP_KEEP_MONTHLY` | `0` | Monthly snapshots to keep. |
+| Variable                | Default           | Purpose                                                                                                                                    |
+| ----------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BACKUP_ENABLED`        | `true`            | Set `false` to disable the sidecar entirely.                                                                                               |
+| `BACKUP_SCHEDULE`       | `0 2 * * *`       | 5-field cron, UTC. Daily at 02:00.                                                                                                         |
+| `BACKUP_REPOSITORY`     | `/backups/restic` | Snapshot destination. Local path by default; `s3:<endpoint>/<bucket>` for R2, S3, MinIO, B2.                                               |
+| `BACKUP_S3_REGION`      | `auto`            | Region for S3-compatible backends (`auto` is what R2 wants; set a real region for AWS). Ignored locally. `AWS_DEFAULT_REGION` wins if set. |
+| `AWS_ACCESS_KEY_ID`     | —                 | Key for the off-site backend. Unused locally.                                                                                              |
+| `AWS_SECRET_ACCESS_KEY` | —                 | Secret for the off-site backend. Unused locally.                                                                                           |
+| `BACKUP_KEEP_DAILY`     | `3`               | Daily snapshots to keep; older ones are pruned after each run.                                                                             |
+| `BACKUP_KEEP_WEEKLY`    | `1`               | Weekly snapshots to keep.                                                                                                                  |
+| `BACKUP_KEEP_MONTHLY`   | `0`               | Monthly snapshots to keep.                                                                                                                 |
 
 Verified against `.env.example` and `docker-compose.yml` in the app repo. See
 [Backups and restore](/self-hosting/backups/) for operations.
@@ -181,11 +180,11 @@ Uploaded media — post images, avatars, the instance banner — is bounded thre
 ways: a per-account upload rate limit (`RL_UPLOAD_MAX`, above), storage quotas,
 and garbage collection.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `UPLOAD_QUOTA_USER_MB` | `200` | Upload storage per account, in MB. `0` disables. |
-| `UPLOAD_QUOTA_TOTAL_MB` | `2048` | Upload storage for the whole instance, in MB. `0` disables. |
-| `UPLOAD_GC_GRACE_DAYS` | `30` | Days an unreferenced upload survives before the daily sweep deletes it. |
+| Variable                | Default | Purpose                                                                 |
+| ----------------------- | ------- | ----------------------------------------------------------------------- |
+| `UPLOAD_QUOTA_USER_MB`  | `200`   | Upload storage per account, in MB. `0` disables.                        |
+| `UPLOAD_QUOTA_TOTAL_MB` | `2048`  | Upload storage for the whole instance, in MB. `0` disables.             |
+| `UPLOAD_GC_GRACE_DAYS`  | `30`    | Days an unreferenced upload survives before the daily sweep deletes it. |
 
 A quota breach answers an upload with HTTP 413 naming the cap that was hit.
 Quota checks are transactional, so concurrent uploads cannot slip past a cap.

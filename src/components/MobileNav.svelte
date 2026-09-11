@@ -1,8 +1,8 @@
 <script lang="ts">
   // SPDX-License-Identifier: AGPL-3.0-or-later
   import { Dialog } from "bits-ui";
-  import Sidebar from "./Sidebar.svelte";
   import type { NavSection } from "@/lib/nav";
+  import Sidebar from "./Sidebar.svelte";
 
   type Props = { sections: NavSection[]; currentSlug: string };
   let { sections, currentSlug }: Props = $props();
@@ -36,9 +36,7 @@
       class="fixed inset-y-0 left-0 z-50 flex w-[19rem] max-w-[85vw] flex-col border-r border-border bg-background outline-none lg:hidden"
     >
       <div class="flex items-center justify-between border-b border-border px-4 py-3">
-        <Dialog.Title class="text-sm font-semibold tracking-tight text-foreground">
-          Documentation
-        </Dialog.Title>
+        <Dialog.Title class="text-sm font-semibold tracking-tight text-foreground">Documentation</Dialog.Title>
         <Dialog.Close
           aria-label="Close navigation"
           class="inline-flex size-8 items-center justify-center rounded-input text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
@@ -58,9 +56,7 @@
           </svg>
         </Dialog.Close>
       </div>
-      <Dialog.Description class="sr-only">
-        Links to every section of the Omicron documentation.
-      </Dialog.Description>
+      <Dialog.Description class="sr-only">Links to every section of the Omicron documentation.</Dialog.Description>
       <nav class="flex-1 overflow-y-auto px-2 py-3">
         <Sidebar {sections} {currentSlug} onnavigate={() => (open = false)} />
       </nav>

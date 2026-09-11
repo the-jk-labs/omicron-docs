@@ -22,10 +22,9 @@ The script:
 No git required. Re-running the installer later performs an upgrade.
 
 <Callout type="tip">
-Piping a script to a shell is worth reading first. The script is short and
-lives at
-[install.sh](https://github.com/the-jk-labs/omicron/blob/main/install.sh) —
-download it, read it, then run it if you prefer.
+  Piping a script to a shell is worth reading first. The script is short and lives at
+  [install.sh](https://github.com/the-jk-labs/omicron/blob/main/install.sh) — download it, read it, then run it if you
+  prefer.
 </Callout>
 
 ## Option B — clone and run
@@ -48,13 +47,13 @@ are cached and fast.
 docker compose ps
 ```
 
-| Service | Purpose | Published on |
-| --- | --- | --- |
-| `caddy` | Public entrypoint, TLS termination, Let's Encrypt | 80, 443 |
-| `frontend` | SvelteKit web app | 127.0.0.1:5173 |
-| `backend` | JSON API + ActivityPub (Deno) | 127.0.0.1:8000 |
-| `postgres` | Database | internal only |
-| `redis` | Queue + rate-limit state | internal only |
+| Service    | Purpose                                           | Published on   |
+| ---------- | ------------------------------------------------- | -------------- |
+| `caddy`    | Public entrypoint, TLS termination, Let's Encrypt | 80, 443        |
+| `frontend` | SvelteKit web app                                 | 127.0.0.1:5173 |
+| `backend`  | JSON API + ActivityPub (Deno)                     | 127.0.0.1:8000 |
+| `postgres` | Database                                          | internal only  |
+| `redis`    | Queue + rate-limit state                          | internal only  |
 
 The frontend and backend ports are bound to **loopback only**. They exist for
 troubleshooting on the host; all public traffic goes through Caddy.
@@ -105,6 +104,6 @@ docker compose down -v   # stop and DELETE all volumes
 ```
 
 <Callout type="danger" title="`down -v` is irreversible">
-`-v` removes the named volumes: database, uploads, secrets, and certificates.
-Never run it on an instance whose data you want to keep.
+  `-v` removes the named volumes: database, uploads, secrets, and certificates. Never run it on an instance whose data
+  you want to keep.
 </Callout>

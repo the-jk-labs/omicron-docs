@@ -29,9 +29,8 @@ Create the first user. This account:
 - is **signed in immediately** when the wizard completes.
 
 <Callout type="warning" title="Do this before anyone else can reach the instance">
-The wizard is open until the first account exists. On a publicly reachable
-server, finish it as soon as the stack is up — the first person to complete it
-owns the instance.
+  The wizard is open until the first account exists. On a publicly reachable server, finish it as soon as the stack is
+  up — the first person to complete it owns the instance.
 </Callout>
 
 ## Step 3 — Email
@@ -70,7 +69,4 @@ docker compose down -v      # deletes ALL data, then start over
 docker compose up -d --build
 ```
 
-<Callout type="danger">
-`down -v` destroys the database, uploads, secrets, and certificates. There is no
-undo.
-</Callout>
+<Callout type="danger">`down -v` destroys the database, uploads, secrets, and certificates. There is no undo.</Callout>

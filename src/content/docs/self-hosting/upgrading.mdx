@@ -28,9 +28,8 @@ including the cache cleanup below.
 - The app version is logged on boot and exposed at `GET /version`.
 
 <Callout type="tip" title="Back up first">
-Take a backup before any significant upgrade — `docker compose exec backup
-backup-now` takes a minute and turns a bad release into an inconvenience. See
-[Backups and restore](/self-hosting/backups/).
+  Take a backup before any significant upgrade — `docker compose exec backup backup-now` takes a minute and turns a bad
+  release into an inconvenience. See [Backups and restore](/self-hosting/backups/).
 </Callout>
 
 ## Migration policy
@@ -62,8 +61,8 @@ until Caddy has been recreated. After that release, normal `up -d` upgrades
 resume.
 
 <Callout type="note">
-The same trick applies any time a release changes `Caddyfile` or another file a
-service only reads at startup. Release notes will say so explicitly.
+  The same trick applies any time a release changes `Caddyfile` or another file a service only reads at startup. Release
+  notes will say so explicitly.
 </Callout>
 
 ## One-time step: the Redis 8 release
@@ -91,6 +90,7 @@ docker compose up -d --build
 Only regenerable state lives there — rate-limit counters, queued jobs, and
 federation activities not yet delivered. No posts, accounts, or uploads. Activities
 still queued are lost, so remote instances may never receive them.
+
 </Callout>
 
 ## One-time step: the scraper-shield fixes release
@@ -159,6 +159,7 @@ A release that raises the version of a bundled service can also block a
 downgrade, because the newer service may leave data the older one refuses to
 read. Rolling back past the Redis 8 release is the current example — see
 [above](#one-time-step-the-redis-8-release). Release notes call these out.
+
 </Callout>
 
 ## Never run this on a live instance

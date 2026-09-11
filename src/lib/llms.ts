@@ -68,7 +68,10 @@ export function mdxToMarkdown(body: string): string {
     out.push(inCallout ? (line.trim() ? `> ${line}` : ">") : line);
   }
 
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return out
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 /** The section heading a slug sits under, for grouping in llms.txt. */

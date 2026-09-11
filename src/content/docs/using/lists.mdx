@@ -34,9 +34,8 @@ post about it.
 Private lists are visible only to you.
 
 <Callout type="note">
-Reading lists are exposed to the fediverse as ActivityPub objects under
-`/users/{username}/lists/{listId}`, so a public list is genuinely public — it can
-be fetched by any server that knows its URI.
+  Reading lists are exposed to the fediverse as ActivityPub objects under `/users/{username}/lists/{listId}`, so a
+  public list is genuinely public — it can be fetched by any server that knows its URI.
 </Callout>
 
 ## Lists and remote posts
@@ -46,12 +45,12 @@ reference; if the remote post is deleted upstream, the entry stops resolving.
 
 ## Managing a list
 
-| Action | Where |
-| --- | --- |
-| Create | `/lists` |
-| Rename, edit description, change visibility | The list page |
-| Add a post | The post, or the list page |
-| Remove a post | The list page |
-| Delete the list | The list page |
+| Action                                      | Where                      |
+| ------------------------------------------- | -------------------------- |
+| Create                                      | `/lists`                   |
+| Rename, edit description, change visibility | The list page              |
+| Add a post                                  | The post, or the list page |
+| Remove a post                               | The list page              |
+| Delete the list                             | The list page              |
 
 Deleting a list never deletes the posts in it — a list is a set of references.

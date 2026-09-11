@@ -20,24 +20,24 @@ override a default.
    knobs (ports, external database, rate limits). Every variable is optional.
 
 <Callout type="note">
-If you set `APP_DOMAIN` in `.env` and a different domain in the admin panel, the
-admin panel wins. Environment values are defaults, not overrides.
+  If you set `APP_DOMAIN` in `.env` and a different domain in the admin panel, the admin panel wins. Environment values
+  are defaults, not overrides.
 </Callout>
 
 ## Most-used variables
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `APP_DOMAIN` | `localhost:5173` | Public domain (no scheme). Usually set via the wizard. |
-| `PUBLIC_APP_NAME` | `Omicron` | Instance name shown in the UI. |
-| `FEDERATION_ENABLED` | `false` | `true` enables ActivityPub. Applied on restart. |
-| `HTTP_PORT` | `80` | Host HTTP port for Caddy. |
-| `HTTPS_PORT` | `443` | Host HTTPS port for Caddy. |
-| `SESSION_SECRET` | *(generated)* | Only set to pin your own: `openssl rand -hex 32`. |
-| `DATABASE_URL` | *(bundled Postgres)* | Point at an **external** Postgres. |
-| `REDIS_URL` | *(bundled Redis)* | Durable queues and shared rate limits. |
-| `RATE_LIMIT_ENABLED` | `true` | Leave on unless a trusted upstream throttles. |
-| `EMAIL_VERIFICATION_REQUIRED` | `true` | New accounts must confirm their email before they can sign in (`"false"` disables). |
+| Variable                      | Default              | Purpose                                                                             |
+| ----------------------------- | -------------------- | ----------------------------------------------------------------------------------- |
+| `APP_DOMAIN`                  | `localhost:5173`     | Public domain (no scheme). Usually set via the wizard.                              |
+| `PUBLIC_APP_NAME`             | `Omicron`            | Instance name shown in the UI.                                                      |
+| `FEDERATION_ENABLED`          | `false`              | `true` enables ActivityPub. Applied on restart.                                     |
+| `HTTP_PORT`                   | `80`                 | Host HTTP port for Caddy.                                                           |
+| `HTTPS_PORT`                  | `443`                | Host HTTPS port for Caddy.                                                          |
+| `SESSION_SECRET`              | _(generated)_        | Only set to pin your own: `openssl rand -hex 32`.                                   |
+| `DATABASE_URL`                | _(bundled Postgres)_ | Point at an **external** Postgres.                                                  |
+| `REDIS_URL`                   | _(bundled Redis)_    | Durable queues and shared rate limits.                                              |
+| `RATE_LIMIT_ENABLED`          | `true`               | Leave on unless a trusted upstream throttles.                                       |
+| `EMAIL_VERIFICATION_REQUIRED` | `true`               | New accounts must confirm their email before they can sign in (`"false"` disables). |
 
 The complete annotated list is in
 [Environment variables](/reference/environment/) and in
@@ -73,9 +73,9 @@ Redis is optional. Without `REDIS_URL`, the rate limiter, Fedify's key-value
 store and message queue, and the app job queue all run **in-process**.
 
 <Callout type="warning">
-In-process mode means queued jobs and pending federation deliveries are **lost on
-restart**, and multiple backend processes do not share rate-limit state. Fine for
-local development or a tiny box; not what you want for a busy federated instance.
+  In-process mode means queued jobs and pending federation deliveries are **lost on restart**, and multiple backend
+  processes do not share rate-limit state. Fine for local development or a tiny box; not what you want for a busy
+  federated instance.
 </Callout>
 
 ## Applying changes

@@ -84,8 +84,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Documentation prose. Hand-rolled (no @tailwindcss/typography colours) so
-   every colour is a Bits UI docs token.
+   Documentation prose. Hand-rolled, every colour is a Bits UI docs token.
    --------------------------------------------------------------------------- */
 
 .prose-docs {

@@ -17,12 +17,12 @@ pnpm install
 pnpm dev        # http://localhost:4321
 ```
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Dev server with hot reload |
-| `pnpm build` | Static build into `dist/`, then generates the Pagefind index |
-| `pnpm preview` | Serve the built site locally |
-| `pnpm check` | `astro check` — types and template diagnostics |
+| Command        | What it does                                                 |
+| -------------- | ------------------------------------------------------------ |
+| `pnpm dev`     | Dev server with hot reload                                   |
+| `pnpm build`   | Static build into `dist/`, then generates the Pagefind index |
+| `pnpm preview` | Serve the built site locally                                 |
+| `pnpm check`   | `astro check` — types and template diagnostics               |
 
 The package manager is **pnpm**, pinned via `packageManager` in `package.json`;
 `corepack enable` picks up the right version automatically. `pnpm-workspace.yaml`
@@ -43,7 +43,7 @@ descriptions, so it still works.
    ---
    title: Backups and restore
    description: One line, shown under the title and in search results.
-   badge: Admin only   # optional
+   badge: Admin only # optional
    ---
    ```
 
@@ -57,7 +57,7 @@ descriptions, so it still works.
 import Callout from "@/components/Callout.astro";
 
 <Callout type="warning" title="Optional title">
-Body text, Markdown allowed.
+  Body text, Markdown allowed.
 </Callout>
 ```
 
@@ -105,11 +105,11 @@ Both light and dark themes are first-class. Check any UI change in both.
 
 The site is fully static. On Vercel, the framework preset is Astro:
 
-| Setting | Value |
-| --- | --- |
-| Build command | `pnpm build` |
-| Output directory | `dist` |
-| Install command | `pnpm install --frozen-lockfile` |
+| Setting          | Value                            |
+| ---------------- | -------------------------------- |
+| Build command    | `pnpm build`                     |
+| Output directory | `dist`                           |
+| Install command  | `pnpm install --frozen-lockfile` |
 
 `pnpm build` runs Pagefind after Astro, so the search index ships with the
 site.
@@ -132,10 +132,10 @@ domain swap. Set `SITE_URL` only if you need to override that.
 
 Two licences, because code and prose want different things:
 
-| What | Licence |
-| --- | --- |
+| What                                                       | Licence                                            |
+| ---------------------------------------------------------- | -------------------------------------------------- |
 | **Site source code** (layouts, components, styles, config) | [AGPL-3.0-or-later](LICENSE) — the same as Omicron |
-| **Documentation text** (everything under `src/content/`) | [CC BY-SA 4.0](LICENSE-DOCS) |
+| **Documentation text** (everything under `src/content/`)   | [CC BY-SA 4.0](LICENSE-DOCS)                       |
 
 CC BY-SA is copyleft too: share and adapt the text, including commercially, as
 long as you credit the Omicron documentation, note your changes, and license

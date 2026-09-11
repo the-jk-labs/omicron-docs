@@ -48,19 +48,18 @@ is deliberately boring — layered, with the database reachable only through
 repository functions.
 
 <Callout type="tip" title="In a hurry?">
-Go straight to the [Quick start](/quick-start/). It takes one command and a
-short web wizard.
+  Go straight to the [Quick start](/quick-start/). It takes one command and a short web wizard.
 </Callout>
 
 ## The stack
 
-| Layer | Technology |
-| --- | --- |
-| Backend | Deno, Hono, Fedify (ActivityPub), Drizzle ORM |
-| Database | PostgreSQL |
-| Queue and cache | Redis (optional — falls back to in-process) |
-| Frontend | SvelteKit, Bits UI, Tailwind CSS, Tiptap |
-| Entrypoint | Caddy, with on-demand Let's Encrypt certificates |
+| Layer           | Technology                                       |
+| --------------- | ------------------------------------------------ |
+| Backend         | Deno, Hono, Fedify (ActivityPub), Drizzle ORM    |
+| Database        | PostgreSQL                                       |
+| Queue and cache | Redis (optional — falls back to in-process)      |
+| Frontend        | SvelteKit, Bits UI, Tailwind CSS, Tiptap         |
+| Entrypoint      | Caddy, with on-demand Let's Encrypt certificates |
 
 Everything ships in a single `docker-compose.yml`. You do not install or manage
 any of these individually.

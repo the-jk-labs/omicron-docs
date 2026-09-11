@@ -21,11 +21,8 @@ export async function listByAuthor(authorId: string, cursor?: Cursor) { … }
 Services call repositories. Routes call services. Nothing else touches Drizzle.
 
 <Callout type="danger" title="Never do this">
-```ts
-db.select().from(posts);   // in a route or a service
-```
-Call a repository function instead. This is the project's most important
-architectural rule.
+  ```ts db.select().from(posts); // in a route or a service ``` Call a repository function instead. This is the
+  project's most important architectural rule.
 </Callout>
 
 ## Cursor pagination
@@ -77,9 +74,8 @@ only** within a version:
 3. **Remove** old columns only in a later major release.
 
 <Callout type="warning" title="Why this matters more than it looks">
-Containers do not all restart at the same instant, and an operator may roll back
-a patch release. Additive-only changes mean old and new code can both be running
-against the same database without corruption.
+  Containers do not all restart at the same instant, and an operator may roll back a patch release. Additive-only
+  changes mean old and new code can both be running against the same database without corruption.
 </Callout>
 
 ## Sessions
@@ -105,9 +101,8 @@ docker compose exec -T postgres psql -U omicron -c '\dt' omicron
 ```
 
 <Callout type="warning">
-Hand-editing production data bypasses every invariant the services enforce. If
-you must, take a backup first — see
-[Backups and restore](/self-hosting/backups/).
+  Hand-editing production data bypasses every invariant the services enforce. If you must, take a backup first — see
+  [Backups and restore](/self-hosting/backups/).
 </Callout>
 
 ## Bringing your own Postgres

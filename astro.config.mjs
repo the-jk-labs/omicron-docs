@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // @ts-check
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "astro/config";
-import svelte from "@astrojs/svelte";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import svelte from "@astrojs/svelte";
+import { defineConfig } from "astro/config";
 
 // The canonical origin. docs.omicron.blog is the official domain, so it is the
 // default rather than something derived from the environment: a local or

@@ -38,9 +38,8 @@ pnpm dev
 Migrations run automatically on backend startup, so an empty database is fine.
 
 <Callout type="note" title="No Redis in this mode">
-Without `REDIS_URL`, the queue, Fedify's KV store, and the rate limiter all run
-in-process. That is fine for development; just remember that queued jobs vanish
-on restart. See [Delivery and queues](/federation/delivery/).
+  Without `REDIS_URL`, the queue, Fedify's KV store, and the rate limiter all run in-process. That is fine for
+  development; just remember that queued jobs vanish on restart. See [Delivery and queues](/federation/delivery/).
 </Callout>
 
 ## Checks before you push
@@ -62,6 +61,7 @@ types still match them, so it needs the backend's npm dependencies on disk.
 Skip it and `pnpm check` reports `Cannot find module 'drizzle-orm'` against
 files under `apps/backend/` rather than anything you changed. See
 [the type contract](/development/frontend/#api-types-and-the-backend-contract).
+
 </Callout>
 
 ## Testing federation locally
@@ -75,9 +75,8 @@ workable approaches:
    reality, and worth it before any federation-touching change.
 
 <Callout type="warning">
-Do not test federation against your production domain. Actor URIs are built from
-the domain, so experiments create real identities other servers will remember.
-Use a throwaway subdomain.
+  Do not test federation against your production domain. Actor URIs are built from the domain, so experiments create
+  real identities other servers will remember. Use a throwaway subdomain.
 </Callout>
 
 ## Useful during development

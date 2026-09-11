@@ -119,16 +119,12 @@
   </Dialog.Trigger>
 
   <Dialog.Portal>
-    <Dialog.Overlay
-      class="fixed inset-0 z-50 bg-black/60"
-    />
+    <Dialog.Overlay class="fixed inset-0 z-50 bg-black/60" />
     <Dialog.Content
       class="fixed left-1/2 top-[12vh] z-50 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 rounded-card border border-border bg-background p-1.5 shadow-popover outline-none"
     >
       <Dialog.Title class="sr-only">Search the documentation</Dialog.Title>
-      <Dialog.Description class="sr-only">
-        Find a page by title or content. Press Escape to close.
-      </Dialog.Description>
+      <Dialog.Description class="sr-only">Find a page by title or content. Press Escape to close.</Dialog.Description>
 
       <div class="flex items-center gap-2 border-b border-border px-3">
         <svg
@@ -156,9 +152,7 @@
 
       <div class="max-h-[55vh] overflow-y-auto p-1.5">
         {#if !query.trim()}
-          <p class="px-3 py-6 text-center text-sm text-muted-foreground">
-            Start typing to search every page.
-          </p>
+          <p class="px-3 py-6 text-center text-sm text-muted-foreground">Start typing to search every page.</p>
         {:else if searching && results.length === 0}
           <p class="px-3 py-6 text-center text-sm text-muted-foreground">Searching…</p>
         {:else if results.length === 0}

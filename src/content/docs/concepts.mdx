@@ -31,12 +31,12 @@ Omicron ships it turned **off**: a fresh instance is a private, standalone blog.
 Turning it on binds your server's identity to your domain, which is why the
 domain must be set first and the change applies on restart.
 
-| Activity | What it means here |
-| --- | --- |
-| `Follow` | Someone subscribes to one of your writers. Inbound follows are auto-accepted (unless the account requires approval). |
-| `Create(Article)` | A new post is delivered to your followers' inboxes. |
-| `Announce` | A boost/repost — Omicron's UI calls this **Recommend**. |
-| `Undo` | Reverses a previous Follow or Announce. |
+| Activity          | What it means here                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `Follow`          | Someone subscribes to one of your writers. Inbound follows are auto-accepted (unless the account requires approval). |
+| `Create(Article)` | A new post is delivered to your followers' inboxes.                                                                  |
+| `Announce`        | A boost/repost — Omicron's UI calls this **Recommend**.                                                              |
+| `Undo`            | Reverses a previous Follow or Announce.                                                                              |
 
 See [How federation works](/federation/overview/) for the full picture.
 
@@ -62,17 +62,17 @@ place.
 
 ## Standalone vs federated
 
-| | Standalone | Federated |
-| --- | --- | --- |
-| `FEDERATION_ENABLED` | `false` (default) | `true` |
-| Public domain | Optional | **Required** |
-| HTTPS | Recommended | **Required in practice** |
-| ActivityPub code paths | Not even loaded | Active |
-| Reachable by Mastodon | No | Yes |
+|                        | Standalone        | Federated                |
+| ---------------------- | ----------------- | ------------------------ |
+| `FEDERATION_ENABLED`   | `false` (default) | `true`                   |
+| Public domain          | Optional          | **Required**             |
+| HTTPS                  | Recommended       | **Required in practice** |
+| ActivityPub code paths | Not even loaded   | Active                   |
+| Reachable by Mastodon  | No                | Yes                      |
 
 <Callout type="note">
-The whole `federation/` tree and the Fedify dependency are imported **only** when
-federation is enabled, so a standalone blog carries none of that code at runtime.
+  The whole `federation/` tree and the Fedify dependency are imported **only** when federation is enabled, so a
+  standalone blog carries none of that code at runtime.
 </Callout>
 
 ## The setup model
@@ -95,14 +95,14 @@ See [Configuration](/self-hosting/configuration/) and
 
 Nothing you care about lives inside a container image:
 
-| Volume | Holds |
-| --- | --- |
-| `pgdata` | All Postgres data — accounts, posts, follows |
-| `uploads` | User-uploaded media |
-| `secrets` | Generated database password and bootstrap session secret |
-| `state` | App-managed state, e.g. a UI-rotated session secret |
-| `redis_data` | Queued jobs and pending federation deliveries |
-| `caddy_data` | Let's Encrypt certificates |
+| Volume       | Holds                                                    |
+| ------------ | -------------------------------------------------------- |
+| `pgdata`     | All Postgres data — accounts, posts, follows             |
+| `uploads`    | User-uploaded media                                      |
+| `secrets`    | Generated database password and bootstrap session secret |
+| `state`      | App-managed state, e.g. a UI-rotated session secret      |
+| `redis_data` | Queued jobs and pending federation deliveries            |
+| `caddy_data` | Let's Encrypt certificates                               |
 
 Rebuilding recreates containers, never volumes. See
 [Backups and restore](/self-hosting/backups/).

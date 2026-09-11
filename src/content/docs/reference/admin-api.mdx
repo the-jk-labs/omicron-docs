@@ -11,48 +11,47 @@ These are the endpoints the admin panel itself calls; they are documented here
 because operators sometimes need to script against them.
 
 <Callout type="warning">
-There is no API token flow — an admin script authenticates by signing in and
-keeping the session cookie, exactly like the browser. Treat any script holding
-that cookie as holding admin rights.
+  There is no API token flow — an admin script authenticates by signing in and keeping the session cookie, exactly like
+  the browser. Treat any script holding that cookie as holding admin rights.
 </Callout>
 
 ## Instance
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/instance` | Instance name, domain, federation flag |
-| `PUT` | `/api/admin/instance` | Update them (domain and federation apply on restart) |
-| `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret |
+| Method | Path                                | Purpose                                              |
+| ------ | ----------------------------------- | ---------------------------------------------------- |
+| `GET`  | `/api/admin/instance`               | Instance name, domain, federation flag               |
+| `PUT`  | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
+| `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
 
 Rotating signs everyone out on the next restart. If `SESSION_SECRET` is pinned in
 the environment, rotate it there instead.
 
 ## Settings and analytics
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/settings` | All instance settings |
-| `PUT` | `/api/admin/settings/analytics` | Analytics behaviour |
+| Method | Path                            | Purpose               |
+| ------ | ------------------------------- | --------------------- |
+| `GET`  | `/api/admin/settings`           | All instance settings |
+| `PUT`  | `/api/admin/settings/analytics` | Analytics behaviour   |
 
 What analytics can and cannot be turned on is described in
 [Writer dashboard](/using/analytics/).
 
 ## Security
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/security` | Current security settings |
-| `PUT` | `/api/admin/security/anubis` | Toggle the AI-scraper shield |
+| Method | Path                         | Purpose                      |
+| ------ | ---------------------------- | ---------------------------- |
+| `GET`  | `/api/admin/security`        | Current security settings    |
+| `PUT`  | `/api/admin/security/anubis` | Toggle the AI-scraper shield |
 
 The toggle applies live — the backend re-routes traffic through the challenge
 service via Caddy's internal admin API. No restart.
 
 ## Discoverability
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/seo` | Discoverability settings, including the IndexNow key |
-| `PUT` | `/api/admin/seo` | Update `indexingEnabled`, `verification`, `indexNowEnabled` |
+| Method | Path             | Purpose                                                     |
+| ------ | ---------------- | ----------------------------------------------------------- |
+| `GET`  | `/api/admin/seo` | Discoverability settings, including the IndexNow key        |
+| `PUT`  | `/api/admin/seo` | Update `indexingEnabled`, `verification`, `indexNowEnabled` |
 
 Documented in full in [Discoverability](/self-hosting/discoverability/). The
 IndexNow key appears only here — the public `/api/seo` withholds it, since it is
@@ -60,10 +59,10 @@ what authorises submissions for the domain.
 
 ## Media
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/unsplash` | Whether an Unsplash key is configured |
-| `PUT` | `/api/admin/unsplash` | Set the key, or clear it with `null` |
+| Method | Path                  | Purpose                               |
+| ------ | --------------------- | ------------------------------------- |
+| `GET`  | `/api/admin/unsplash` | Whether an Unsplash key is configured |
+| `PUT`  | `/api/admin/unsplash` | Set the key, or clear it with `null`  |
 
 Both return `{ "configured": boolean }` and nothing more — the key is never read
 back, so it cannot end up in a browser cache or a screenshot. Clearing it turns
@@ -72,14 +71,14 @@ Unsplash off; Openverse needs no key and keeps working. See
 
 ## Email
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/email` | Current email configuration (secrets are write-only) |
-| `PUT` | `/api/admin/email` | Update mode and connection details |
-| `POST` | `/api/admin/email/dkim` | Generate an RSA-2048 DKIM keypair |
-| `GET` | `/api/admin/email/dns` | The SPF, DKIM, and DMARC records to publish, and live verification |
-| `GET` | `/api/admin/email/port25` | Test outbound port 25 from inside the container |
-| `POST` | `/api/admin/email/test` | Send a live test message |
+| Method | Path                      | Purpose                                                            |
+| ------ | ------------------------- | ------------------------------------------------------------------ |
+| `GET`  | `/api/admin/email`        | Current email configuration (secrets are write-only)               |
+| `PUT`  | `/api/admin/email`        | Update mode and connection details                                 |
+| `POST` | `/api/admin/email/dkim`   | Generate an RSA-2048 DKIM keypair                                  |
+| `GET`  | `/api/admin/email/dns`    | The SPF, DKIM, and DMARC records to publish, and live verification |
+| `GET`  | `/api/admin/email/port25` | Test outbound port 25 from inside the container                    |
+| `POST` | `/api/admin/email/test`   | Send a live test message                                           |
 
 Passwords and API keys are never read back — the API returns "unchanged" rather
 than the stored secret. The DKIM private key never leaves the server.
@@ -88,21 +87,21 @@ See [Email](/self-hosting/email/).
 
 ## Users
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/users` | List local accounts, newest first (`?q=` over handle, name and email; `?suspended=`, `?admin=`, `?verified=`; `?cursor=` + `?limit=` for pages) |
-| `POST` | `/api/admin/users/:id/suspend` | Suspend or reinstate an account |
-| `GET` | `/api/admin/users/:id` | One account with counts, latest posts and reports against it |
-| `PATCH` | `/api/admin/users/:id` | Edit profile fields and the login email |
-| `POST` | `/api/admin/users/:id/avatar` | Replace another account's avatar (raw image body) |
-| `DELETE` | `/api/admin/users/:id/avatar` | Clear another account's avatar back to initials |
-| `POST` | `/api/admin/users/:id/role` | Grant or revoke the admin role (confirm with your password) |
-| `POST` | `/api/admin/users/:id/verification-email` | Resend the verification email |
-| `POST` | `/api/admin/users/:id/verify` | Manually mark the address verified |
-| `POST` | `/api/admin/users/:id/delete` | Delete an account (confirm with username + your password) |
-| `POST` | `/api/admin/users/:id/restore` | Restore a deleted account within 30 days |
-| `GET` | `/api/admin/users/deleted` | Recently deleted accounts, with expiry (`?q=`, `?cursor=` + `?limit=`, `nextCursor` + `total` + `filteredTotal` in the response) |
-| `DELETE` | `/api/admin/users/deleted/:id` | Erase a deleted account permanently |
+| Method   | Path                                      | Purpose                                                                                                                                         |
+| -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/admin/users`                        | List local accounts, newest first (`?q=` over handle, name and email; `?suspended=`, `?admin=`, `?verified=`; `?cursor=` + `?limit=` for pages) |
+| `POST`   | `/api/admin/users/:id/suspend`            | Suspend or reinstate an account                                                                                                                 |
+| `GET`    | `/api/admin/users/:id`                    | One account with counts, latest posts and reports against it                                                                                    |
+| `PATCH`  | `/api/admin/users/:id`                    | Edit profile fields and the login email                                                                                                         |
+| `POST`   | `/api/admin/users/:id/avatar`             | Replace another account's avatar (raw image body)                                                                                               |
+| `DELETE` | `/api/admin/users/:id/avatar`             | Clear another account's avatar back to initials                                                                                                 |
+| `POST`   | `/api/admin/users/:id/role`               | Grant or revoke the admin role (confirm with your password)                                                                                     |
+| `POST`   | `/api/admin/users/:id/verification-email` | Resend the verification email                                                                                                                   |
+| `POST`   | `/api/admin/users/:id/verify`             | Manually mark the address verified                                                                                                              |
+| `POST`   | `/api/admin/users/:id/delete`             | Delete an account (confirm with username + your password)                                                                                       |
+| `POST`   | `/api/admin/users/:id/restore`            | Restore a deleted account within 30 days                                                                                                        |
+| `GET`    | `/api/admin/users/deleted`                | Recently deleted accounts, with expiry (`?q=`, `?cursor=` + `?limit=`, `nextCursor` + `total` + `filteredTotal` in the response)                |
+| `DELETE` | `/api/admin/users/deleted/:id`            | Erase a deleted account permanently                                                                                                             |
 
 Deleting takes `{ "username", "password" }`: the account's exact username plus
 your own password, both re-verified server-side. The account is notified by
@@ -123,25 +122,25 @@ to the previous one.
 
 ## Content and reports
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/reports` | The moderation queue |
-| `POST` | `/api/admin/reports/:id/resolve` | Resolve or dismiss a report |
-| `DELETE` | `/api/admin/posts/:id` | Remove a post |
+| Method   | Path                             | Purpose                     |
+| -------- | -------------------------------- | --------------------------- |
+| `GET`    | `/api/admin/reports`             | The moderation queue        |
+| `POST`   | `/api/admin/reports/:id/resolve` | Resolve or dismiss a report |
+| `DELETE` | `/api/admin/posts/:id`           | Remove a post               |
 
 Removing a published post federates a `Delete` to remote servers.
 
 ## Federation domains
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/admin/domains` | Blocked domains |
-| `POST` | `/api/admin/domains` | Block (defederate) a domain |
-| `DELETE` | `/api/admin/domains/:domain` | Re-federate a domain |
+| Method   | Path                         | Purpose                     |
+| -------- | ---------------------------- | --------------------------- |
+| `GET`    | `/api/admin/domains`         | Blocked domains             |
+| `POST`   | `/api/admin/domains`         | Block (defederate) a domain |
+| `DELETE` | `/api/admin/domains/:domain` | Re-federate a domain        |
 
 <Callout type="danger" title="Blocking purges">
-Defederating a domain **purges already-cached content** from it — this is not a
-forward-only filter, and re-federating does not bring the purged content back.
+  Defederating a domain **purges already-cached content** from it — this is not a forward-only filter, and re-federating
+  does not bring the purged content back.
 </Callout>
 
 ## Notes for scripting

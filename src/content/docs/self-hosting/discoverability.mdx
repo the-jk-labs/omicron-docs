@@ -13,19 +13,18 @@ nothing here needs a restart.
 
 The master switch, **on** by default.
 
-| State | What the instance serves |
-| --- | --- |
-| **On** | A permissive `robots.txt`, a sitemap of published posts, and normal indexable pages. |
-| **Off** | `robots.txt` disallowing everything, and `noindex` on every page. |
+| State   | What the instance serves                                                             |
+| ------- | ------------------------------------------------------------------------------------ |
+| **On**  | A permissive `robots.txt`, a sitemap of published posts, and normal indexable pages. |
+| **Off** | `robots.txt` disallowing everything, and `noindex` on every page.                    |
 
 Turn it off for a private instance, a staging copy, or anything you do not want
 appearing in search results. Private areas — settings, your posts, the
 dashboard, admin, search results — are never indexed either way.
 
 <Callout type="note" title="Turning it off does not remove what is already indexed">
-`noindex` tells an engine to drop a page the next time it fetches it. Pages
-already in an index disappear over days to weeks, not immediately. To remove
-something urgently, use the removal tool in the relevant search console.
+  `noindex` tells an engine to drop a page the next time it fetches it. Pages already in an index disappear over days to
+  weeks, not immediately. To remove something urgently, use the removal tool in the relevant search console.
 </Callout>
 
 ## The sitemap
@@ -33,11 +32,11 @@ something urgently, use the removal tool in the relevant search console.
 `/sitemap.xml` is a **sitemap index** — a list of other sitemap files rather than
 a list of URLs.
 
-| File | Contents |
-| --- | --- |
-| `/sitemap.xml` | The index. This is the one you submit to a search console. |
+| File                                | Contents                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `/sitemap.xml`                      | The index. This is the one you submit to a search console.                 |
 | `/sitemap/posts-1.xml`, `-2.xml`, … | Published local posts, 40,000 per file. Page 1 also carries the home page. |
-| `/sitemap/pages.xml` | Author profiles, tag pages, and public reading lists. |
+| `/sitemap/pages.xml`                | Author profiles, tag pages, and public reading lists.                      |
 
 You only ever submit the index. Engines read it and fetch the rest themselves.
 
@@ -61,8 +60,8 @@ tag, or list it is the newest thing that page lists.
   published collection.
 
 <Callout type="tip" title="Resubmit after upgrading to the split sitemap">
-If you submitted `sitemap.xml` before it became an index, resubmit it. A search
-console keeps polling the shape it first saw and will not notice on its own.
+  If you submitted `sitemap.xml` before it became an index, resubmit it. A search console keeps polling the shape it
+  first saw and will not notice on its own.
 </Callout>
 
 ## robots.txt
@@ -83,10 +82,10 @@ blocking `/lists` would take `/lists/<public-list>` with it.
 For the same reason two paths under `/api/` are explicitly **allowed** back,
 ahead of the `/api/` disallow:
 
-| Path | What it serves |
-| --- | --- |
-| `/api/uploads/` | Every image an author uploads, avatars included |
-| `/api/og/` | The card drawn for a post that has no image of its own |
+| Path            | What it serves                                         |
+| --------------- | ------------------------------------------------------ |
+| `/api/uploads/` | Every image an author uploads, avatars included        |
+| `/api/og/`      | The card drawn for a post that has no image of its own |
 
 Both hold files rather than endpoints, and both are fetched by the crawlers that
 build link cards — which read `robots.txt` before fetching an `og:image`.
@@ -100,11 +99,11 @@ Paste the token from each console to claim the site; Omicron renders the matchin
 `<meta>` tag on every page. Pick the **HTML meta tag** method in the console and
 copy just the token value, not the whole tag.
 
-| Console | Also covers |
-| --- | --- |
-| [Bing Webmaster Tools](https://www.bing.com/webmasters) | DuckDuckGo, Ecosia, Yahoo |
-| [Google Search Console](https://search.google.com/search-console) | — |
-| [Yandex Webmaster](https://webmaster.yandex.com) | — |
+| Console                                                           | Also covers               |
+| ----------------------------------------------------------------- | ------------------------- |
+| [Bing Webmaster Tools](https://www.bing.com/webmasters)           | DuckDuckGo, Ecosia, Yahoo |
+| [Google Search Console](https://search.google.com/search-console) | —                         |
+| [Yandex Webmaster](https://webmaster.yandex.com)                  | —                         |
 
 ## IndexNow
 
@@ -131,8 +130,8 @@ The key is kept once minted — rotating it would invalidate the file the engine
 have already fetched.
 
 <Callout type="note" title="Nothing is submitted from a localhost instance">
-Submission is skipped when `APP_DOMAIN` is a localhost development host, since
-there is no public URL for an engine to fetch.
+  Submission is skipped when `APP_DOMAIN` is a localhost development host, since there is no public URL for an engine to
+  fetch.
 </Callout>
 
 Submission runs as a background job, so a slow or unreachable engine never delays
@@ -152,7 +151,7 @@ Handled automatically, with nothing to configure:
   data, taken from the author's language selection.
 - **Structured data** — `BlogPosting` for a post (with author, dates, language,
   and tags), `ProfilePage` for a local author, `WebSite` for the instance, and a
-  breadcrumb trail so results read *instance → author → article*.
+  breadcrumb trail so results read _instance → author → article_.
 - **Link-preview metadata** — Open Graph and Twitter cards, with the fediverse
   author attribution Mastodon shows above a shared link. The share image is the
   post's banner, or the first image in its body when no banner was chosen, or —
@@ -180,7 +179,7 @@ Check these in order.
    [Security](/self-hosting/security/).
 3. **Is the sitemap reachable and current?** Open `/sitemap.xml`, then one of the
    files it lists.
-4. **What does the console say?** In Google Search Console, *Pages → Why pages
-   aren't indexed* distinguishes a technical problem (blocked, redirected) from a
-   judgement about the content (*crawled — currently not indexed*), which no
+4. **What does the console say?** In Google Search Console, _Pages → Why pages
+   aren't indexed_ distinguishes a technical problem (blocked, redirected) from a
+   judgement about the content (_crawled — currently not indexed_), which no
    configuration will fix.

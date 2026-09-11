@@ -19,13 +19,13 @@ running as a network service must publish its source to its users.
 
 ## What the dashboard shows
 
-| Card | Source |
-| --- | --- |
-| **Views** | On-instance page views, deduplicated per reader per post |
-| **Likes** | `Like` activities, local and federated |
-| **Comments** | Replies, local and federated |
-| **Engagement** | Likes plus comments |
-| **Followers** | `Follow` activities |
+| Card           | Source                                                   |
+| -------------- | -------------------------------------------------------- |
+| **Views**      | On-instance page views, deduplicated per reader per post |
+| **Likes**      | `Like` activities, local and federated                   |
+| **Comments**   | Replies, local and federated                             |
+| **Engagement** | Likes plus comments                                      |
+| **Followers**  | `Follow` activities                                      |
 
 Plus a daily views chart and per-post breakdowns.
 
@@ -40,7 +40,7 @@ purpose.
 
 Surfaced per post and per account: likes, boosts, replies, new followers, and
 **federated reach** — how many remote inboxes a post was successfully
-**delivered** to. Reach measures *our sending*, not anyone's reading.
+**delivered** to. Reach measures _our sending_, not anyone's reading.
 
 What is **not** done with engagement: no per-reader profiles, no correlating one
 person's likes across your posts into a behavioural history, no "who is reading
@@ -56,7 +56,7 @@ How a view is counted:
 
 1. **One reader per post, ever** — not once per day. The stored total is an
    aggregate integer, `(post_id, date, views)`, bucketed by the day a reader was
-   *first* counted, with **no row representing an individual visit**. Refreshing,
+   _first_ counted, with **no row representing an individual visit**. Refreshing,
    re-opening, or returning next month never increases it again.
 2. **No IP address is stored. No fingerprint is taken.** Signed-in readers are
    deduplicated by a one-way hash of their account id. Anonymous readers are
@@ -77,10 +77,9 @@ reverse, and there is no per-visit log, IP, or fingerprint alongside it to
 correlate against.
 
 <Callout type="note" title="Why deduplicated readers, not raw hits">
-Reading requires no account, so a raw hit counter would be trivially inflated by
-refreshing. "Distinct readers per post" is the honest, refresh-proof number. This
-is resistance to casual inflation, not forensic fraud detection — someone
-clearing cookies and rotating networks can still inflate an account-less metric.
+  Reading requires no account, so a raw hit counter would be trivially inflated by refreshing. "Distinct readers per
+  post" is the honest, refresh-proof number. This is resistance to casual inflation, not forensic fraud detection —
+  someone clearing cookies and rotating networks can still inflate an account-less metric.
 </Callout>
 
 ## The federation reality
@@ -88,7 +87,7 @@ clearing cookies and rotating networks can still inflate an account-less metric.
 Your posts are read on Mastodon, other Omicron instances, RSS readers, and
 ActivityPub apps everywhere. Omicron has **no visibility into those reads and does
 not attempt to obtain any.** On-instance view counts cover only pages served by
-*this* instance.
+_this_ instance.
 
 This is a feature, not a gap: surveilling the wider fediverse to inflate a number
 would betray the entire point of the platform. A writer's truest signal of reach
@@ -113,6 +112,5 @@ dashboard simply shows engagement. Nothing in the list above becomes available b
 flipping a setting.
 
 <Callout type="tip" title="Tell your readers">
-If you run an instance, link this page — or your own version of it — from your
-about page. The honesty is the point.
+  If you run an instance, link this page — or your own version of it — from your about page. The honesty is the point.
 </Callout>
