@@ -11,16 +11,8 @@ export default defineConfig({
   rules: {
     eqeqeq: "warn",
     "no-throw-literal": "warn",
-    "import/no-unassigned-import": ["warn", { allow: ["**/app.css", "@testing-library/jest-dom/vitest"] }],
+    "import/no-unassigned-import": ["warn", { allow: ["**/app.css"] }],
     "unicorn/prefer-node-protocol": "warn",
     "typescript/consistent-type-imports": "warn",
   },
-  overrides: [
-    {
-      files: ["**/*.svelte"],
-      rules: {
-        "no-unused-expressions": "off",
-      },
-    },
-  ],
 });

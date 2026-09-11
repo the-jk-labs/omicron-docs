@@ -10,7 +10,7 @@ import { nav, hrefFor } from "@/lib/nav";
 // /llms-full.txt. Format: https://llmstxt.org.
 export const GET: APIRoute = async ({ site }) => {
   const entries = await getCollection("docs");
-  const descriptions = new Map(entries.map((e) => [e.id, e.data.description]));
+  const descriptions = new Map<string, string>(entries.map((e) => [e.id, e.data.description]));
 
   const sections = nav
     .map((section) => {
