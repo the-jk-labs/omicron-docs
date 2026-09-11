@@ -24,8 +24,8 @@ importers:
         specifier: ^5.2.8
         version: 5.3.0
       '@lucide/svelte':
-        specifier: ^1.31.0
-        version: 1.31.0(svelte@5.56.9)
+        specifier: ^1.42.0
+        version: 1.42.0(svelte@5.56.9)
       astro:
         specifier: ^7.2.1
         version: 7.2.1(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.3)(jiti@1.21.7)(yaml@2.9.0)
@@ -654,8 +654,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lucide/svelte@1.31.0':
-    resolution: {integrity: sha512-pgPuLEJdF0UpsajG9eSw0YvqXVuDxB+/x58BRiC4xE/KEHiopOqT1id3KCUvRN/PUmQkN1F26sslcs/1jutlBQ==}
+  '@lucide/svelte@1.42.0':
+    resolution: {integrity: sha512-9vOi3EdzJht5aD7F5OraoxrK2GyyL1Y+kVXEtIg4+IAdKmDBrwYK2d/x7akC89uA+cvkfjcw+IuzH0vfd/TuzA==}
     peerDependencies:
       svelte: ^5
 
@@ -3272,7 +3272,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lucide/svelte@1.31.0(svelte@5.56.9)':
+  '@lucide/svelte@1.42.0(svelte@5.56.9)':
     dependencies:
       svelte: 5.56.9
 
