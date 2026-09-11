@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Config } from "tailwindcss";
 
-// Theme tokens ported verbatim from the Bits UI docs theme
+//  Theme tokens ported verbatim from the Bits UI docs theme
 // (docs/src/lib/styles/app.css), matching the Omicron app's own
 // apps/frontend/tailwind.config.ts. The docs use Tailwind v4 `@theme`; this is
 // the v3 equivalent so the docs' example class strings resolve unchanged.
