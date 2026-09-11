@@ -105,9 +105,10 @@ See [Email](/self-hosting/email/).
 | `DELETE` | `/api/admin/users/deleted/:id` | Erase a deleted account permanently |
 
 Deleting takes `{ "username", "password" }`: the account's exact username plus
-your own password, both re-verified server-side. A deleted account is kept for
-30 days and comes back with `/restore`; the expiry and `/deleted/:id` erase it
-for good and free the username.
+your own password, both re-verified server-side. The account is notified by
+email, through the instance's configured email transport. A deleted account is
+kept for 30 days and comes back with `/restore`; the expiry and `/deleted/:id`
+erase it for good and free the username.
 
 Listing is keyset-paginated: `?limit=` sizes the page (1–100, default 50) and
 the response carries `nextCursor` (pass back as `?cursor=`) plus `total`
