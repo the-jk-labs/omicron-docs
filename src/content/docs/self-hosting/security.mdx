@@ -29,8 +29,8 @@ import Callout from "@/components/Callout.astro";
 ## What you can get wrong
 
 <Callout type="danger" title="Do not expose the debug ports">
-Changing the backend or frontend port mapping from `127.0.0.1` to `0.0.0.0` on a
-public host exposes the API without TLS. There is no reason to do this.
+  Changing the backend or frontend port mapping from `127.0.0.1` to `0.0.0.0` on a public host exposes the API without
+  TLS. There is no reason to do this.
 </Callout>
 
 - **Do not disable rate limiting** (`RATE_LIMIT_ENABLED=false`) unless a trusted
@@ -48,32 +48,30 @@ public host exposes the API without TLS. There is no reason to do this.
 
 Defaults, tunable in `.env`:
 
-| Variable | Default | Limit |
-| --- | --- | --- |
-| `RL_LOGIN_MAX` | 15 | login attempts per IP / 15 min |
-| `RL_REGISTER_MAX` | 5 | registrations per IP / hour |
-| `RL_API_WRITE_MAX` | 120 | writes / min per signed-in user (or per IP) |
-| `RL_UPLOAD_MAX` | 10 | media uploads / min per signed-in user (or per IP) |
-| `RL_INBOX_MAX` | 300 | federation inbox POSTs / min per source IP |
-| `RL_WEBHOOK_MAX` | 30 | content-webhook POSTs / min per source IP |
-| `INBOX_MAX_BODY_BYTES` | 1000000 | maximum inbox payload size |
-| `WEBHOOK_MAX_BODY_BYTES` | 512000 | maximum content-webhook payload size |
-| `RL_REMOTE_MAX` | 30 | anonymous remote-discovery GETs / min per IP |
-| `RL_REMOTE_MISS_MAX` | 20 | cache-miss (outbound) remote lookups / min per caller |
-| `RL_REMOTE_MAX_OUTBOUND` | 10 | global concurrent outbound federation lookups |
-| `RL_REMOTE_MAX_PER_ORIGIN` | 3 | concurrent outbound lookups per remote host |
-| `REMOTE_LOOKUP_TIMEOUT_MS` | 10000 | deadline for one WebFinger + actor + outbox lookup |
-| `REMOTE_NEGATIVE_CACHE_TTL_MS` | 60000 | negative-cache time for failed/not-found lookups |
-| `REMOTE_CACHE_RETENTION_DAYS` | 30 | days a cached remote actor survives unreferenced (`0` disables pruning) |
+| Variable                       | Default | Limit                                                                   |
+| ------------------------------ | ------- | ----------------------------------------------------------------------- |
+| `RL_LOGIN_MAX`                 | 15      | login attempts per IP / 15 min                                          |
+| `RL_REGISTER_MAX`              | 5       | registrations per IP / hour                                             |
+| `RL_API_WRITE_MAX`             | 120     | writes / min per signed-in user (or per IP)                             |
+| `RL_UPLOAD_MAX`                | 10      | media uploads / min per signed-in user (or per IP)                      |
+| `RL_INBOX_MAX`                 | 300     | federation inbox POSTs / min per source IP                              |
+| `RL_WEBHOOK_MAX`               | 30      | content-webhook POSTs / min per source IP                               |
+| `INBOX_MAX_BODY_BYTES`         | 1000000 | maximum inbox payload size                                              |
+| `WEBHOOK_MAX_BODY_BYTES`       | 512000  | maximum content-webhook payload size                                    |
+| `RL_REMOTE_MAX`                | 30      | anonymous remote-discovery GETs / min per IP                            |
+| `RL_REMOTE_MISS_MAX`           | 20      | cache-miss (outbound) remote lookups / min per caller                   |
+| `RL_REMOTE_MAX_OUTBOUND`       | 10      | global concurrent outbound federation lookups                           |
+| `RL_REMOTE_MAX_PER_ORIGIN`     | 3       | concurrent outbound lookups per remote host                             |
+| `REMOTE_LOOKUP_TIMEOUT_MS`     | 10000   | deadline for one WebFinger + actor + outbox lookup                      |
+| `REMOTE_NEGATIVE_CACHE_TTL_MS` | 60000   | negative-cache time for failed/not-found lookups                        |
+| `REMOTE_CACHE_RETENTION_DAYS`  | 30      | days a cached remote actor survives unreferenced (`0` disables pruning) |
 
 <Callout type="note">
-Remote discovery (`GET /api/remote/…`) is treated separately because, unlike the
-other read-only GETs, a cache miss there triggers outbound federation requests
-and database writes. The `RL_REMOTE_MAX` per-IP budget applies to anonymous
-browsing, and the outbound work itself is bounded by concurrency ceilings and a
-per-lookup deadline — see
-[Rate limits → Remote discovery](/reference/rate-limits/#remote-discovery-outbound-bounds).
-A slow or hostile origin is still best handled by defederating it outright.
+  Remote discovery (`GET /api/remote/…`) is treated separately because, unlike the other read-only GETs, a cache miss
+  there triggers outbound federation requests and database writes. The `RL_REMOTE_MAX` per-IP budget applies to
+  anonymous browsing, and the outbound work itself is bounded by concurrency ceilings and a per-lookup deadline — see
+  [Rate limits → Remote discovery](/reference/rate-limits/#remote-discovery-outbound-bounds). A slow or hostile origin
+  is still best handled by defederating it outright.
 </Callout>
 
 Cached remote actors and their posts are also pruned daily once they are stale

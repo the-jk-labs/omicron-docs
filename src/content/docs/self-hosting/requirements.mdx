@@ -14,14 +14,14 @@ The whole stack runs as five small containers (backend, frontend, PostgreSQL,
 Redis, Caddy). Everything is bundled, so the only thing you install on the host
 is a container engine.
 
-| Resource | Local test | Standalone blog | Public federated instance |
-| --- | --- | --- | --- |
-| CPU | 1 vCPU | 1 vCPU | 2 vCPU |
-| RAM | 1 GB | 1 GB | **2 GB** |
-| Disk | 2 GB free | a few GB (grows with uploads) | 5 GB+ (grows with uploads) |
-| Architecture | amd64 or arm64 | amd64 or arm64 | amd64 or arm64 |
-| Domain | not needed | optional | **required** |
-| Open ports | none (localhost) | 80 + 443 | **80 + 443, publicly reachable** |
+| Resource     | Local test       | Standalone blog               | Public federated instance        |
+| ------------ | ---------------- | ----------------------------- | -------------------------------- |
+| CPU          | 1 vCPU           | 1 vCPU                        | 2 vCPU                           |
+| RAM          | 1 GB             | 1 GB                          | **2 GB**                         |
+| Disk         | 2 GB free        | a few GB (grows with uploads) | 5 GB+ (grows with uploads)       |
+| Architecture | amd64 or arm64   | amd64 or arm64                | amd64 or arm64                   |
+| Domain       | not needed       | optional                      | **required**                     |
+| Open ports   | none (localhost) | 80 + 443                      | **80 + 443, publicly reachable** |
 
 Notes:
 
@@ -38,9 +38,8 @@ Notes:
   bundled or generated on first boot.
 
 <Callout type="warning" title="Federation needs to be reachable">
-Other ActivityPub servers deliver activities to your inbox over port 443. A
-federated instance behind a firewall that blocks inbound 443, or on a home
-connection without port forwarding, will send but never receive.
+  Other ActivityPub servers deliver activities to your inbox over port 443. A federated instance behind a firewall that
+  blocks inbound 443, or on a home connection without port forwarding, will send but never receive.
 </Callout>
 
 ## 2. A container engine
@@ -68,12 +67,10 @@ Only for a public instance. You need a domain (for example
 need one to try Omicron locally.
 
 <Callout type="note" title="A note on ports">
-A public instance uses ports **80** and **443**. Make sure nothing else on the
-host is using them (another web server, another Caddy or nginx). If they are
-taken you can move Omicron to other ports — see
-[Configuration](/self-hosting/configuration/) — but automatic Let's Encrypt
-issuance on non-standard ports is not standard, so for a real public instance
-prefer freeing 80 and 443.
+  A public instance uses ports **80** and **443**. Make sure nothing else on the host is using them (another web server,
+  another Caddy or nginx). If they are taken you can move Omicron to other ports — see
+  [Configuration](/self-hosting/configuration/) — but automatic Let's Encrypt issuance on non-standard ports is not
+  standard, so for a real public instance prefer freeing 80 and 443.
 </Callout>
 
 ## What you do not need

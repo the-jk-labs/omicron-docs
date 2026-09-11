@@ -27,16 +27,16 @@ apps/frontend (SvelteKit)
 
 ### 1. Layered architecture
 
-| Layer | May do | Must never do |
-| --- | --- | --- |
-| `routes/` | Parse input, call a service, serialize a response | Touch the database, hold business logic |
-| `services/` | Business logic, orchestration | Know about HTTP, write SQL |
-| `db/` | Drizzle schema and repository functions | Contain business rules |
-| `federation/` | ActivityPub concerns | Be imported when federation is off |
+| Layer         | May do                                            | Must never do                           |
+| ------------- | ------------------------------------------------- | --------------------------------------- |
+| `routes/`     | Parse input, call a service, serialize a response | Touch the database, hold business logic |
+| `services/`   | Business logic, orchestration                     | Know about HTTP, write SQL              |
+| `db/`         | Drizzle schema and repository functions           | Contain business rules                  |
+| `federation/` | ActivityPub concerns                              | Be imported when federation is off      |
 
 <Callout type="danger" title="No direct DB calls in routes">
-A route that reaches for Drizzle is the one architectural violation that
-compounds fastest. If a route needs data, a service asks a repository for it.
+  A route that reaches for Drizzle is the one architectural violation that compounds fastest. If a route needs data, a
+  service asks a repository for it.
 </Callout>
 
 ### 2. Repository pattern (mandatory)

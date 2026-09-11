@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { APIRoute } from "astro";
-import { hrefFor } from "@/lib/nav";
 import { SUMMARY, mdxToMarkdown, orderedDocs, sectionFor } from "@/lib/llms";
+import { hrefFor } from "@/lib/nav";
 
 // /llms-full.txt — every page's full text as one Markdown file, in reading
 // order. An agent answering a question about Omicron can fetch this once

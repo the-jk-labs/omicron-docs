@@ -48,28 +48,27 @@ query, a visibility predicate, or anything in `db/repositories/`. CI runs it
 against its own throwaway Postgres either way.
 
 <Callout type="warning" title="Point it at a scratch database">
-The suite truncates every table it touches before each test. Give it a database
-you do not mind losing — never your development instance.
+  The suite truncates every table it touches before each test. Give it a database you do not mind losing — never your
+  development instance.
 </Callout>
 
 ## What review looks for
 
-| Area | Expectation |
-| --- | --- |
-| **Layering** | Routes stay thin; no SQL outside `db/`; no HTTP inside `services/` |
-| **Repositories** | Every query is a repository function |
-| **Visibility** | A listing that reaches another user's posts applies `isPublished`, `notSuspended`, `notHidden(viewer)` and `visibleToViewer(viewer)` |
-| **Pagination** | Cursor-based on `(created_at, id)`, never `OFFSET` |
-| **UI** | Bits UI primitives and theme tokens only — no ad-hoc colours |
-| **Migrations** | Additive within a version; generated SQL committed |
-| **Federation** | Nothing imported from `federation/` when the flag is off |
-| **Privacy** | No new reader-identifying data. See [Writer dashboard](/using/analytics/) |
-| **Comments** | Explain *why*, at the density of the surrounding code |
+| Area             | Expectation                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Layering**     | Routes stay thin; no SQL outside `db/`; no HTTP inside `services/`                                                                   |
+| **Repositories** | Every query is a repository function                                                                                                 |
+| **Visibility**   | A listing that reaches another user's posts applies `isPublished`, `notSuspended`, `notHidden(viewer)` and `visibleToViewer(viewer)` |
+| **Pagination**   | Cursor-based on `(created_at, id)`, never `OFFSET`                                                                                   |
+| **UI**           | Bits UI primitives and theme tokens only — no ad-hoc colours                                                                         |
+| **Migrations**   | Additive within a version; generated SQL committed                                                                                   |
+| **Federation**   | Nothing imported from `federation/` when the flag is off                                                                             |
+| **Privacy**      | No new reader-identifying data. See [Writer dashboard](/using/analytics/)                                                            |
+| **Comments**     | Explain _why_, at the density of the surrounding code                                                                                |
 
 <Callout type="tip" title="Match the code you are standing in">
-The codebase has a consistent voice — naming, comment density, error handling.
-A patch that reads like the file around it gets merged faster than a better patch
-that does not.
+  The codebase has a consistent voice — naming, comment density, error handling. A patch that reads like the file around
+  it gets merged faster than a better patch that does not.
 </Callout>
 
 ## Migrations in a pull request
@@ -104,8 +103,7 @@ Include:
 - the relevant logs (`docker compose logs --since 30m backend`).
 
 <Callout type="warning" title="Scrub logs before posting">
-Logs can contain email addresses, domains, and — in `console` email mode —
-password-reset links.
+  Logs can contain email addresses, domains, and — in `console` email mode — password-reset links.
 </Callout>
 
 ## Security issues

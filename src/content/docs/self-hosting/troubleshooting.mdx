@@ -193,7 +193,7 @@ curl -sA 'WhatsApp/2.23.20.0 A' https://your-domain/@you/your-post \
 ```
 
 If the tags are missing and the response is small, check the status: a `503`
-whose title is *"Making sure you're not a bot!"* means the
+whose title is _"Making sure you're not a bot!"_ means the
 [scraper shield](/self-hosting/security/) answered instead of the article. That
 should not happen — post URLs are not challenged — so look at whether
 `botPolicy.yaml` has been customised. If the tags are there,
@@ -238,8 +238,8 @@ docker compose logs --since 30m backend > backend.log
 ```
 
 <Callout type="warning" title="Scrub before you share">
-Logs can contain email addresses, domains, and — in `console` email mode —
-password-reset links. Read through them before attaching them to a public issue.
+  Logs can contain email addresses, domains, and — in `console` email mode — password-reset links. Read through them
+  before attaching them to a public issue.
 </Callout>
 
 Then open an issue at

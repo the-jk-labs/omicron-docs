@@ -31,23 +31,23 @@ The first build compiles the images and can take a few minutes. Watch it with
 `docker compose logs -f`.
 
 <Callout type="note">
-There is **no config file to edit**. The session secret and the database password
-are generated on first boot and stored in the `secrets` volume.
+  There is **no config file to edit**. The session secret and the database password are generated on first boot and
+  stored in the `secrets` volume.
 </Callout>
 
 ## Open the app
 
-| Where | URL |
-| --- | --- |
-| Local | `http://localhost` |
+| Where  | URL                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------- |
+| Local  | `http://localhost`                                                                                   |
 | Public | `https://your-domain` (after pointing DNS — see [Domain and HTTPS](/self-hosting/domain-and-https/)) |
 
 You will land on the **setup wizard**. It has three short steps: instance
 identity, the admin account, and email.
 
 <Callout type="warning" title="The first account is the admin">
-Whoever creates the first account becomes the administrator of the instance.
-Create it yourself, immediately, before exposing the instance to anyone else.
+  Whoever creates the first account becomes the administrator of the instance. Create it yourself, immediately, before
+  exposing the instance to anyone else.
 </Callout>
 
 ## Confirm it is healthy
@@ -65,21 +65,21 @@ Caddy on 80/443.
 
 Five small containers, orchestrated by one `docker-compose.yml`:
 
-| Service | Role |
-| --- | --- |
-| `caddy` | The public entrypoint. Terminates TLS, gets Let's Encrypt certificates automatically. |
-| `frontend` | The SvelteKit web app. |
-| `backend` | The JSON API and ActivityPub server (Deno). |
-| `postgres` | All content and accounts. |
-| `redis` | Durable queues and shared rate limits (optional). |
+| Service    | Role                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------- |
+| `caddy`    | The public entrypoint. Terminates TLS, gets Let's Encrypt certificates automatically. |
+| `frontend` | The SvelteKit web app.                                                                |
+| `backend`  | The JSON API and ActivityPub server (Deno).                                           |
+| `postgres` | All content and accounts.                                                             |
+| `redis`    | Durable queues and shared rate limits (optional).                                     |
 
 Direct service URLs, for debugging only:
 
-| Service | URL |
-| --- | --- |
-| Caddy | `http://localhost` |
+| Service  | URL                     |
+| -------- | ----------------------- |
+| Caddy    | `http://localhost`      |
 | Frontend | `http://localhost:5173` |
-| Backend | `http://localhost:8000` |
+| Backend  | `http://localhost:8000` |
 
 ## Next steps
 

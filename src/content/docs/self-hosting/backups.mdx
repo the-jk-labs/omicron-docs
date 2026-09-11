@@ -13,12 +13,12 @@ and secrets into the encrypted `backups` volume, keeping the last 3 daily
 snapshots plus 1 weekly and pruning the rest. Snapshots are encrypted at rest
 (AES-256) with a password generated into the `secrets` volume on first boot.
 
-| What | Default |
-| --- | --- |
-| Schedule | Daily 02:00 UTC (`BACKUP_SCHEDULE`) |
-| Destination | Local `backups` volume (`BACKUP_REPOSITORY`) |
-| Retention | 3 daily + 1 weekly (`BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`) |
-| Contents | Database dump, uploads, state, secrets, Caddyfile, bot policy |
+| What        | Default                                                        |
+| ----------- | -------------------------------------------------------------- |
+| Schedule    | Daily 02:00 UTC (`BACKUP_SCHEDULE`)                            |
+| Destination | Local `backups` volume (`BACKUP_REPOSITORY`)                   |
+| Retention   | 3 daily + 1 weekly (`BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`) |
+| Contents    | Database dump, uploads, state, secrets, Caddyfile, bot policy  |
 
 ```bash
 docker compose exec backup backup-now       # run one now (e.g. before upgrading)
@@ -39,6 +39,7 @@ the host's disk — see off-site below.
 
 Secrets are restored by hand, never automatically: overwriting a live
 `db_password` would lock Postgres out. `restore.sh` prints the exact commands.
+
 </Callout>
 
 ### Going off-site (R2, S3, MinIO, B2)
@@ -66,25 +67,24 @@ intact.
 
 All state lives in named volumes; nothing important is inside a container image.
 
-| Volume | Holds | In backups? |
-| --- | --- | --- |
-| `pgdata` | All database content | Yes (Method B) or via dump (Method A) |
-| `uploads` | User-uploaded media | **Always** |
-| `secrets` | Generated DB password + bootstrap session secret | Method B only |
-| `state` | UI-rotated session secret, if any | Method B only |
-| `caddy_data` | Let's Encrypt certificates | Optional |
-| `redis_data` | Transient queue state | **Never** |
-| `backups` | Automatic restic snapshots (above) | N/A — this *is* the backup |
+| Volume       | Holds                                            | In backups?                           |
+| ------------ | ------------------------------------------------ | ------------------------------------- |
+| `pgdata`     | All database content                             | Yes (Method B) or via dump (Method A) |
+| `uploads`    | User-uploaded media                              | **Always**                            |
+| `secrets`    | Generated DB password + bootstrap session secret | Method B only                         |
+| `state`      | UI-rotated session secret, if any                | Method B only                         |
+| `caddy_data` | Let's Encrypt certificates                       | Optional                              |
+| `redis_data` | Transient queue state                            | **Never**                             |
+| `backups`    | Automatic restic snapshots (above)               | N/A — this _is_ the backup            |
 
 `redis_data` is deliberately excluded: it holds only pending jobs and in-flight
 federation deliveries, which Redis re-drains after a restart. No durable content
 lives there.
 
 <Callout type="warning" title="The pairing rule">
-`secrets/db_password` is bound to whatever `pgdata` was created with. The
-database and that password must always travel **together** — or neither. A
-partial mix (new `pgdata` with old `secrets`) breaks the pairing and the backend
-will not connect.
+  `secrets/db_password` is bound to whatever `pgdata` was created with. The database and that password must always
+  travel **together** — or neither. A partial mix (new `pgdata` with old `secrets`) breaks the pairing and the backend
+  will not connect.
 </Callout>
 
 Commands assume the default Compose project name `omicron` (the directory name),
@@ -99,7 +99,7 @@ intact.
 
 Portable across Postgres major versions and safe to run on a live instance. On
 restore, the instance generates a **fresh** database password and session secret
-— so `secrets` is *not* backed up — which means everyone is signed out once.
+— so `secrets` is _not_ backed up — which means everyone is signed out once.
 That is expected for a restore or migration.
 
 ### Back up
@@ -163,13 +163,13 @@ Restore the **whole set** or none of it.
 
 ## Choosing between them
 
-| | Method A | Method B |
-| --- | --- | --- |
-| Runs on a live instance | Yes | No — requires a stop |
-| Portable across Postgres versions | Yes | No |
-| Sessions survive restore | No | Yes |
-| Backup contains your secrets | No | **Yes** |
-| Simplicity | One dump + two tarballs | Five tarballs |
+|                                   | Method A                | Method B             |
+| --------------------------------- | ----------------------- | -------------------- |
+| Runs on a live instance           | Yes                     | No — requires a stop |
+| Portable across Postgres versions | Yes                     | No                   |
+| Sessions survive restore          | No                      | Yes                  |
+| Backup contains your secrets      | No                      | **Yes**              |
+| Simplicity                        | One dump + two tarballs | Five tarballs        |
 
 Method A for routine backups and host migrations. Method B when you want a
 byte-for-byte snapshot before a risky upgrade.
@@ -186,10 +186,9 @@ the fallback:
 ```
 
 <Callout type="danger" title="Store backups privately">
-Automatic snapshots are encrypted at rest, but the manual files below are
-**not**: Method B tarballs contain your database password and session secret,
-and Method A dumps contain every account's data. Encrypt them, and keep every
-kind of backup off the same machine.
+  Automatic snapshots are encrypted at rest, but the manual files below are **not**: Method B tarballs contain your
+  database password and session secret, and Method A dumps contain every account's data. Encrypt them, and keep every
+  kind of backup off the same machine.
 </Callout>
 
 ## Test your restores

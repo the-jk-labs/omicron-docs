@@ -18,19 +18,18 @@ queue.add("federate_post", { postId });
 
 Two backends sit behind that call:
 
-| Backend | When | Behaviour |
-| --- | --- | --- |
-| **In-process** | No `REDIS_URL` | Jobs live in memory; **lost on restart** |
-| **Redis** | `REDIS_URL` set (the Compose default) | Jobs persist; survives restarts; shared across processes |
+| Backend        | When                                  | Behaviour                                                |
+| -------------- | ------------------------------------- | -------------------------------------------------------- |
+| **In-process** | No `REDIS_URL`                        | Jobs live in memory; **lost on restart**                 |
+| **Redis**      | `REDIS_URL` set (the Compose default) | Jobs persist; survives restarts; shared across processes |
 
 The call sites and signatures are identical either way, so switching is a matter
 of setting one environment variable.
 
 <Callout type="warning" title="In-process mode loses pending work">
-Without Redis, a restart while deliveries are pending drops them silently. The
-post stays published locally, but the followers who had not yet received it never
-will. The bundled Compose stack sets `REDIS_URL` for you — only local
-`deno task dev` runs without it by default.
+  Without Redis, a restart while deliveries are pending drops them silently. The post stays published locally, but the
+  followers who had not yet received it never will. The bundled Compose stack sets `REDIS_URL` for you — only local
+  `deno task dev` runs without it by default.
 </Callout>
 
 ## What Redis backs
@@ -55,12 +54,12 @@ and POSTs the activity. It handles:
 
 ## Failure modes
 
-| Symptom | Cause | Action |
-| --- | --- | --- |
-| One remote server never receives anything | It has defederated your domain | Nothing to fix on your side |
-| Deliveries stall after a restart | In-process queue, jobs lost | Set `REDIS_URL` |
-| Persistent signature errors | Domain or scheme mismatch in generated URIs | Check the public domain setting and that Caddy sets `x-forwarded-proto` |
-| Everything is slow to arrive | Large follower set, normal backoff | Watch the backend logs; this is usually just retry pacing |
+| Symptom                                   | Cause                                       | Action                                                                  |
+| ----------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| One remote server never receives anything | It has defederated your domain              | Nothing to fix on your side                                             |
+| Deliveries stall after a restart          | In-process queue, jobs lost                 | Set `REDIS_URL`                                                         |
+| Persistent signature errors               | Domain or scheme mismatch in generated URIs | Check the public domain setting and that Caddy sets `x-forwarded-proto` |
+| Everything is slow to arrive              | Large follower set, normal backoff          | Watch the backend logs; this is usually just retry pacing               |
 
 ## Federated reach
 
@@ -73,10 +72,10 @@ no mechanism, and no intention, to observe reads on other servers. See
 
 The receiving side is throttled too, so a hostile peer cannot flood you:
 
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `RL_INBOX_MAX` | 300 | inbox POSTs per minute per source IP |
-| `INBOX_MAX_BODY_BYTES` | 1000000 | maximum accepted payload (bytes) |
+| Variable               | Default | Meaning                              |
+| ---------------------- | ------- | ------------------------------------ |
+| `RL_INBOX_MAX`         | 300     | inbox POSTs per minute per source IP |
+| `INBOX_MAX_BODY_BYTES` | 1000000 | maximum accepted payload (bytes)     |
 
 Both are generous on purpose — a busy instance legitimately delivers many
 activities in a burst.

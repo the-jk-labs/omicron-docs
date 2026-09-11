@@ -10,13 +10,13 @@ not mounted at all and return 404.
 
 ## Discovery
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /.well-known/webfinger?resource=acct:{user}@{domain}` | Resolves a handle to an actor URI |
-| `GET /.well-known/host-meta` | The WebFinger URL template, as XRD |
-| `GET /.well-known/host-meta.json` | The same, as JSON |
-| `GET /.well-known/nodeinfo` | Where the NodeInfo documents live |
-| `GET /nodeinfo/2.0`, `GET /nodeinfo/2.1` | Instance metadata — software, version, usage counts |
+| Endpoint                                                   | Purpose                                             |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| `GET /.well-known/webfinger?resource=acct:{user}@{domain}` | Resolves a handle to an actor URI                   |
+| `GET /.well-known/host-meta`                               | The WebFinger URL template, as XRD                  |
+| `GET /.well-known/host-meta.json`                          | The same, as JSON                                   |
+| `GET /.well-known/nodeinfo`                                | Where the NodeInfo documents live                   |
+| `GET /nodeinfo/2.0`, `GET /nodeinfo/2.1`                   | Instance metadata — software, version, usage counts |
 
 WebFinger is the entry point for "search for `@alice@your-domain` on Mastodon".
 host-meta is the older step in front of it: some software asks for the WebFinger
@@ -34,22 +34,20 @@ plus the software name, version, and the instance's display name. No handle,
 title, or address is in it.
 
 <Callout type="note" title="What the counts leave out">
-`localPosts` is published local posts only: no drafts, nothing waiting for a
-scheduled time, nothing from another instance, and nothing from a suspended
-account. A private account's posts **are** counted — they are still this
-instance's output, and only the number leaves. Sign-in counts are read from
-session records, so they err low rather than high: signing out deletes the row,
-and that visit is no longer remembered.
+  `localPosts` is published local posts only: no drafts, nothing waiting for a scheduled time, nothing from another
+  instance, and nothing from a suspended account. A private account's posts **are** counted — they are still this
+  instance's output, and only the number leaves. Sign-in counts are read from session records, so they err low rather
+  than high: signing out deletes the row, and that visit is no longer remembered.
 </Callout>
 
 ## Actor
 
 An account has **two addresses**, and they are not interchangeable:
 
-| Address | For | Serves |
-| --- | --- | --- |
+| Address                           | For      | Serves                         |
+| --------------------------------- | -------- | ------------------------------ |
 | `https://your-domain/users/alice` | Software | The actor document, as JSON-LD |
-| `https://your-domain/@alice` | People | The profile page, as HTML |
+| `https://your-domain/@alice`      | People   | The profile page, as HTML      |
 
 `/users/alice` is the identity: it is the actor's `id`, the `self` link WebFinger
 returns, and what every remote server stores and addresses. It never changes.
@@ -66,17 +64,17 @@ Each address answers for the other rather than refusing:
   `<link rel="alternate" type="application/activity+json">` pointing there.
 
 The redirect on `/@alice` only fires for an unambiguous ActivityPub request —
-one where an ActivityPub type is the client's *first* preference. A browser, a
+one where an ActivityPub type is the client's _first_ preference. A browser, a
 crawler sending `*/*`, and anything ranking `text/html` first all get the page.
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /users/{identifier}` | The actor document — profile, keys, endpoints |
-| `GET /users/{identifier}/followers` | The followers collection |
-| `GET /users/{identifier}/outbox` | The actor's public activity stream |
-| `GET /users/{identifier}/comments/{commentId}` | One local response as a `Note` |
-| `GET /users/{identifier}/posts/{postId}/replies` | The post's responses as a collection |
-| `GET /users/{identifier}/lists/{listId}` | A public reading list as an object |
+| Endpoint                                         | Purpose                                       |
+| ------------------------------------------------ | --------------------------------------------- |
+| `GET /users/{identifier}`                        | The actor document — profile, keys, endpoints |
+| `GET /users/{identifier}/followers`              | The followers collection                      |
+| `GET /users/{identifier}/outbox`                 | The actor's public activity stream            |
+| `GET /users/{identifier}/comments/{commentId}`   | One local response as a `Note`                |
+| `GET /users/{identifier}/posts/{postId}/replies` | The post's responses as a collection          |
+| `GET /users/{identifier}/lists/{listId}`         | A public reading list as an object            |
 
 The actor document carries the public key remote servers use to verify your
 signatures, and the inbox endpoints they deliver to.
@@ -87,10 +85,10 @@ to redirect you to.
 
 ## Inboxes
 
-| Endpoint | Purpose |
-| --- | --- |
-| `POST /users/{identifier}/inbox` | Personal inbox |
-| `POST /inbox` | Shared inbox for activities addressed to many local users |
+| Endpoint                         | Purpose                                                   |
+| -------------------------------- | --------------------------------------------------------- |
+| `POST /users/{identifier}/inbox` | Personal inbox                                            |
+| `POST /inbox`                    | Shared inbox for activities addressed to many local users |
 
 Both are public and unauthenticated by protocol design; authenticity comes from
 **HTTP signature verification**, not from a session.
@@ -126,30 +124,39 @@ curl https://your-domain/nodeinfo/2.1
 A working `/.well-known/nodeinfo` names both documents:
 
 ```json
-{"links":[
-  {"rel":"http://nodeinfo.diaspora.software/ns/schema/2.0","href":"https://your-domain/nodeinfo/2.0","type":"..."},
-  {"rel":"http://nodeinfo.diaspora.software/ns/schema/2.1","href":"https://your-domain/nodeinfo/2.1","type":"..."}
-]}
+{
+  "links": [
+    {
+      "rel": "http://nodeinfo.diaspora.software/ns/schema/2.0",
+      "href": "https://your-domain/nodeinfo/2.0",
+      "type": "..."
+    },
+    {
+      "rel": "http://nodeinfo.diaspora.software/ns/schema/2.1",
+      "href": "https://your-domain/nodeinfo/2.1",
+      "type": "..."
+    }
+  ]
+}
 ```
 
 <Callout type="warning" title="Send the right Accept header">
-Without `Accept: application/activity+json`, `/users/alice` redirects to the
-human-readable profile page — that is deliberate, so a link someone pasted still
-lands somewhere readable. If you are inspecting the actor document, send the
-header, or `curl -L` will follow the redirect and hand you HTML. A "the actor
-endpoint returns HTML" bug report is almost always a missing header.
+  Without `Accept: application/activity+json`, `/users/alice` redirects to the human-readable profile page — that is
+  deliberate, so a link someone pasted still lands somewhere readable. If you are inspecting the actor document, send
+  the header, or `curl -L` will follow the redirect and hand you HTML. A "the actor endpoint returns HTML" bug report is
+  almost always a missing header.
 </Callout>
 
 ## Non-federation public routes
 
 Not ActivityPub, but part of the public surface:
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /healthz` | Liveness — `{"status":"ok"}` |
-| `GET /version` | Name, version, and the federation flag |
-| `GET /@{handle}/feed.xml` | Per-author RSS |
-| `GET /sitemap.xml`, `GET /robots.txt` | SEO surface |
+| Endpoint                              | Purpose                                |
+| ------------------------------------- | -------------------------------------- |
+| `GET /healthz`                        | Liveness — `{"status":"ok"}`           |
+| `GET /version`                        | Name, version, and the federation flag |
+| `GET /@{handle}/feed.xml`             | Per-author RSS                         |
+| `GET /sitemap.xml`, `GET /robots.txt` | SEO surface                            |
 
 `/healthz` and `/version` are served by the backend, which is published on
 loopback only — reach them on the host, not from the internet.

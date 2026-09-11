@@ -62,10 +62,10 @@ environment variables, and defaults against `apps/backend/src/` and
 
 ## Licensing (two licences)
 
-| What | Licence |
-| --- | --- |
+| What                                                       | Licence             |
+| ---------------------------------------------------------- | ------------------- |
 | Site source code — layouts, components, styles, config, CI | `AGPL-3.0-or-later` |
-| Documentation text — everything under `src/content/` | `CC-BY-SA-4.0` |
+| Documentation text — everything under `src/content/`       | `CC-BY-SA-4.0`      |
 
 New **source** files carry `// SPDX-License-Identifier: AGPL-3.0-or-later`.
 Content files under `src/content/` carry no per-file header — `COPYING.md` and
@@ -110,7 +110,7 @@ Never credit an AI assistant as author, co-author, or contributor. No
 Write them for someone who has not seen the problem. A good one covers:
 
 - **What was wrong or missing** — and where a reader would have hit it.
-- **What changed** — separating corrections of statements that were *wrong*
+- **What changed** — separating corrections of statements that were _wrong_
   from additions that were merely absent. A doc that actively misleads is a
   different severity from one that is incomplete; say which this is.
 - **Where the facts came from** — the file in the app repo each variable,

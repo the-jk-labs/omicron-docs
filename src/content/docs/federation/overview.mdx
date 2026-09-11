@@ -23,7 +23,7 @@ profile: https://your-domain/@alice
 ```
 
 The actor URI is the identity other servers store and address. The profile is
-where the actor sends *people* — it is the actor's `url`, and the page a Mastodon
+where the actor sends _people_ — it is the actor's `url`, and the page a Mastodon
 user reaches by clicking a byline. See
 [two addresses](/federation/endpoints/#actor) for how each one answers for the
 other.
@@ -37,10 +37,9 @@ Every one of those URIs is built from your domain, which is why the domain must
 be settled **before** you federate and must not change afterwards.
 
 <Callout type="note" title="Why HTTPS is effectively mandatory">
-Remote servers will not deliver to, or fetch from, a plain-HTTP actor. Caddy
-terminates TLS and forwards to the backend over HTTP inside the Docker network;
-the backend trusts `x-forwarded-proto` from that single hop so every generated
-URI is `https://`.
+  Remote servers will not deliver to, or fetch from, a plain-HTTP actor. Caddy terminates TLS and forwards to the
+  backend over HTTP inside the Docker network; the backend trusts `x-forwarded-proto` from that single hop so every
+  generated URI is `https://`.
 </Callout>
 
 ## Inbound
@@ -48,15 +47,15 @@ URI is `https://`.
 Other servers POST activities to an actor's inbox, or to the **shared inbox** at
 `/inbox` when one activity is addressed to many of your users at once.
 
-| Incoming | What Omicron does |
-| --- | --- |
-| `Follow` | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept` |
-| `Create` (Article) | Stores the post and shows it in the appropriate feed |
-| `Create` (Note) | Stores it as a **response** when it replies to one of your posts (or to a known response) — see [Compatibility](/federation/compatibility/). Any other microblog `Note` is ignored |
-| `Announce` | Records a **recommendation**: caches the boosted Article if not already fetched, and notifies its local author. Surfaces on the booster's local followers' For you feed — see [Recommending](/using/reading/#recommending) |
-| `Undo` | Reverses the referenced Follow or Announce |
-| `Update` | Refreshes the cached copy of a remote post or response, when the editor wrote it |
-| `Delete` | Removes the referenced remote content |
+| Incoming           | What Omicron does                                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Follow`           | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept`                                                                                                                                  |
+| `Create` (Article) | Stores the post and shows it in the appropriate feed                                                                                                                                                                       |
+| `Create` (Note)    | Stores it as a **response** when it replies to one of your posts (or to a known response) — see [Compatibility](/federation/compatibility/). Any other microblog `Note` is ignored                                         |
+| `Announce`         | Records a **recommendation**: caches the boosted Article if not already fetched, and notifies its local author. Surfaces on the booster's local followers' For you feed — see [Recommending](/using/reading/#recommending) |
+| `Undo`             | Reverses the referenced Follow or Announce                                                                                                                                                                                 |
+| `Update`           | Refreshes the cached copy of a remote post or response, when the editor wrote it                                                                                                                                           |
+| `Delete`           | Removes the referenced remote content                                                                                                                                                                                      |
 
 Inbound requests are signature-verified by Fedify, rate-limited per source IP,
 and capped in body size — twice, once by declared `Content-Length` and again

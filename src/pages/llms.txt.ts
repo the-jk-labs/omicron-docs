@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { APIRoute } from "astro";
-import { nav, hrefFor } from "@/lib/nav";
 import { getCollection } from "astro:content";
 import { SUMMARY } from "@/lib/llms";
+import { nav, hrefFor } from "@/lib/nav";
 
 // /llms.txt — the map, not the territory: every page as an absolute link with
 // its one-line description, grouped by chapter, so a model can pick the two

@@ -9,14 +9,14 @@ Deno, Hono, Fedify, Drizzle, PostgreSQL.
 
 ## Directory map
 
-| Directory | Responsibility |
-| --- | --- |
-| `src/routes/` | HTTP only — parse, call a service, serialize |
-| `src/services/` | Business logic — no HTTP, no SQL |
-| `src/db/` | Drizzle schema, migrations, and repositories |
-| `src/federation/` | ActivityPub, loaded only when federation is on |
-| `src/queue/` | The `queue.add(name, payload)` abstraction and job handlers |
-| `src/lib/` | Small shared helpers (HTTP errors, rate limiting, body caps) |
+| Directory         | Responsibility                                               |
+| ----------------- | ------------------------------------------------------------ |
+| `src/routes/`     | HTTP only — parse, call a service, serialize                 |
+| `src/services/`   | Business logic — no HTTP, no SQL                             |
+| `src/db/`         | Drizzle schema, migrations, and repositories                 |
+| `src/federation/` | ActivityPub, loaded only when federation is on               |
+| `src/queue/`      | The `queue.add(name, payload)` abstraction and job handlers  |
+| `src/lib/`        | Small shared helpers (HTTP errors, rate limiting, body caps) |
 
 ## Adding an endpoint
 
@@ -40,8 +40,7 @@ postRoutes.get("/:id", async (c) => {
 ```
 
 <Callout type="danger" title="The one hard rule">
-No Drizzle in `routes/` or `services/`. If you find yourself importing `db` there,
-the query belongs in a repository.
+  No Drizzle in `routes/` or `services/`. If you find yourself importing `db` there, the query belongs in a repository.
 </Callout>
 
 ## Route composition
@@ -101,23 +100,21 @@ there and calling `queue.add` from a service — never from a route.
 
 `src/federation/` is imported dynamically, only when federation is running:
 
-| File | Role |
-| --- | --- |
-| `mod.ts` | Fedify setup — actor, followers, outbox, inbox listeners, object dispatchers |
-| `actor.ts` | Building actor documents |
-| `article.ts` | Mapping posts to ActivityPub objects |
-| `deliver.ts`, `outbound.ts` | Sending activities |
-| `remote.ts` | Resolving and caching remote actors |
-| `attribution.ts` | Splicing Mastodon's `attributionDomains` into the actor doc |
-| `lists.ts` | Public reading lists as addressable objects |
+| File                        | Role                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `mod.ts`                    | Fedify setup — actor, followers, outbox, inbox listeners, object dispatchers |
+| `actor.ts`                  | Building actor documents                                                     |
+| `article.ts`                | Mapping posts to ActivityPub objects                                         |
+| `deliver.ts`, `outbound.ts` | Sending activities                                                           |
+| `remote.ts`                 | Resolving and caching remote actors                                          |
+| `attribution.ts`            | Splicing Mastodon's `attributionDomains` into the actor doc                  |
+| `lists.ts`                  | Public reading lists as addressable objects                                  |
 
 <Callout type="warning" title="Proxy scheme correction">
-Caddy terminates TLS and proxies over plain HTTP, so the request Fedify sees is
-`http://`. The app corrects the scheme from `x-forwarded-proto` before handing
-the request over — otherwise every generated actor URI would be `http://` on an
-HTTPS site. When touching that path, never re-read `req.body`: the POST path
-buffers the body once, and rebuilding a `Request` from the same object twice
-throws.
+  Caddy terminates TLS and proxies over plain HTTP, so the request Fedify sees is `http://`. The app corrects the scheme
+  from `x-forwarded-proto` before handing the request over — otherwise every generated actor URI would be `http://` on
+  an HTTPS site. When touching that path, never re-read `req.body`: the POST path buffers the body once, and rebuilding
+  a `Request` from the same object twice throws.
 </Callout>
 
 ## Health and version
