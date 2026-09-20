@@ -26,14 +26,14 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "autoprefixer": "10.4.20",
+    "autoprefixer": "10.6.1",
     "greenly": "1.1.6",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.83.0",
     "oxlint-tsgolint": "7.0.2001",
     "pagefind": "1.5.2",
     "postcss": "8.5.28",
-    "tailwindcss": "3.4.15",
+    "tailwindcss": "3.4.19",
     "typescript": "6.0.3"
   },
   "engines": {
