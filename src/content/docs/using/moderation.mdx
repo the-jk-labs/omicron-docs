@@ -1,12 +1,13 @@
 ---
 title: Moderation tools
-description: What individual users can do, what admins can do, and how defederation works.
+description: What individual users can do, what moderators and admins can do, and how defederation works.
 ---
 
 import Callout from "@/components/Callout.astro";
 
-Moderation happens at two levels: what a reader does for themselves, and what an
-admin does for the whole instance.
+Moderation happens at three levels: what a reader does for themselves, what a
+moderator does for the community, and what an admin does for the whole
+instance.
 
 ## User-level
 
@@ -21,11 +22,45 @@ admin does for the whole instance.
 Muted and blocked accounts are listed in **Settings → Muted and blocked** and can
 be undone at any time.
 
+## Moderator-level
+
+Moderators open the same **`/admin`** panel as admins, but only two tabs work
+for them — **Reports** and **Users**. The other tabs (Federation, Email,
+Security, Discoverability, Media, Instance) stay visible and explain that they
+require the admin role. Within their two tabs moderators can do everything an
+admin can: work the queue, remove posts, and suspend, edit, verify, delete, or
+restore regular accounts.
+
+The boundaries, enforced server-side:
+
+- **No instance controls.** Settings, email, federation, defederation domains,
+  SEO, media keys, and the session secret are admin-only.
+- **No role grants.** Only admins hand out the admin or moderator role.
+- **No acting on privileged accounts.** A moderator cannot suspend, edit,
+  verify, delete, or otherwise touch an admin's account — or another
+  moderator's. Admins can act on moderators.
+
+A moderator's own posts and comments can still be removed like anyone's, and a
+moderator can delete any local post or comment from the article page, same as
+an admin.
+
+### Appointing a moderator
+
+An admin opens **Admin → Users**, expands the account's **More actions** menu,
+and chooses **Make moderator…**, confirmed with the admin's own password. The
+account is notified by email and carries a Moderator badge. Removing the role
+works the same way. An admin's account needs no moderator flag — admins
+implicitly hold every moderator power.
+
 ## Admin-level
+
+Everything in the moderator section, plus the instance itself. Each subsection
+below is admin-only.
 
 ### Reports
 
-**Admin → Reports** is the moderation queue. For each report you can:
+The **Reports** tab is the moderation queue, shared with moderators. For each
+report you can:
 
 - review the reported post or actor,
 - **remove the post**,
@@ -36,7 +71,7 @@ stop serving it locally.
 
 ### Users
 
-**Admin → Users** suspends or reinstates local accounts. A suspended account
+The **Users** tab suspends or reinstates local accounts. A suspended account
 cannot sign in and its content stops being served. Suspended, reinstated and
 restored accounts are notified by email.
 
@@ -45,7 +80,8 @@ posts, and every report filed against it or its posts — the context behind a
 suspend or delete decision. The search box matches handle, display name, or
 login email; Status, Role, and Email filters narrow the table to either side
 — active or suspended accounts, admins or non-admins, verified or
-unverified addresses. The table loads 50
+unverified addresses. Accounts with a role carry an Admin or Moderator badge.
+The table loads 50
 accounts at a time — **Load more** fetches the next page. **Suspend** (or
 **Reinstate**) sits on the row itself;
 **Edit**, role changes, and **Delete** live in the row's **More actions**
@@ -55,16 +91,18 @@ An unverified address can be nudged with a fresh verification email, or
 marked verified by hand when instance mail was broken — the account is told
 it can sign in.
 
-Admins can grant or revoke the admin role from the same table, confirmed with
-their own password. You cannot change your own role or remove the last admin;
-the affected account is notified either way.
+Admins can grant or revoke the admin or the moderator role from the same
+table, confirmed with their own password. You cannot change your own role,
+remove the last admin, or put a moderator flag on an admin (they already have
+every moderator power); the affected account is notified either way.
 
 Deleting an account goes further: it signs the account out immediately and
 hides the account, its posts and its profile everywhere. The account is
 notified by email, with the date until which restoration is possible.
 Deletion is guarded like deleting a repository — you must type the account's
 exact username and re-enter your own password. You cannot delete your own
-account or another admin's.
+account or another admin's, and a moderator cannot delete an admin's or
+another moderator's.
 
 A deleted account is kept for **30 days** and can be restored from the
 **Recently deleted** list on the same page, which shows who deleted it and when
@@ -89,7 +127,7 @@ resend it from the same place.
 **Admin → Federation** blocks a domain outright — and blocking **purges
 already-cached content** from that domain, rather than only filtering what
 arrives next. Re-federating a domain restores delivery going forward; purged
-content does not come back on its own.
+content does not come back on its own. Moderators cannot reach this tab.
 
 <Callout type="warning" title="Defederation is blunt and visible">
   Blocking a domain cuts off every account on it, including people your users follow. Their follows break silently from
