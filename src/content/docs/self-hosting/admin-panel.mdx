@@ -5,8 +5,14 @@ description: Every instance setting, moderation queue, and security switch — a
 
 import Callout from "@/components/Callout.astro";
 
-Sign in as the admin and open **`/admin`**. Everything the setup wizard set — and
-more — is editable here.
+Sign in as an admin or a moderator and open **`/admin`**. Everything the setup
+wizard set — and more — is editable here, subject to your role.
+
+<Callout type="note" title="Moderators share this panel">
+  Moderators can use the **Reports** and **Users** tabs — the full moderation workflow. **Instance**, **Email**,
+  **Federation**, **Security**, **Discoverability**, and **Media** are admin-only: a moderator opening them sees a
+  notice saying so. See [Moderation tools](/using/moderation/).
+</Callout>
 
 ## Instance
 
@@ -37,13 +43,15 @@ Full detail: [Email](/self-hosting/email/).
 
 ## Reports
 
-The moderation queue. Review user-reported posts and actors, remove posts, and
-dismiss reports. Reports cover both local and remote content.
+The moderation queue, shared with moderators. Review user-reported posts and
+actors, remove posts, and dismiss reports. Reports cover both local and remote
+content.
 
 ## Users
 
 Suspend or reinstate local accounts. A suspended account cannot sign in, and its
-content stops being served.
+content stops being served. Moderators share this tab but can only act on
+regular accounts — never on admins or fellow moderators.
 
 Deleting an account hides it everywhere but keeps it restorable for 30 days —
 see [Moderation tools](/using/moderation/#users). Erasing it from Recently
