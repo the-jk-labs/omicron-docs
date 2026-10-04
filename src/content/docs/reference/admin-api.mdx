@@ -16,8 +16,8 @@ endpoints the admin panel itself calls; they are documented here
 because operators sometimes need to script against them.
 
 <Callout type="warning">
-  There is no API token flow — a script authenticates by signing in and keeping the session cookie, exactly like the
-  browser. Treat any script holding that cookie as holding that account's role and rights.
+  Scripts can use a 15-minute bearer JWT minted from a Better Auth session. Treat the session cookie or JWT as holding
+  that account's role and rights; see [HTTP API authentication](/reference/http-api/#authentication).
 </Callout>
 
 ## Instance
@@ -28,8 +28,9 @@ because operators sometimes need to script against them.
 | `PUT`  | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
 | `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
 
-Rotating signs everyone out on the next restart. If `SESSION_SECRET` is pinned in
-the environment, rotate it there instead.
+Rotating signs everyone out and invalidates JWTs on the next restart. JWT
+issuance and public-key discovery pause until that restart completes. If
+`SESSION_SECRET` is pinned in the environment, rotate it there instead.
 
 ## Settings and analytics
 
