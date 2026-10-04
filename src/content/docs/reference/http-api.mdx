@@ -12,14 +12,30 @@ naturally.
 
 ## Authentication
 
-Session-based. Signing in sets an **httpOnly cookie** backed by a row in the
-Postgres `sessions` table. Send that cookie with subsequent requests.
+Signing in creates a server-side session, represented by an **httpOnly cookie**
+backed by the Postgres `sessions` table. Browsers use that cookie directly.
 
-<Callout type="warning" title="No API tokens yet">
-  There is no personal-access-token or OAuth flow for the API at large. Programmatic clients authenticate the same way
-  the browser does — by signing in and keeping the cookie. The one exception is the [content
-  webhook](/reference/content-webhook/), whose per-user tokens can only publish posts and nothing else.
-</Callout>
+Non-cookie clients use a short-lived JWT. First establish a Better Auth session,
+then request a token and send it with normal API calls:
+
+```http
+Authorization: Bearer <token>
+```
+
+| Method | Path              | Authentication      | Purpose                                  |
+| ------ | ----------------- | ------------------- | ---------------------------------------- |
+| `GET`  | `/api/auth/jwks`  | None                | Public keys for JWT signature validation |
+| `GET`  | `/api/auth/token` | Better Auth session | Mint a JWT for normal API calls          |
+
+`/api/auth/token` returns `{"token":"ey…"}`. Tokens contain only standard
+claims and expire after 15 minutes. Keep the JWT in memory, refresh it through
+the session before expiry, and never send either credential to another origin.
+Session revocation prevents a new token from being minted; an issued token stays
+valid until it expires.
+
+There is no personal-access-token or OAuth flow. The [content
+webhook](/reference/content-webhook/) remains separate: its per-user tokens can
+only publish posts and nothing else.
 
 ## Conventions
 

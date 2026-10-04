@@ -96,8 +96,9 @@ space immediately. Details in
 ## Session secret rotation
 
 **Admin → Instance → Session secret** rotates the secret that signs sessions. It
-signs everyone out — including you — on the next restart. Use it only if you
-suspect exposure.
+signs everyone out — including you — and invalidates every JWT on the next
+restart. JWT issuance and public-key discovery pause until the restart completes.
+Use it only if you suspect exposure.
 
 If you pinned `SESSION_SECRET` in the environment, rotate it there instead; an
 env-supplied value takes precedence over the stored one.
