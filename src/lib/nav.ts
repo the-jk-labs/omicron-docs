@@ -47,6 +47,7 @@ export const nav: NavSection[] = [
     items: [
       { slug: "using/writing", label: "Writing posts" },
       { slug: "using/profiles", label: "Profiles" },
+      { slug: "using/android", label: "Android app" },
       { slug: "using/reading", label: "Reading and following" },
       { slug: "using/lists", label: "Lists and read later" },
       { slug: "using/moderation", label: "Moderation tools" },

@@ -1,0 +1,46 @@
+---
+title: Android app
+description: Connect the Omicron Android app to an instance and manage your account session.
+---
+
+The Android app currently supports choosing an Omicron instance and managing an
+account session. The instance you choose must use HTTPS.
+
+## Choose an instance
+
+1. Open the app and enter your instance address, such as
+   `https://omicron.blog`.
+2. Select **Continue** after the app confirms the instance.
+3. Select **Change instance** at any time to connect to another server.
+
+The app keeps each instance's session separate. Changing instances never sends
+an existing session to the new server.
+
+## Sign in or create an account
+
+Use your email address or username and password to sign in. A username may be
+entered with or without its leading `@`.
+
+To create an account, select **Create an account** and provide a username,
+email address, and password. Usernames use 3 to 30 lowercase letters, numbers,
+or underscores. Passwords must be 12 to 128 characters.
+
+If you need another account on the same instance, sign out first, then sign in
+with the other account.
+
+## Confirm your email
+
+An instance can require new accounts to confirm their email address. In that
+case, the app shows **Check your inbox** after registration or an unverified
+sign-in attempt. Open the confirmation link in your email, then return to the
+app and sign in.
+
+The confirmation link opens the instance's web verification page. Android App
+Links are not currently available for this handoff.
+
+## Session security
+
+The app stores the session cookie securely on the device and only uses it with
+the instance that issued it. API access tokens remain in memory and are renewed
+before they expire. Signing out removes the current in-memory session and asks
+the instance to end its session.
