@@ -20,6 +20,20 @@ at all. Create one next to `docker-compose.yml` only to override a default.
 | `APP_DOMAIN`      | `localhost:5173` | Public domain, no scheme, no trailing slash. Usually set via the wizard. |
 | `PUBLIC_APP_NAME` | `Omicron`        | Instance name shown in the UI.                                           |
 
+## Legal and footer
+
+| Variable               | Default    | Purpose                                                                                                 |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SOURCE_URL`    | _upstream_ | Where the footer's Source link points. Point at your fork when you run a modified build (AGPL-3.0 §13). |
+| `PUBLIC_STATUS_URL`    | _(empty)_  | External status page linked from the footer and `/status`. Overridden by Admin → Instance when set.     |
+| `PUBLIC_CONTACT_URL`   | _(empty)_  | Contact page linked from the footer. Overridden by Admin → Instance when set.                           |
+| `PUBLIC_CONTACT_EMAIL` | _(empty)_  | Contact email shown on `/contact`. Overridden by Admin → Instance when set.                             |
+| `PUBLIC_ABUSE_EMAIL`   | _(empty)_  | Abuse email shown on `/contact`. Falls back to the contact email. Overridden by Admin → Instance.       |
+
+About, instance rules, and the privacy policy have no environment equivalent —
+they are managed in Admin → Instance → Public information only. Instance
+settings take precedence over every variable above.
+
 ## Federation
 
 | Variable                   | Default | Purpose                                                                                                                                                                                 |
