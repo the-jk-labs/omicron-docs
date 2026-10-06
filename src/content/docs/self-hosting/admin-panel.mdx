@@ -18,10 +18,44 @@ wizard set — and more — is editable here, subject to your role.
 
 - **Name** and **public domain**.
 - The **federation** toggle.
+- The **signed-out visitor card** (tagline and banner image).
+- **Public information** — About, rules, privacy policy, and operator contact and status links.
 - **Session-secret rotation**.
 
 Domain and federation changes apply on the **next restart**; the page tells you
-when a restart is needed.
+when a restart is needed. Everything else on this tab applies immediately.
+
+### Visitor card
+
+The card shown to signed-out visitors. Leave the tagline blank to use the
+built-in sentence, and upload a banner image or revert to the bundled artwork.
+Images are resized and re-encoded automatically.
+
+### Public information
+
+The instance-specific pages linked from the footer — About, instance rules,
+privacy, contact, and status — are edited here, by admins only. The three page
+sections accept Markdown and are rendered to sanitized HTML server-side:
+
+- **About this instance** appears on `/about` under "This instance".
+- **Instance rules** appears on `/about` under "Instance rules".
+- **Privacy policy** replaces `/privacy` entirely.
+
+Leave any of them blank to keep the built-in placeholder text. Placeholders are
+safe defaults, not legal advice: replace the privacy text with your own policy
+before operating a public service.
+
+Contact and status fields may each be left blank:
+
+- **Contact email** and **abuse email** are shown on `/contact`. The abuse
+  address falls back to the contact email when unset.
+- **Contact page URL** replaces the footer's Contact link when set.
+- **Status page URL** replaces the footer's Status link when set.
+
+When an instance value is unset, the corresponding `PUBLIC_*` environment
+fallback applies if configured — see
+[Environment variables](/reference/environment/#legal-and-footer). Instance
+settings take precedence over the environment.
 
 ### Rotating the session secret
 

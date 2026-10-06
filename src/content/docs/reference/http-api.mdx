@@ -248,17 +248,25 @@ revoke tokens. Full reference in
 
 ## Reports, instance, setup, SEO
 
-| Method | Path                            | Purpose                                                               |
-| ------ | ------------------------------- | --------------------------------------------------------------------- |
-| `POST` | `/api/reports`                  | Report a post or actor                                                |
-| `GET`  | `/api/instance`                 | Public instance metadata                                              |
-| `GET`  | `/api/instance/tls-check`       | Whether a hostname may be issued a certificate                        |
-| `POST` | `/api/setup`                    | Complete the first-run wizard                                         |
-| `POST` | `/api/setup/test-email`         | Send a test email during setup                                        |
-| `GET`  | `/api/seo`                      | Indexing flag and verification tokens (the IndexNow key is withheld)  |
-| `GET`  | `/api/seo/sitemap-entries`      | Profiles, tags, and public lists for the sitemap, plus the post count |
-| `GET`  | `/api/seo/sitemap-posts?page=N` | One page of published local posts for the sitemap                     |
-| `GET`  | `/api/seo/indexnow-key/:key`    | Whether `key` is this instance's IndexNow key                         |
+| Method | Path                            | Purpose                                                                 |
+| ------ | ------------------------------- | ----------------------------------------------------------------------- |
+| `POST` | `/api/reports`                  | Report a post or actor                                                  |
+| `GET`  | `/api/instance`                 | Public instance metadata, including visitor card and public information |
+| `GET`  | `/api/instance/tls-check`       | Whether a hostname may be issued a certificate                          |
+| `POST` | `/api/setup`                    | Complete the first-run wizard                                           |
+| `POST` | `/api/setup/test-email`         | Send a test email during setup                                          |
+| `GET`  | `/api/seo`                      | Indexing flag and verification tokens (the IndexNow key is withheld)    |
+| `GET`  | `/api/seo/sitemap-entries`      | Profiles, tags, and public lists for the sitemap, plus the post count   |
+| `GET`  | `/api/seo/sitemap-posts?page=N` | One page of published local posts for the sitemap                       |
+| `GET`  | `/api/seo/indexnow-key/:key`    | Whether `key` is this instance's IndexNow key                           |
+
+`GET /api/instance` is unauthenticated and powers the site chrome and the
+public About, privacy, contact, and status pages. Alongside the name, domain,
+federation flag, and visitor card it returns the admin-managed public
+information as sanitized HTML (`aboutHtml`, `rulesHtml`, `privacyPolicyHtml`)
+plus the contact and status links; each is `null` when the admin has not set
+it, in which case the page shows its built-in placeholder or environment
+fallback.
 
 Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).

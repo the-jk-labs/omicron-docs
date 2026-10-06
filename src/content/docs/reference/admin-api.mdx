@@ -22,11 +22,21 @@ because operators sometimes need to script against them.
 
 ## Instance
 
-| Method | Path                                | Purpose                                              |
-| ------ | ----------------------------------- | ---------------------------------------------------- |
-| `GET`  | `/api/admin/instance`               | Instance name, domain, federation flag               |
-| `PUT`  | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
-| `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
+| Method   | Path                                | Purpose                                              |
+| -------- | ----------------------------------- | ---------------------------------------------------- |
+| `GET`    | `/api/admin/instance`               | Instance identity, visitor card, public information  |
+| `PUT`    | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
+| `POST`   | `/api/admin/instance/banner`        | Upload the visitor-card banner image                 |
+| `DELETE` | `/api/admin/instance/banner`        | Revert the banner to the bundled artwork             |
+| `POST`   | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
+
+`PUT /api/admin/instance` accepts any subset of `appName`, `appDomain`,
+`federationEnabled`, `bannerText`, `about`, `rules`, `privacyPolicy`,
+`contactEmail`, `contactUrl`, `abuseEmail`, and `statusUrl`. The three page
+sections accept Markdown up to 20,000 characters each and are stored alongside
+their server-rendered sanitized HTML; blank clears back to the built-in
+placeholder. Emails must be valid, and contact/status URLs must be `http(s)`.
+Invalid values answer `400`.
 
 Rotating signs everyone out and invalidates JWTs on the next restart. JWT
 issuance and public-key discovery pause until that restart completes. If
