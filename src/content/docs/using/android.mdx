@@ -1,10 +1,10 @@
 ---
 title: Android app
-description: Connect the Omicron Android app to an instance and manage your account session.
+description: Connect the Android app, read posts, interact with writers, and manage your account session.
 ---
 
-The Android app currently supports choosing an Omicron instance and managing an
-account session. The instance you choose must use HTTPS.
+The Android app supports guest reading, signed-in feeds and social actions, and
+local or federated profiles. The instance you choose must use HTTPS.
 
 ## Choose an instance
 
@@ -38,9 +38,47 @@ app and sign in.
 The confirmation link opens the instance's web verification page. Android App
 Links are not currently available for this handoff.
 
+## Read posts
+
+After connecting, browse **Global** and **Local** as a guest. When signed in, the
+**For you** feed adds posts from writers you follow and posts they recommend.
+Select a post to read its article, then continue to related posts below it.
+
+If your session expires while using **For you**, the app switches to **Global**
+and shows a sign-in action. After signing in again, select **Continue reading**
+to return to the screen you were using.
+
+## Interact with posts and comments
+
+Open a post to **Like**, **Recommend**, or **Save for later**. Recommendations
+are reposts that federate to followers; see
+[Recommending](/using/reading/#recommending). **Save for later** adds the post
+to your private [Read later list](/using/lists/#read-later).
+
+The responses section lists comments and replies. Sign in to respond, reply to a
+comment, like a response, or edit or delete your own response. If an action fails,
+the app restores the previous state and shows an error so you can retry.
+
+## Open profiles
+
+Select a writer's name on a post, or your account button in the feed header, to
+open a profile. Profiles include **Articles**, **Recommendations**, and **About**.
+Local profiles also have **Followers** and **Following** member lists; remote
+profiles show the follower and following counts available from the remote
+instance.
+
+On another writer's profile, sign in to follow, mute, or block them. Following a
+private local account shows **Requested** until the writer approves you. A block
+also ends the follow relationship. Remote profiles and actions require federation
+to be enabled on the instance.
+
+If a local profile is private, you can still see its public header, but its posts
+and follower lists stay hidden until you are an approved follower.
+
 ## Session security
 
 The app stores the session cookie securely on the device and only uses it with
 the instance that issued it. API access tokens remain in memory and are renewed
-before they expire. Signing out removes the current in-memory session and asks
-the instance to end its session.
+before they expire. If the instance rejects a session, its saved cookie is cleared
+and the app offers a way to sign in again. Signing out removes the current
+in-memory session and asks the instance to end its session.
