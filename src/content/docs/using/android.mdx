@@ -75,6 +75,32 @@ to be enabled on the instance.
 If a local profile is private, you can still see its public header, but its posts
 and follower lists stay hidden until you are an approved follower.
 
+## Write and manage posts
+
+Sign in, then select the **+** button in the feed header to open a new post.
+The composer supports a title and body blocks (paragraphs, headings, lists,
+quotes, code, and images), plus an optional description, tags, language, and
+banner. Save a draft, publish now, or schedule it for a later time. Scheduled
+times use your phone's timezone.
+
+To manage posts, open your own profile from the feed and select **Manage posts**.
+The screen has **Drafts**, **Scheduled**, and **Published** tabs with a count on
+each. Select **Load more** when a list has another page.
+
+| Tab           | Available actions                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Drafts**    | Continue editing, schedule, or delete. Deleting asks for confirmation.                                            |
+| **Scheduled** | Continue editing, reschedule, publish now, unschedule back to a draft, or delete. Deleting asks for confirmation. |
+| **Published** | View, edit, unpublish back to a draft, or delete. Unpublish and delete ask for confirmation.                      |
+
+Drafts and scheduled posts autosave after you pause editing. Editing a scheduled
+post this way keeps its scheduled time; selecting **Save draft** explicitly
+unschedules it.
+Published edits are not autosaved: select **Save changes** to update the live
+post. It remains published, and the update is queued for remote followers.
+Unpublishing makes the post a draft and sends a deletion to remote followers, but
+remote servers are not guaranteed to remove every copy.
+
 ## Session security
 
 The app stores the session cookie securely on the device and only uses it with
