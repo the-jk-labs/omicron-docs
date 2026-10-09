@@ -101,6 +101,21 @@ post. It remains published, and the update is queued for remote followers.
 Unpublishing makes the post a draft and sends a deletion to remote followers, but
 remote servers are not guaranteed to remove every copy.
 
+## Settings
+
+Select the gear in the feed header to open **Settings**. The screen remains
+available when signed out.
+
+| Setting           | What it does                                                                                                                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Instance**      | Shows the connected instance. Select **Change instance** to open the connection screen, then choose another address there.                                                                                       |
+| **Appearance**    | Choose **System**, **Light**, or **Dark**. The preference is saved on this device across restarts and instance changes. **System** follows Android's current appearance. It is not synced with your web account. |
+| **About Omicron** | Identifies the app and its license.                                                                                                                                                                              |
+| **Account**       | Shows the signed-in account and provides **Sign out**, or offers **Sign in** when signed out.                                                                                                                    |
+
+Signing out clears the saved session on this device even when the instance cannot
+confirm the remote sign-out. In that case, Settings displays a warning.
+
 ## Session security
 
 The app stores the session cookie securely on the device and only uses it with
