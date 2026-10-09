@@ -106,15 +106,37 @@ remote servers are not guaranteed to remove every copy.
 Select the gear in the feed header to open **Settings**. The screen remains
 available when signed out.
 
-| Setting           | What it does                                                                                                                                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Instance**      | Shows the connected instance. Select **Change instance** to open the connection screen, then choose another address there.                                                                                       |
-| **Appearance**    | Choose **System**, **Light**, or **Dark**. The preference is saved on this device across restarts and instance changes. **System** follows Android's current appearance. It is not synced with your web account. |
-| **About Omicron** | Identifies the app and its license.                                                                                                                                                                              |
-| **Account**       | Shows the signed-in account and provides **Sign out**, or offers **Sign in** when signed out.                                                                                                                    |
+| Setting             | What it does                                                                                                                                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Instance**        | Shows the connected instance. Select **Change instance** to open the connection screen, then choose another address there.                                                                                       |
+| **Appearance**      | Choose **System**, **Light**, or **Dark**. The preference is saved on this device across restarts and instance changes. **System** follows Android's current appearance. It is not synced with your web account. |
+| **About Omicron**   | Identifies the app and its license.                                                                                                                                                                              |
+| **Offline reading** | Opens public articles saved on this device for the selected instance.                                                                                                                                            |
+| **Account**         | Shows the signed-in account and provides **Sign out**, or offers **Sign in** when signed out.                                                                                                                    |
 
 Signing out clears the saved session on this device even when the instance cannot
 confirm the remote sign-out. In that case, Settings displays a warning.
+
+### Offline reading
+
+When you open a public article online, the app saves its article details on the
+device. Open **Settings → Offline reading** to see saved articles for the
+currently selected instance. Select **Read** to open one, **Remove** to remove
+an individual copy, or **Clear saved articles for this instance** to remove all
+of that instance's copies. Switching instances does not mix or clear their
+saved articles.
+
+Every article open checks the instance first. If a network connection fails, the
+app can show the saved copy, marked as possibly out of date. A server response
+such as **Not found** or a sign-in requirement is not replaced with cached content.
+The app does not save drafts, scheduled posts, feeds, comments, or account-specific
+likes and recommendations.
+
+Copies expire 30 days after their last online update. Across instances, the
+device cache is limited to 50 articles and 64 MB total; it removes the
+least-recently read copies first. Images use a separate 32 MB cache. An image
+may be missing if it was not downloaded before or has been evicted, and Android
+may clear that cache at any time.
 
 ## Session security
 
