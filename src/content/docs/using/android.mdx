@@ -138,6 +138,21 @@ least-recently read copies first. Images use a separate 32 MB cache. An image
 may be missing if it was not downloaded before or has been evicted, and Android
 may clear that cache at any time.
 
+## Accessibility
+
+The Android reading and Settings screens support TalkBack and follow Android's
+font scale. Enable TalkBack in Android's accessibility settings to navigate
+controls by focus and hear their labels and selected states. Feed header actions
+and article controls have accessible labels. The **For you**, **Local**, and
+**Global** scopes expose the active tab. In Settings, **System**, **Light**, and
+**Dark** are radio choices with the selected appearance exposed to TalkBack.
+**Like**, **Recommend**, and **Save for later** expose whether each action is
+selected.
+
+Article headings are available for heading navigation. Inline article images use
+their supplied description when one is available; cover images and decorative
+images are not announced.
+
 ## Session security
 
 The app stores the session cookie securely on the device and only uses it with
