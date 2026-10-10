@@ -3,8 +3,9 @@ title: Android app
 description: Connect the Android app, read posts, interact with writers, and manage your account session.
 ---
 
-The Android app supports guest reading, signed-in feeds and social actions, and
-local or federated profiles. The instance you choose must use HTTPS.
+The Android app supports guest reading, signed-in feeds and social actions,
+reading lists, a writer dashboard, notifications, and local or federated
+profiles. The instance you choose must use HTTPS.
 
 ## Choose an instance
 
@@ -38,11 +39,35 @@ app and sign in.
 The confirmation link opens the instance's web verification page. Android App
 Links are not currently available for this handoff.
 
+## Navigate the app
+
+The top bar provides **Search** and a theme toggle. When signed in, it also shows
+a notification bell with an unread count and an account menu. The bell opens a
+recent-notification preview; opening it marks unread notifications as read.
+Select **See all** to open the full notifications screen. When signed out, use
+the top-bar gear to open Settings.
+
+Signed-in readers also have a bottom navigation bar:
+
+| Destination | Opens                                    |
+| ----------- | ---------------------------------------- |
+| **Home**    | The For you, Local, and Global feeds     |
+| **Lists**   | Your reading lists, including Read later |
+| **Write**   | A new post in the composer               |
+| **Stats**   | Your writer dashboard                    |
+| **Profile** | Your profile                             |
+
+The account menu links to **Profile**, **Write**, **Your posts**, **Lists**,
+**Stats**, **Settings**, and **Sign out**. Guests can read the public Home feeds
+and use Search, but do not see the signed-in bottom navigation.
+
 ## Read posts
 
 After connecting, browse **Global** and **Local** as a guest. When signed in, the
 **For you** feed adds posts from writers you follow and posts they recommend.
-Select a post to read its article, then continue to related posts below it.
+Select a post's title, summary, or image to read its article, then continue to
+related posts below it. Author names open profiles, and topic tags open their
+tag pages.
 
 If your session expires while using **For you**, the app switches to **Global**
 and shows a sign-in action. After signing in again, select **Continue reading**
@@ -50,8 +75,8 @@ to return to the screen you were using.
 
 ## Interact with posts and comments
 
-Open a post to **Like**, **Recommend**, or **Save for later**. Recommendations
-are reposts that federate to followers; see
+Use the actions on a feed card or open a post to **Like**, **Recommend**, or
+**Save for later**. Recommendations are reposts that federate to followers; see
 [Recommending](/using/reading/#recommending). **Save for later** adds the post
 to your private [Read later list](/using/lists/#read-later).
 
@@ -61,8 +86,9 @@ the app restores the previous state and shows an error so you can retry.
 
 ## Open profiles
 
-Select a writer's name on a post, or your account button in the feed header, to
-open a profile. Profiles include **Articles**, **Recommendations**, and **About**.
+Select a writer's name on a post, or **Profile** in the account menu or bottom
+navigation, to open a profile. Profiles include **Articles**,
+**Recommendations**, and **About**.
 Local profiles also have **Followers** and **Following** member lists; remote
 profiles show the follower and following counts available from the remote
 instance.
@@ -77,13 +103,15 @@ and follower lists stay hidden until you are an approved follower.
 
 ## Write and manage posts
 
-Sign in, then select the **+** button in the feed header to open a new post.
+Sign in, then select **Write** in the bottom navigation or account menu to open a
+new post.
 The composer supports a title and body blocks (paragraphs, headings, lists,
 quotes, code, and images), plus an optional description, tags, language, and
 banner. Save a draft, publish now, or schedule it for a later time. Scheduled
 times use your phone's timezone.
 
-To manage posts, open your own profile from the feed and select **Manage posts**.
+To manage posts, open **Your posts** in the account menu or select **Manage posts**
+on your own profile.
 The screen has **Drafts**, **Scheduled**, and **Published** tabs with a count on
 each. Select **Load more** when a list has another page.
 
@@ -101,10 +129,37 @@ post. It remains published, and the update is queued for remote followers.
 Unpublishing makes the post a draft and sends a deletion to remote followers, but
 remote servers are not guaranteed to remove every copy.
 
+## Reading lists
+
+Select **Lists** in the bottom navigation or account menu to open your lists.
+**Read later** is pinned at the top. Select **New list** to create a public or
+private list, then select a list to browse its articles. Longer lists use **Load
+more** to retrieve the next page.
+
+The bookmark action on a feed card or article adds or removes it from **Read
+later**. Open **Settings → Offline reading** to manage public articles cached on
+the device; offline copies are separate from reading lists.
+
+## Writer dashboard
+
+Select **Stats** in the bottom navigation or account menu to open your dashboard.
+It shows aggregate views when the instance enables view counting, plus likes,
+comments, engagement, followers, a views-over-time chart, and per-post totals.
+The dashboard reports aggregate counts only; it does not identify readers.
+When view counting is disabled, the views metrics are omitted.
+
+## Notifications
+
+The signed-in top-bar bell shows the unread count and a recent-notification
+preview. Opening the preview or the full screen marks notifications as read.
+Select **See all** to open the full list. Select a notification to open the
+related article or writer profile; use **Load more** to fetch older
+notifications.
+
 ## Settings
 
-Select the gear in the feed header to open **Settings**. The screen remains
-available when signed out.
+When signed out, select the top-bar gear. When signed in, open **Settings** from
+the account menu. The screen remains available when signed out.
 
 | Setting             | What it does                                                                                                                                                                                                     |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -142,12 +197,12 @@ may clear that cache at any time.
 
 The Android reading and Settings screens support TalkBack and follow Android's
 font scale. Enable TalkBack in Android's accessibility settings to navigate
-controls by focus and hear their labels and selected states. Feed header actions
-and article controls have accessible labels. The **For you**, **Local**, and
-**Global** scopes expose the active tab. In Settings, **System**, **Light**, and
-**Dark** are radio choices with the selected appearance exposed to TalkBack.
-**Like**, **Recommend**, and **Save for later** expose whether each action is
-selected.
+controls by focus and hear their labels and selected states. Top-bar actions,
+account-menu items, bottom-navigation tabs, and article controls have accessible
+labels. The **For you**, **Local**, and **Global** scopes and bottom tabs expose
+their selected state. In Settings, **System**, **Light**, and **Dark** are radio
+choices with the selected appearance exposed to TalkBack. **Like**,
+**Recommend**, and **Save for later** expose whether each action is selected.
 
 Article headings are available for heading navigation. Inline article images use
 their supplied description when one is available; cover images and decorative
