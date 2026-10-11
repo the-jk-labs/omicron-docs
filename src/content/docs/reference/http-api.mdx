@@ -37,6 +37,27 @@ There is no personal-access-token or OAuth flow. The [content
 webhook](/reference/content-webhook/) remains separate: its per-user tokens can
 only publish posts and nothing else.
 
+### Public gateway origin checks
+
+The public `/api` routes pass through SvelteKit before reaching the backend.
+Native and scripted clients should send the destination's origin on mutations,
+including bodyless requests such as liking a post:
+
+```http
+Authorization: Bearer <token>
+Origin: https://your-instance.example
+```
+
+An origin contains the scheme, hostname, and non-default port, without a path or
+trailing slash. For example, an instance on port 8443 uses
+`https://your-instance.example:8443`; the default HTTPS port 443 is omitted.
+
+The gateway checks the origin for `POST`, `PUT`, `PATCH`, and `DELETE` requests
+that have no `Content-Type` or use a form content type. A missing or mismatched
+origin can return `403 Cross-site POST form submissions are forbidden` before
+the backend authenticates the request. A Bearer token does not bypass this check.
+Send `Content-Type: application/json` when submitting a JSON request body.
+
 ## Conventions
 
 - **Cursor pagination.** Listing endpoints accept a cursor and return the next
@@ -44,11 +65,13 @@ only publish posts and nothing else.
 - **Rate limiting.** Writes are throttled per signed-in user, or per IP when
   anonymous; reads are not throttled by the general limiter. A limited request
   gets `429` with `Retry-After`.
-- **Errors** are JSON, always the same shape — `{"error": "…"}` — with an
+- **Backend errors** are JSON, always the same shape — `{"error": "…"}` — with an
   appropriate status code. A request body that fails validation gets `400` and a
   message naming the field, for example
   `{"error":"displayName: Invalid input: expected string, received number"}`. A
   body that is not valid JSON gets `400` too, not `500`.
+  Gateway rejections can instead return plain text, including the origin-check
+  error above; check the response status and content type before decoding JSON.
 
 ## Health
 

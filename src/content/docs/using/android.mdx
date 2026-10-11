@@ -78,11 +78,50 @@ to return to the screen you were using.
 Use the actions on a feed card or open a post to **Like**, **Recommend**, or
 **Save for later**. Recommendations are reposts that federate to followers; see
 [Recommending](/using/reading/#recommending). **Save for later** adds the post
-to your private [Read later list](/using/lists/#read-later).
+to your private [Read later list](/using/lists/#read-later). Select an active
+action again to unlike, remove the recommendation, or remove the saved post.
 
-The responses section lists comments and replies. Sign in to respond, reply to a
-comment, like a response, or edit or delete your own response. If an action fails,
-the app restores the previous state and shows an error so you can retry.
+### Responses and replies
+
+1. Open an article and select its comment-count action to move to **Responses**.
+2. Sign in, then enter a response in **What are your thoughts?** and select
+   **Respond**. Responses are plain text, support multiple lines, and can contain
+   up to 2,000 characters. Wait for the initial responses list to finish loading
+   before submitting.
+3. Select **Reply** on a comment to move to the response composer. It shows
+   **Replying to** the selected author and focuses the reply field. Select
+   **Respond** to send the reply, or **Cancel reply** to return to a top-level
+   response. Changing or cancelling the reply target keeps the unfinished text.
+
+While sending, the field and reply-target controls are disabled. The new response
+shows **Posting…** and has no action controls until the server confirms it. The
+field clears after a successful submission. Replies to replies stay in the same
+top-level thread.
+
+Select a response's heart to like it; select the active heart again to unlike it.
+Your own responses also offer **Edit** and **Delete**. After editing, select
+**Save**. Deleting asks for confirmation. Deleting a top-level response also
+removes its replies and cannot be undone.
+
+### Failed actions and retries
+
+If an action fails, the app restores only that action's previous state and count;
+another successful like or recommendation stays active. Article errors appear
+beside the affected action, comment, or editor.
+
+| Feedback                  | Recovery                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Offline or failed request | Restore your connection if needed, then select **Try again** beside the failed action. |
+| Expired session           | Select **Sign in**, authenticate again, and return to the article.                     |
+| Action not allowed        | The account is not permitted to perform the action; the error has no retry button.     |
+
+A failed response keeps its text and reply target so **Try again** sends it to
+the same thread. A failed edit keeps the edited text ready to save again. Retrying
+a failed deletion asks for confirmation again. **Try again** for a failed Read
+later save or removal repeats that action.
+
+Response drafts and retry state are held in memory. They are not saved as offline
+drafts or queued to send automatically when connectivity returns.
 
 ## Open profiles
 
@@ -223,6 +262,8 @@ labels. The **For you**, **Local**, and **Global** scopes and bottom tabs expose
 their selected state. In Settings, **System**, **Light**, and **Dark** are radio
 choices with the selected appearance exposed to TalkBack. **Like**,
 **Recommend**, and **Save for later** expose whether each action is selected.
+Comment hearts expose their like count and selected state. Comment action rows
+wrap on narrow screens and at larger font scales, with 48dp minimum touch targets.
 
 Full-screen loading states keep progress centered and show a message describing
 what is loading. TalkBack exposes the same message on the progress indicator.
