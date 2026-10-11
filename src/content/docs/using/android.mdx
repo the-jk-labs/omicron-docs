@@ -89,18 +89,25 @@ the app restores the previous state and shows an error so you can retry.
 Select a writer's name on a post, or **Profile** in the account menu or bottom
 navigation, to open a profile. Profiles include **Articles**,
 **Recommendations**, and **About**.
-Local profiles also have **Followers** and **Following** member lists; remote
-profiles show the follower and following counts available from the remote
-instance.
+On an unlocked local profile, the **Followers** and **Following** counts open a
+separate people screen. Switch between the counted tabs, then select a person's
+avatar or name to open their profile. Remote profiles show the follower and
+following counts available from the remote instance, but do not have member
+lists. A private local profile keeps its counts visible, but its member lists
+stay hidden until you are an approved follower.
 
-On another writer's profile, sign in to follow them. Open **More actions** (the
-ellipsis button) to mute or block them. Following a private local account shows
-**Requested** until the writer approves you. A block also ends the follow
-relationship. Links in **About** open outside the app. Remote profiles and actions
-require federation to be enabled on the instance.
+Each person in a member list has a **Follow** action. Sign in to follow someone;
+the button then shows **Following** or, for a private local account, **Requested**
+until the writer approves you. Selecting **Following** asks you to confirm before
+unfollowing. Cancelling a pending **Requested** follow also asks for confirmation.
+On your own Following list, a successful follow or unfollow updates the list and
+count. Open **More actions** (the ellipsis button) on another writer's profile to
+mute or block them. A block also ends the follow relationship. Links in **About**
+open outside the app. Remote profiles and actions require federation to be enabled
+on the instance.
 
-If a local profile is private, you can still see its public header, but its posts
-and follower lists stay hidden until you are an approved follower.
+If a local profile is private, you can still see its public header and counts, but
+its posts and member lists stay hidden until you are an approved follower.
 
 ## Write and manage posts
 
