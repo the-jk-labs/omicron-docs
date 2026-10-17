@@ -134,6 +134,17 @@ cascades to its posts, so the two grow and shrink together. Set the variable to
   clears all counters. The bundled Compose stack sets `REDIS_URL` for you.
 </Callout>
 
+Better Auth's own authentication rules also use the shared atomic Redis counter,
+including sign-in and recovery requests. Their budgets survive **backend**
+restarts for the remainder of each window; this does not promise survival of a
+Redis restart without Redis persistence. On Redis errors, the store falls back
+to per-process memory, so distributed enforcement is temporarily lost.
+
+The [remote-image proxy](/reference/http-api/#remote-images--apimediaproxy) has
+a separate **240 requests per minute per IP** limiter. Its transfer, concurrency,
+and cache limits are fixed in source rather than tuned through the variables
+above.
+
 ## Responses
 
 A limited request returns **429 Too Many Requests** with a `Retry-After` header.

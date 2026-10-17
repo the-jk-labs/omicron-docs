@@ -15,6 +15,49 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Security-hardening upgrade
+
+The remote-image proxy, browser policy, and Caddy admin socket must ship
+**together**. Do not deploy just the frontend: it will request an image endpoint
+the old backend does not provide. Do not reload only the Caddyfile: the old
+backend still expects the removed admin TCP listener.
+
+1. Before upgrading, create a backup and verify the new snapshot exists:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if the backup fails or the snapshot is missing. Keep an off-host copy
+   and a tested restore procedure; see [Backups](/self-hosting/backups/).
+
+2. Remove a legacy `CADDY_ADMIN_URL=http://caddy:2019` override from `.env`, if
+   present. The bundled stack now uses `/run/caddy-admin/admin.sock`; a nonempty
+   custom URL takes precedence and would keep the toggle pointed at the old port.
+
+3. Pull the release containing the change and recreate the three services:
+
+   ```bash
+   git pull
+   docker compose up -d --build --force-recreate backend frontend caddy
+   ```
+
+   Compose creates the `caddy_admin` volume and mounts it only in Caddy and the
+   backend. Do not delete existing database, upload, secret, or certificate volumes.
+   Podman Compose users can use the equivalent commands.
+
+4. Check sign-in, remote avatars and article images, and the scraper-protection
+   toggle in both directions. Confirm `/.well-known/security.txt` is public and
+   `/api/instance/tls-check?domain=your-domain` returns `404` through the public
+   entrypoint. Check Caddy and backend logs for socket or config-reload errors.
+
+No schema migration or content backfill is required by these hardening changes.
+HTTP-only remote images may stop displaying: the proxy requires HTTPS. Inline
+style attributes remain a documented compatibility exception. DNS/mail policy,
+DNSSEC, CAA, and HSTS preload are separate operator work, not changes made by this
+upgrade.
+
 ## What happens
 
 - **Migrations run automatically** on backend startup and are idempotent — a

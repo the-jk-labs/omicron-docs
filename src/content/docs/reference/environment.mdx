@@ -61,6 +61,11 @@ Normally auto-generated into the `secrets` volume on first boot — leave unset.
 The Compose stack sets this to its bundled `redis` service automatically. Leave
 it unset for local `deno task dev`, or point it at your own Redis.
 
+Better Auth's authentication limiter uses this same Redis connection, with
+atomic counters shared across backend processes. Counters retain their remaining
+window across backend restarts. If Redis is unavailable, limiting falls back to
+each process's memory; that fallback is not shared and resets on restart.
+
 <Callout type="warning">
   In-process mode loses queued jobs and pending federation deliveries on restart, and rate-limit counters are not shared
   across processes.
@@ -166,6 +171,24 @@ sits behind the challenge service.
 | `INTERNAL_API_URL` | `http://backend:8000` | How the frontend reaches the backend.                                     |
 | `UPLOADS_DIR`      | `/data/uploads`       | Where uploaded media is written.                                          |
 | `STATE_DIR`        | `/data/state`         | Where generated secrets are persisted when not supplied via env or files. |
+
+## Caddy administration
+
+The bundled stack shares a Unix socket between **Caddy and the backend only**.
+There is no admin TCP listener on the Compose network. The backend uses it to
+apply the AI-scraper-protection toggle without restarting Caddy.
+
+| Variable             | Default                                                           | Purpose                                                                                                                                          |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CADDY_ADMIN_SOCKET` | Unset in a bare backend; `/run/caddy-admin/admin.sock` in Compose | Path to Caddy's admin socket. Compose mounts the `caddy_admin` volume at `/run/caddy-admin`, read-only in the backend.                           |
+| `CADDY_ADMIN_URL`    | Unset                                                             | Optional HTTP admin URL for a separately managed Caddy. Takes precedence over the socket when nonempty. Keep it on a trusted private connection. |
+| `CADDYFILE_PATH`     | `/etc/caddy/Caddyfile`                                            | The file read by the backend when applying the toggle; mounted read-only by Compose.                                                             |
+
+For a custom deployment, set the socket path in the backend's environment and
+match Caddy's `admin` address and the shared mount. The bundled Compose file fixes
+the socket path; changing only `.env` does not relocate it. Remove an old
+`CADDY_ADMIN_URL=http://caddy:2019` override when upgrading the bundled stack:
+that listener no longer exists. See [Upgrading](/self-hosting/upgrading/#security-hardening-upgrade).
 
 ## Backups
 
