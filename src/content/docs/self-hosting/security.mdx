@@ -25,6 +25,22 @@ import Callout from "@/components/Callout.astro";
 - **The federation inbox is capped.** Oversized payloads are rejected by declared
   length and again while buffering, so a missing or spoofed `Content-Length`
   cannot stream an unbounded body into the parser.
+- **Caddy administration is isolated.** Only Caddy and the backend share the
+  admin Unix socket; other stack containers cannot reach an admin TCP port.
+  The TLS certificate-approval endpoint is blocked at both public proxy layers.
+
+## Browser policy
+
+Production pages use a nonce-based script and style-element policy. Images are
+restricted to the instance, `data:` previews, and `blob:` previews; HTTPS pages
+also send `upgrade-insecure-requests`. Tiptap's injected stylesheet uses the page
+nonce.
+
+**Inline style attributes remain allowed** through
+`style-src-attr 'unsafe-inline'` for dynamic UI sizing and positioning. This is a
+narrower exception, not the complete removal of inline styling. Public RSS and
+federation discovery keep their intentional public CORS behavior; it is not
+enabled for authenticated pages or private APIs.
 
 ## What you can get wrong
 
@@ -141,6 +157,15 @@ keyed by a one-way hash, with no IP address, fingerprint, or per-visit row store
 anywhere. The full account, including what is deliberately never collected, is in
 [Writer dashboard](/using/analytics/).
 
+The web UI fetches remote images through the instance's
+[image proxy](/reference/http-api/#remote-images--apimediaproxy). Remote image
+servers see the instance's outbound address, not the browser's address or
+session cookies. Private/reserved destinations, active image formats, and
+oversized transfers are refused. A legacy HTTP image must also be available over
+HTTPS to display. The instance still sees these image requests, and a link
+opened by the reader goes directly to its destination as usual. Stored post
+content and federated media URLs are not rewritten.
+
 ## Keeping up to date
 
 ```bash
@@ -155,3 +180,6 @@ that your backups actually restore.
 Report security issues privately through
 [GitHub security advisories](https://github.com/the-jk-labs/omicron/security/advisories)
 rather than in a public issue, so a fix can ship before the details are public.
+
+`/.well-known/security.txt` also publishes the project contact from `SECURITY.md`
+(`subhanqedirli@protonmail.com`). It remains accessible when bot protection is on.

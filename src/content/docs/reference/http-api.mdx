@@ -209,6 +209,32 @@ preview crawlers refuse, and because a share image has to be a format every one
 of them reads. Unauthenticated by necessity: the caller is a crawler with no
 session.
 
+## Remote images — `/api/media/proxy`
+
+`GET /api/media/proxy?url=<encoded-absolute-url>` is an unauthenticated image
+endpoint. The web UI uses it for remote avatars, covers, body images, and image
+previews so the remote host receives the instance's request, not the reader's.
+Stored URLs and ActivityPub payloads are unchanged.
+
+- Only public HTTPS destinations on the default port are fetched. Legacy HTTP
+  URLs are upgraded to HTTPS; HTTP-only sources stop displaying.
+- PNG, JPEG, GIF, and WebP must match their declared MIME type and raster
+  signature. SVG and other active content are refused.
+- Transfers are capped at **5 MiB**, **10 seconds total**, and **3 redirects**.
+  Each redirect is revalidated; DNS answers are checked and pinned to the socket.
+- The process-local cache lasts **1 hour**, with at most **64 entries / 16 MiB**.
+  Concurrent misses for one URL share a fetch. There are at most **8** fetches
+  globally and **2** per initial origin, per backend process.
+- The request limiter allows **240 requests per minute per source IP**. These
+  image-proxy limits are source constants, not environment variables.
+
+A successful response contains image bytes, `Cache-Control: public, max-age=3600`,
+`X-Content-Type-Options: nosniff`, and
+`Cross-Origin-Resource-Policy: same-origin`. Visitor cookies and request headers
+are not forwarded upstream; upstream cookies are not returned. Invalid targets
+return `400`, unavailable or rejected images `404`, and exhausted request or
+concurrency budgets `429`.
+
 ## Share cards — `/api/og`
 
 | Method | Path             | Purpose                                                |
@@ -275,7 +301,6 @@ revoke tokens. Full reference in
 | ------ | ------------------------------- | ----------------------------------------------------------------------- |
 | `POST` | `/api/reports`                  | Report a post or actor                                                  |
 | `GET`  | `/api/instance`                 | Public instance metadata, including visitor card and public information |
-| `GET`  | `/api/instance/tls-check`       | Whether a hostname may be issued a certificate                          |
 | `POST` | `/api/setup`                    | Complete the first-run wizard                                           |
 | `POST` | `/api/setup/test-email`         | Send a test email during setup                                          |
 | `GET`  | `/api/seo`                      | Indexing flag and verification tokens (the IndexNow key is withheld)    |
@@ -290,6 +315,16 @@ information as sanitized HTML (`aboutHtml`, `rulesHtml`, `privacyPolicyHtml`)
 plus the contact and status links; each is `null` when the admin has not set
 it, in which case the page shows its built-in placeholder or environment
 fallback.
+
+`GET /api/instance/tls-check?domain=…` is **internal only**: Caddy calls the
+backend directly before issuing a certificate. Both the public Caddy route and
+the frontend API proxy return `404` for it. A custom reverse proxy must preserve
+that boundary rather than publishing the backend directly.
+
+`GET /.well-known/security.txt` publishes the project's vulnerability-reporting
+contact, an expiry 180 days ahead, and the preferred language. It is served as
+plain text with a one-day cache and bypasses federation routing and the bot
+challenge.
 
 Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).
