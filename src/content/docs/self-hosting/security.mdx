@@ -36,11 +36,93 @@ restricted to the instance, `data:` previews, and `blob:` previews; HTTPS pages
 also send `upgrade-insecure-requests`. Tiptap's injected stylesheet uses the page
 nonce.
 
-**Inline style attributes remain allowed** through
-`style-src-attr 'unsafe-inline'` for dynamic UI sizing and positioning. This is a
-narrower exception, not the complete removal of inline styling. Public RSS and
-federation discovery keep their intentional public CORS behavior; it is not
-enabled for authenticated pages or private APIs.
+Style attributes use `unsafe-hashes` with a **fixed SHA-256 allowlist**, not a
+blanket `unsafe-inline` allowance. It covers reviewed declarations for avatar
+sizes, visibility, hidden form controls, and fixed crop/navigation geometry.
+Hashes are never collected from rendered page or post HTML. Trusted client
+JavaScript still updates sizing and positioning through CSSOM.
+
+Custom components that introduce new server-rendered style attributes need a
+stylesheet/class or a reviewed fixed declaration in
+`apps/frontend/src/lib/server/styleCsp.ts`. Do not hash arbitrary user content to
+make a CSP warning disappear. Public RSS and federation discovery keep their
+intentional public CORS behavior; it is not enabled for authenticated pages or
+private APIs.
+
+## Domain and mail hardening
+
+These are **domain-owner changes**, not automatic consequences of upgrading the
+application. Export the DNS zone first, record the previous values, and make one
+change at a time. Do not replace working SPF, DKIM, or MX records with examples.
+
+### DKIM and DMARC
+
+1. Identify every legitimate sender for the domain, including services unrelated
+   to Omicron. For API relay or SMTP delivery, use the provider's DKIM records;
+   Omicron's generated DKIM keys are for **direct** sending, not a replacement for
+   the relay provider's keys.
+2. Inspect a real received verification or test message. Check
+   `Authentication-Results` for `dkim=pass` with a signing domain aligned to the
+   visible From domain, and `dmarc=pass`. A public DKIM TXT record alone does not
+   establish that messages are correctly signed or aligned.
+3. Create and test a receiving mailbox or alias for aggregate reports. A sending
+   service does not necessarily receive mail. A same-domain address avoids the
+   extra authorization required for external DMARC report recipients.
+4. **Replace** the single `_dmarc` TXT record with monitoring plus that working
+   address, for example:
+
+   ```text
+   v=DMARC1; p=none; rua=mailto:dmarc@example.com
+   ```
+
+5. After reports and received-message headers show all legitimate senders passing,
+   change `p=none` to `p=quarantine`. Monitor delivery, then move to `p=reject`.
+   Review the effect on subdomains too; do not enforce a policy blindly or publish
+   multiple DMARC records at the same name.
+
+Keep each provider's existing return-path SPF/MX records. SPF records at the
+apex and at a sending subdomain are separate policies; do not add a second SPF
+record at either name.
+
+### CAA
+
+Caddy's default issuer fallback uses **Let's Encrypt and ZeroSSL**. A CAA
+allowlist must permit both unless you deliberately configure a different issuer
+set. For that default configuration, add these records at the zone apex:
+
+```text
+example.com. 3600 IN CAA 0 issue "letsencrypt.org"
+example.com. 3600 IN CAA 0 issue "sectigo.com"
+```
+
+ZeroSSL's CAA identifier is `sectigo.com`, not `zerossl.com`. Add an `iodef`
+contact only when its mailbox is monitored. Inventory other certificate users
+and subdomains first: an apex CAA policy can affect their renewals too. See
+[Caddy issuer fallback](https://caddyserver.com/docs/automatic-https#issuer-fallback)
+and [ZeroSSL's CAA requirements](https://help.zerossl.com/hc/en-us/articles/360060119753-Invalid-CAA-Records).
+
+### DNSSEC
+
+Enable zone signing at the authoritative DNS provider, verify that it publishes
+DNSKEY records and signatures, then publish **the provider-generated DS values**
+at the registrar. Do not invent a DS record or publish it before the matching
+signed zone is available: that can turn every validating lookup into `SERVFAIL`.
+Verify the chain with a validating resolver or DNSViz. Key rotation, changing DNS
+providers, and rollback also require coordinating the zone keys and parent DS.
+
+### HSTS preload
+
+Omicron already sends a two-year HSTS policy with `includeSubDomains` over HTTPS.
+Preload is an optional extra, controlled by `HSTS_PRELOAD=true` (default `false`).
+The setting only adds the `preload` token; it does **not** submit the domain to
+browser lists.
+
+Before enabling it, inventory every subdomain, confirm permanent HTTPS support
+and certificate renewal, and check the apex and `www` redirects. Recreate the
+frontend after changing the environment. Run the readiness check at
+[hstspreload.org](https://hstspreload.org/) before submitting there as the domain
+owner. Browser-list removal can take months; turning the setting back off does
+not immediately undo a submission.
 
 ## What you can get wrong
 

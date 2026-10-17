@@ -53,10 +53,11 @@ backend still expects the removed admin TCP listener.
    entrypoint. Check Caddy and backend logs for socket or config-reload errors.
 
 No schema migration or content backfill is required by these hardening changes.
-HTTP-only remote images may stop displaying: the proxy requires HTTPS. Inline
-style attributes remain a documented compatibility exception. DNS/mail policy,
-DNSSEC, CAA, and HSTS preload are separate operator work, not changes made by this
-upgrade.
+HTTP-only remote images may stop displaying: the proxy requires HTTPS. Style
+attributes are limited to fixed declaration hashes; custom server-rendered
+inline styles may need to move into a stylesheet. DNS/mail policy, DNSSEC, and
+CAA are separate operator work. HSTS preload remains off unless the owner opts
+in after checking the whole domain tree; see [Security](/self-hosting/security/#domain-and-mail-hardening).
 
 ## What happens
 
