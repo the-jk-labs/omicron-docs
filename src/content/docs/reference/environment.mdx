@@ -172,6 +172,17 @@ sits behind the challenge service.
 | `UPLOADS_DIR`      | `/data/uploads`       | Where uploaded media is written.                                          |
 | `STATE_DIR`        | `/data/state`         | Where generated secrets are persisted when not supplied via env or files. |
 
+## HSTS preload
+
+| Variable       | Default | Purpose                                                                                                                                                                 |
+| -------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HSTS_PRELOAD` | `false` | Frontend-only opt-in. Exactly `true` adds `preload` to the existing HTTPS-only, two-year HSTS header with `includeSubDomains`. Other values leave the header unchanged. |
+
+Compose passes this value to the frontend. Recreate the frontend after changing
+it; no backend restart is required. Do not enable it until **every subdomain** is
+permanently HTTPS-ready. The flag does not submit or remove the domain from any
+browser preload list. See [Security → HSTS preload](/self-hosting/security/#hsts-preload).
+
 ## Caddy administration
 
 The bundled stack shares a Unix socket between **Caddy and the backend only**.
