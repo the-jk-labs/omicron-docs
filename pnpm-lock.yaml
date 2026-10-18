@@ -27,8 +27,8 @@ importers:
         specifier: 7.3.2
         version: 7.3.2(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.4)(jiti@2.7.0)(yaml@2.9.0)
       bits-ui:
-        specifier: 2.19.2
-        version: 2.19.2(@internationalized/date@3.12.4)(svelte@5.57.0)
+        specifier: 2.19.3
+        version: 2.19.3(@internationalized/date@3.12.4)(svelte@5.57.0)
       svelte:
         specifier: 5.57.0
         version: 5.57.0
@@ -1295,8 +1295,8 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  bits-ui@2.19.2:
-    resolution: {integrity: sha512-W9upilTmLTIWjuVAD6Ta7XoS6gxRflmCQnXamj+WN1eYxZecghqGENpuSMAKQmVENMLXhh85BZb04LCrBd2+Ng==}
+  bits-ui@2.19.3:
+    resolution: {integrity: sha512-04COIqqht1h0YRnVTJVHy3+F8NhzS5x0eSM8eqvavaWmK/GLDTgYJW2h1CA//8hh9vSk4rG7rOvJ3QAIpCuYIw==}
     engines: {node: '>=20'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -3574,7 +3574,7 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@2.19.2(@internationalized/date@3.12.4)(svelte@5.57.0):
+  bits-ui@2.19.3(@internationalized/date@3.12.4)(svelte@5.57.0):
     dependencies:
       '@floating-ui/core': 1.8.0
       '@floating-ui/dom': 1.8.0
