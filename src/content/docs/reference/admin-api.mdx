@@ -62,6 +62,69 @@ What analytics can and cannot be turned on is described in
 The toggle applies live — the backend re-routes traffic through the challenge
 service via Caddy's internal admin API. No restart.
 
+### IP access rules
+
+All of these routes are **admin-only**, including reads and previews:
+
+| Method   | Path                                    | Purpose                        |
+| -------- | --------------------------------------- | ------------------------------ |
+| `GET`    | `/api/admin/security/access-rules`      | List saved rules               |
+| `POST`   | `/api/admin/security/access-rules`      | Add a temporary rule           |
+| `PATCH`  | `/api/admin/security/access-rules/:id`  | Enable or disable a rule       |
+| `DELETE` | `/api/admin/security/access-rules/:id`  | Remove a rule                  |
+| `POST`   | `/api/admin/security/access-rules/test` | Preview saved rules or a draft |
+
+Creation body:
+
+```json
+{
+  "network": "192.0.2.0/24",
+  "action": "block",
+  "reason": "Temporary automated traffic",
+  "expiresInHours": 24
+}
+```
+
+`action` is `allow` or `block`. `network` accepts IPv4/IPv6 addresses or CIDR
+ranges and is normalized to a network with a prefix. IPv4-mapped IPv6 ranges
+and interface-scoped IPv6 addresses are rejected. `expiresInHours` must be
+`1`, `24`, `168`, or `720`; it is required. `reason` is optional, defaults to
+an empty string, and is limited to 300 characters.
+
+`GET`, `POST`, `PATCH`, and `DELETE` return `{ "rules": [...] }`. Each rule
+contains `id`, `network`, `action`, `reason`, `enabled`, `createdAt`, and
+`expiresAt`; timestamps are ISO strings. New rules are enabled and prepended.
+The first enabled, unexpired match wins. At most 100 unexpired rules can be
+saved, including disabled ones. Adding a rule prunes expired entries.
+
+`PATCH` takes `{ "enabled": boolean }`; an expired rule cannot be re-enabled.
+Unknown rule IDs and validation/application failures return `400` with
+`{ "error": string }`. Writes require managed Caddy, but reads and previews do
+not. The challenge switch does not disable IP rules.
+
+Preview body:
+
+```json
+{
+  "ip": "192.0.2.10",
+  "path": "/search",
+  "draft": { "network": "192.0.2.0/24", "action": "allow" }
+}
+```
+
+Omit `draft` to test saved rules only. A draft is tested before saved rules but
+is never persisted or applied. `ip` must be a single address, not a CIDR range.
+`path` must start with `/`, contain no query or fragment, and be at most
+2,048 characters. The result is `{ "action", "ruleId", "message" }`:
+
+- `action`: `allow`, `block`, `default` (no matching custom rule), or `exempt`.
+- `ruleId`: the matched rule's ID, `"draft"`, or `null` for `default`/`exempt`.
+- `message`: a human-readable explanation. It does not simulate Anubis's bot
+  policy or certify that an IP is what Caddy will see behind a proxy.
+
+For exempt paths, proxy limitations, expiry behavior, and the UI walkthrough,
+see [IP access rules](/self-hosting/admin-panel/#ip-access-rules).
+
 ## Discoverability
 
 | Method | Path             | Purpose                                                     |
