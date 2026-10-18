@@ -29,6 +29,24 @@ import Callout from "@/components/Callout.astro";
   admin Unix socket; other stack containers cannot reach an admin TCP port.
   The TLS certificate-approval endpoint is blocked at both public proxy layers.
 
+## Traffic protection and IP rules
+
+**Admin → Security** contains the optional Anubis challenge switch and
+temporary IP access rules. They are separate controls: the challenge is off by
+default, while custom rules apply independently once saved.
+
+An IP allow rule skips Anubis on matching web pages, not authorization or rate
+limits. A block returns `403` on matching web pages. API, federation, feeds,
+sitemaps, and sign-in/admin recovery paths retain their normal policy and are
+exempt from these custom rules. Newest enabled, unexpired matches win; all
+rules expire within 30 days.
+
+This is not a host firewall. It uses Caddy's direct peer address and must not
+be used behind a separate proxy/CDN in this version. Manage host/provider
+firewall rules independently, keeping SSH and the public HTTP/HTTPS entrypoint
+reachable. See the [UI walkthrough](/self-hosting/admin-panel/#ip-access-rules)
+and [upgrade step](/self-hosting/upgrading/#one-time-step-ip-access-rules).
+
 ## Browser policy
 
 Production pages use a nonce-based script and style-element policy. Images are

@@ -156,6 +156,8 @@ for, which a search engine reads as a soft 404 and, since every challenged URL
 returns the same interstitial, as a set of duplicates of one another.
 
 A denial (no rule issues one in the shipped policy) answers **`403 Forbidden`**.
+Custom [IP block rules](#ip-access-rules) also return `403`, independently of
+the challenge switch.
 
 None of this changes anything for a reader: browsers render an error page and run
 its scripts exactly as they would a 200, so the challenge is solved and the page
@@ -228,6 +230,63 @@ others — falling back to English. Azerbaijani is not among them. The one part
 that stays English whatever it picks is the footer line and imprint page above,
 which are your instance's own words; translate them in `botPolicy.yaml` if your
 readers need it.
+
+### IP access rules
+
+In **Admin → Security → IP access rules**, an admin can temporarily allow or
+block an IPv4/IPv6 address or CIDR range without editing deployment files.
+These rules apply **even when AI-scraper protection is off**. No rules are
+configured by default.
+
+1. Enter an **IP address or CIDR range**, such as `192.0.2.10` or
+   `2001:db8::/64`. Use a single address where possible; a network range can
+   affect many readers. Use plain IPv4 rather than IPv4-mapped IPv6 ranges;
+   scoped IPv6 addresses such as link-local addresses with an interface suffix
+   are not accepted.
+2. Choose **Block web pages (403)** or **Allow without an Anubis challenge**.
+   Allowing does not bypass sign-in, authorization, or rate limits.
+3. Choose an expiry: **1 hour**, **24 hours** (the default), **7 days**, or
+   **30 days**. Permanent rules are not supported. Add an optional reason
+   (up to 300 characters).
+4. Before applying, enter a visitor IP and URL path under **Test an IP and
+   path**, then select **Test draft rule**. The draft takes precedence for
+   this preview only. **Test saved rules** checks the current stored list.
+   Neither button changes the live configuration or simulates Anubis's
+   built-in bot policy.
+5. Select **Apply rule**. A successful save takes effect immediately through
+   Caddy. Invalid configuration is rejected without replacing its running
+   configuration; an error keeps your form input available to correct.
+
+The **first enabled, unexpired matching rule wins, newest first**. A newer
+allow can make an exception to an older block. Disable a rule to stop applying
+it, re-enable it before its expiry, or remove it. Removing is immediate; it
+does not wait for expiry. There is a limit of **100 unexpired rules**, including
+disabled ones. Expired rules cannot be re-enabled; they can be removed and are
+pruned when another rule is added.
+
+Expiry is checked by Caddy **on each request**, without a restart or cleanup
+timer. Saved rules are restored when the backend reconciles Caddy after a stack
+restart; there is a brief fail-open window while Caddy becomes reachable.
+
+<Callout type="warning" title="Not a host firewall or a CDN-aware IP filter">
+  Rules match the peer connecting directly to Caddy, not an IP supplied in forwarding headers. Do not use this first
+  version behind another reverse proxy or CDN: it can match the proxy instead of the visitor. Manage network-wide bans
+  in your host/provider firewall separately. Omicron does not change SSH access or firewall rules.
+</Callout>
+
+**Compatibility and recovery paths are exempt from custom IP rules:** the API,
+federation/discovery, feeds and sitemaps, `robots.txt`, IndexNow verification,
+app/challenge assets, `/admin`, `/login`, and account-recovery pages. Exemption
+leaves the normal routing and Anubis policy intact; a sign-in/admin page may
+still show the ordinary challenge when protection is on. A custom block is
+therefore not a complete ban on API access, federation, or authentication.
+
+The list remains readable and previews remain available without a managed
+proxy, but changing rules requires a managed Caddy deployment. If applying a
+rule reports a missing configuration marker, follow the
+[one-time upgrade steps](/self-hosting/upgrading/#one-time-step-ip-access-rules).
+Advanced bot/path rules remain in `botPolicy.yaml`; the UI does not edit that
+file or provide request logs.
 
 ## Media
 

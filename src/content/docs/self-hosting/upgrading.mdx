@@ -88,6 +88,43 @@ only** within a version:
 Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
 `src/db/migrate.ts`. `drizzle-kit` is **not** required inside the container.
 
+## One-time step: IP access rules
+
+The IP access-rule UI needs a managed insertion marker in the shipped
+`Caddyfile`. Existing deployments must pick up that file in both Caddy and the
+backend; `restart` alone can leave a replaced bind-mounted file pointing at its
+old contents.
+
+1. Create a backup and verify its snapshot before upgrading:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if either command fails or the new snapshot is missing.
+
+2. Pull the release and recreate the affected services:
+
+   ```bash
+   git pull
+   docker compose up -d --build --force-recreate backend frontend caddy backup
+   ```
+
+   The backup service also mounts the Caddyfile, so recreate it to keep future
+   configuration backups current. Never delete named volumes. Podman Compose
+   users can use the equivalent commands.
+
+3. Open **Admin → Security → IP access rules**. Preview a draft against a test
+   address and `/search`, then against `/admin`; the latter must report an
+   exempt path. A preview does not create a live block. Confirm normal sign-in,
+   public reading, feeds, and API access still work.
+
+This feature adds no schema migration or environment variable, and starts with
+no custom rules. A missing-marker error means the backend is still reading an
+older Caddyfile. Stored rules are re-applied after Caddy becomes reachable on
+startup; the short startup gap is fail-open, not a durable network firewall.
+
 ## One-time step: the AI-scraper-shield release
 
 That release changed the bundled **Caddyfile** to open an internal admin API the

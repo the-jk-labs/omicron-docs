@@ -142,6 +142,12 @@ scraping mitigation rather than a moderation tool, but it lives in the same
 place. Off by default; see [Admin panel](/self-hosting/admin-panel/) for the
 trade-offs.
 
+Admins can also add temporary IP allow/block rules from this tab. They are
+separate from account suspension and defederation: a block affects matching
+web-page requests, not the API or federation, and recovery paths stay subject
+to their normal policy. These controls are admin-only, not moderator powers.
+See [IP access rules](/self-hosting/admin-panel/#ip-access-rules).
+
 ## What moderation cannot do
 
 - **It cannot delete a post from other servers.** Removal federates a `Delete`,
