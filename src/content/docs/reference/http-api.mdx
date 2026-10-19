@@ -33,9 +33,11 @@ the session before expiry, and never send either credential to another origin.
 Session revocation prevents a new token from being minted; an issued token stays
 valid until it expires.
 
-There is no personal-access-token or OAuth flow. The [content
-webhook](/reference/content-webhook/) remains separate: its per-user tokens can
-only publish posts and nothing else.
+There is no general-purpose personal-access-token flow. [Identity
+OAuth](/reference/identity-oauth/) is separate: its `read:accounts` tokens can
+verify a consenting account's minimal public identity, but cannot authenticate
+the normal API. The [content webhook](/reference/content-webhook/) has another
+separate credential type: its per-user tokens can only publish posts.
 
 ### Public gateway origin checks
 
@@ -57,6 +59,12 @@ that have no `Content-Type` or use a form content type. A missing or mismatched
 origin can return `403 Cross-site POST form submissions are forbidden` before
 the backend authenticates the request. A Bearer token does not bypass this check.
 Send `Content-Type: application/json` when submitting a JSON request body.
+
+The shipped gateway routes identity OAuth's machine endpoints directly to the
+backend rather than through this browser proxy. They accept JSON and
+form-encoded bodies without a browser `Origin` header; their confidential-client
+or identity-token checks still apply. The browser consent and connection APIs
+remain session-protected; see [Identity OAuth](/reference/identity-oauth/).
 
 ## Conventions
 

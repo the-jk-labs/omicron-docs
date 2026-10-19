@@ -7,7 +7,7 @@ import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
 media uploads, the federation inbox, remote-discovery browsing, and the content
-webhook.
+webhook, as well as identity OAuth.
 
 ## The limiters
 
@@ -121,6 +121,29 @@ re-fetched within `REMOTE_CACHE_RETENTION_DAYS` (default 30). Deleting an actor
 cascades to its posts, so the two grow and shrink together. Set the variable to
 `0` to keep the cache forever — see
 [Environment → Rate limiting](/reference/environment/#rate-limiting).
+
+## Identity OAuth
+
+The [identity OAuth](/reference/identity-oauth/) endpoints have separate fixed
+source-IP budgets. They bypass the general API-write limiter; they do not share
+its per-user budget. These values are fixed in source rather than configured by
+individual environment variables.
+
+| Endpoint                                  | Maximum requests | Window   |
+| ----------------------------------------- | ---------------- | -------- |
+| `POST /api/v1/apps`                       | 10               | 1 hour   |
+| `GET /api/oauth/authorize`                | 30               | 1 minute |
+| `POST /api/oauth/authorize`               | 30               | 1 minute |
+| `POST /oauth/token`                       | 60               | 1 minute |
+| `POST /oauth/revoke`                      | 60               | 1 minute |
+| `GET /api/v1/accounts/verify_credentials` | 120              | 1 minute |
+| `GET /api/oauth/connections`              | 60               | 1 minute |
+| `DELETE /api/oauth/connections/:id`       | 30               | 1 minute |
+
+OAuth JSON and form request bodies have a fixed **16,384-byte** cap, enforced
+while reading the body. Requests over the cap return `413`, including those
+without a `Content-Length` header. Disabling `RATE_LIMIT_ENABLED` also disables
+these rate budgets, but does not disable the body cap.
 
 ## Redis changes the semantics
 

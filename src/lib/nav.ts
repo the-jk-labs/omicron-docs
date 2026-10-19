@@ -47,6 +47,7 @@ export const nav: NavSection[] = [
     items: [
       { slug: "using/writing", label: "Writing posts" },
       { slug: "using/profiles", label: "Profiles" },
+      { slug: "using/connected-applications", label: "Connected applications" },
       { slug: "using/android", label: "Android app" },
       { slug: "using/reading", label: "Reading and following" },
       { slug: "using/lists", label: "Lists and read later" },
@@ -81,6 +82,7 @@ export const nav: NavSection[] = [
       { slug: "reference/http-api", label: "HTTP API" },
       { slug: "reference/admin-api", label: "Admin API" },
       { slug: "reference/content-webhook", label: "Content webhook" },
+      { slug: "reference/identity-oauth", label: "Identity OAuth" },
       { slug: "reference/rate-limits", label: "Rate limits" },
       { slug: "reference/license", label: "License and AGPL" },
     ],
