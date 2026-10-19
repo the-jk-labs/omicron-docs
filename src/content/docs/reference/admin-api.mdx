@@ -209,11 +209,20 @@ to the previous one.
 
 Moderators may call every endpoint in this section.
 
-| Method   | Path                             | Purpose                     |
-| -------- | -------------------------------- | --------------------------- |
-| `GET`    | `/api/admin/reports`             | The moderation queue        |
-| `POST`   | `/api/admin/reports/:id/resolve` | Resolve or dismiss a report |
-| `DELETE` | `/api/admin/posts/:id`           | Remove a post               |
+| Method   | Path                               | Purpose                           |
+| -------- | ---------------------------------- | --------------------------------- |
+| `GET`    | `/api/admin/reports`               | The moderation queue              |
+| `POST`   | `/api/admin/reports/:id/resolve`   | Resolve or dismiss a report       |
+| `POST`   | `/api/admin/posts/:id/ai-assisted` | Add the AI-Assisted disclosure    |
+| `DELETE` | `/api/admin/posts/:id/ai-assisted` | Remove the AI-Assisted disclosure |
+| `DELETE` | `/api/admin/posts/:id`             | Remove a post                     |
+
+The AI-Assisted routes take no body and return `{ "aiAssisted": true }` or
+`{ "aiAssisted": false }`, respectively. They change only the disclosure and
+accept local posts; remote posts are controlled by their originating instance.
+Repeating a request that already matches the current value is a no-op. Changing
+a published post federates an ActivityPub `Update`; drafts and scheduled posts
+are not federated.
 
 Removing a published post federates a `Delete` to remote servers.
 

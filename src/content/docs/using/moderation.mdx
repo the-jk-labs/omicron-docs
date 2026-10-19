@@ -44,6 +44,15 @@ A moderator's own posts and comments can still be removed like anyone's, and a
 moderator can delete any local post or comment from the article page, same as
 an admin.
 
+On a local post, moderators and admins can also use **Post options** to add or
+remove its **AI-Assisted** badge. This changes only the disclosure, not the
+post's content. The badge affects readers who hide AI-assisted posts in feeds
+and listings. Changes to published posts are federated as an ActivityPub
+`Update`; remote posts can only be changed by their originating instance. An
+author can still change the disclosure while editing their own post. See the
+[writing guide](/using/writing/#the-composer) for the author's control and the
+[Admin API](/reference/admin-api/#content-and-reports) for the endpoints.
+
 ### Appointing a moderator
 
 An admin opens **Admin → Users**, expands the account's **More actions** menu,
