@@ -220,6 +220,56 @@ succeeded. See
 If you only edited `botPolicy.yaml` yourself and want it picked up without
 recreating anything else, `docker compose restart anubis` is enough.
 
+## Identity OAuth
+
+The identity OAuth release adds four tables (`oauth_apps`, `oauth_requests`,
+`oauth_codes`, and `oauth_tokens`) through migration `0043_gorgeous_shape`.
+Migrations run automatically on backend startup. Existing usernames, posts,
+sessions, and the NodeInfo software name remain unchanged. No new environment
+variables are required.
+
+1. Before updating, take a backup and verify the new snapshot exists:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if the backup fails or the snapshot is missing.
+
+2. Pull the release and recreate all services that build the new application or
+   mount its updated proxy and bot-policy files:
+
+   ```bash
+   git pull --ff-only
+   docker compose up -d --build --force-recreate backend frontend caddy anubis backup
+   ```
+
+   This refreshes `Caddyfile` in the backend, Caddy, and backup containers, and
+   `botPolicy.yaml` in Anubis and backup. A plain `restart` can leave an old
+   bind-mounted file in place. Preserve every named volume. Podman Compose users
+   can use the equivalent commands.
+
+3. Validate the proxy configuration and check service status:
+
+   ```bash
+   docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   docker compose ps
+   ```
+
+   Confirm `/.well-known/oauth-authorization-server` returns JSON with the
+   instance's canonical issuer, `GET /api/v1/accounts/verify_credentials` without
+   a token returns `401` rather than a bot challenge, and NodeInfo still
+   advertises `omicron`. Check normal sign-in and reading. A complete third-party
+   sign-in also requires a supported client; see
+   [Identity OAuth](/reference/identity-oauth/).
+
+The new Caddy machine-endpoint routes are required for form-encoded OAuth
+clients; do not fix origin-check failures by disabling browser CSRF protections.
+The backend re-applies saved scraper-shield and access-rule settings when Caddy
+is reachable after startup. FediDB still needs its own Omicron support change;
+upgrading the instance alone does not remove that service's software allowlist.
+
 ## Rolling back
 
 Check out the previous tag and rebuild:

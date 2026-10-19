@@ -1,0 +1,52 @@
+---
+title: Connected applications
+description: Sign in to another service with your Omicron identity, review consent, and revoke access.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Services that support Omicron's [identity OAuth flow](/reference/identity-oauth/)
+can ask you to verify your identity using your existing account. This does not
+give them an Omicron session or permission to publish on your behalf.
+
+## Sign in to another service
+
+1. Start sign-in on the other service and select your Omicron instance or handle.
+2. Your browser opens your instance's **Sign in with Omicron** page. If you are
+   signed out, sign in normally; Omicron returns you to the consent page rather
+   than approving the application automatically.
+3. Check the account shown and the **Return to** destination. Application names
+   are supplied by developers and are not verified. Trust the destination, not
+   just a familiar-looking name.
+4. Choose **Allow identity verification** to continue, or **Deny** to return
+   without issuing an access token.
+
+An approval shares only your account ID, username, display name, and public
+profile and ActivityPub URLs. It does not share your login email, password,
+private data, posts, or administrative permissions.
+
+The identity token expires after **one hour**. The other service may keep its
+own sign-in session after that; token expiry does not sign you out of that
+service.
+
+<Callout type="note" title="Federation is not third-party sign-in">
+  Omicron continues to identify as Omicron, not Mastodon. A service must support Omicron and request its identity-only
+  permission. ActivityPub compatibility alone does not make sign-in work. In particular, FediDB needs to enable Omicron
+  in its supported-software list; this feature does not guarantee FediDB sign-in.
+</Callout>
+
+## Review and revoke access
+
+1. Open **Settings → Integrations → Connected applications**.
+2. Find the application by its name and callback origin. Each row represents a
+   still-valid identity token and shows when it expires.
+3. Choose **Revoke** to invalidate that token immediately.
+
+Revocation stops future identity verification with that token. It does not
+delete the account or session the other service has already created, erase
+identity information it previously received, or revoke another token issued by
+a separate approval. Sign out or remove your account on the other service if
+you also want to end its session or remove its stored information.
+
+Expired tokens disappear from the list. Publishing tokens are a separate
+integration with different permissions; see [Content webhook](/reference/content-webhook/).
