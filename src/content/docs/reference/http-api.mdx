@@ -107,24 +107,33 @@ These sit at the root, not under `/api`.
 
 ## Posts — `/api/posts`
 
-| Method             | Path                            | Purpose                                                                                                              |
-| ------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `GET`              | `/`                             | List posts — the Global timeline, assembled with per-author diversity (see [Reading and following](/using/reading/)) |
-| `POST`             | `/`                             | Create a post (draft, scheduled, or published)                                                                       |
-| `GET`              | `/drafts`                       | The current user's drafts                                                                                            |
-| `GET`              | `/mine?status=`                 | The current user's posts in one state — `draft`, `scheduled`, or `published`                                         |
-| `GET`              | `/mine/counts`                  | How many the current user holds in each state                                                                        |
-| `GET`              | `/trending`                     | Trending posts                                                                                                       |
-| `GET`              | `/by/:username/:slug`           | A single post by its public URL                                                                                      |
-| `GET`              | `/:id`                          | A single post                                                                                                        |
-| `PATCH`            | `/:id`                          | Update a post                                                                                                        |
-| `DELETE`           | `/:id`                          | Delete a post                                                                                                        |
-| `POST` / `DELETE`  | `/:id/like`                     | Like / unlike                                                                                                        |
-| `POST` / `DELETE`  | `/:id/recommend`                | Recommend / un-recommend (federates as `Announce`/`Undo(Announce)`)                                                  |
-| `GET`              | `/:id/comments`                 | List comments                                                                                                        |
-| `POST`             | `/:id/comments`                 | Add a comment                                                                                                        |
-| `PATCH` / `DELETE` | `/:id/comments/:commentId`      | Edit / delete a comment                                                                                              |
-| `POST` / `DELETE`  | `/:id/comments/:commentId/like` | Like / unlike a comment                                                                                              |
+| Method             | Path                              | Purpose                                                                                                              |
+| ------------------ | --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GET`              | `/`                               | List posts — the Global timeline, assembled with per-author diversity (see [Reading and following](/using/reading/)) |
+| `POST`             | `/`                               | Create a post (draft, scheduled, or published)                                                                       |
+| `GET`              | `/drafts`                         | The current user's drafts                                                                                            |
+| `GET`              | `/mine?status=`                   | The current user's posts in one state — `draft`, `scheduled`, or `published`                                         |
+| `GET`              | `/mine/counts`                    | How many the current user holds in each state                                                                        |
+| `GET`              | `/trending`                       | Trending posts                                                                                                       |
+| `GET`              | `/random?scope=&langMode=&langs=` | Choose a random post from a feed                                                                                     |
+| `GET`              | `/by/:username/:slug`             | A single post by its public URL                                                                                      |
+| `GET`              | `/:id`                            | A single post                                                                                                        |
+| `PATCH`            | `/:id`                            | Update a post                                                                                                        |
+| `DELETE`           | `/:id`                            | Delete a post                                                                                                        |
+| `POST` / `DELETE`  | `/:id/like`                       | Like / unlike                                                                                                        |
+| `POST` / `DELETE`  | `/:id/recommend`                  | Recommend / un-recommend (federates as `Announce`/`Undo(Announce)`)                                                  |
+| `GET`              | `/:id/comments`                   | List comments                                                                                                        |
+| `POST`             | `/:id/comments`                   | Add a comment                                                                                                        |
+| `PATCH` / `DELETE` | `/:id/comments/:commentId`        | Edit / delete a comment                                                                                              |
+| `POST` / `DELETE`  | `/:id/comments/:commentId/like`   | Like / unlike a comment                                                                                              |
+
+`GET /api/posts/random` returns `{"post": …}` or `{"post": null}` when no
+posts match. `scope` accepts `global` (the default), `local`, or `for-you`; the
+last requires a signed-in reader. `langMode=show|hide` and comma-separated
+`langs=en,az` apply to Local and Global, using the same unknown-language and
+visibility rules as those feeds. For you is not language-filtered. The endpoint
+samples across the full eligible archive rather than a recent page, and returns
+`Cache-Control: no-store`.
 
 ## Feed, search, dashboard
 
