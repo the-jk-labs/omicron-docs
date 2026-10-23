@@ -73,13 +73,14 @@ remain session-protected; see [Identity OAuth](/reference/identity-oauth/).
 - **Rate limiting.** Writes are throttled per signed-in user, or per IP when
   anonymous; reads are not throttled by the general limiter. A limited request
   gets `429` with `Retry-After`.
-- **Backend errors** are JSON, always the same shape — `{"error": "…"}` — with an
+- **Backend errors** normally use the JSON shape `{"error": "…"}`, with an
   appropriate status code. A request body that fails validation gets `400` and a
   message naming the field, for example
   `{"error":"displayName: Invalid input: expected string, received number"}`. A
   body that is not valid JSON gets `400` too, not `500`.
   Gateway rejections can instead return plain text, including the origin-check
-  error above; check the response status and content type before decoding JSON.
+  error above, and the traffic collector has bodyless responses; check the
+  response status and content type before decoding JSON.
 
 ## Health
 
@@ -312,6 +313,40 @@ tokens is an ordinary session-authenticated call, so a token cannot mint or
 revoke tokens. Full reference in
 [Content webhook](/reference/content-webhook/).
 
+## Site traffic collection
+
+`POST /api/traffic/pageview` is the web app's first-party measurement endpoint.
+It requires no sign-in or publishing credential, but does require an `Origin`
+matching the configured instance origin, a browser-like User-Agent, and enabled
+traffic collection. That origin requirement applies to JSON requests too.
+
+```json
+{
+  "path": "/@alice/example-post",
+  "referrer": "https://example.org"
+}
+```
+
+`path` is required and limited to 512 characters; `referrer` is optional,
+defaults to an empty string and is limited to 2,048 characters. The entire
+request body is capped at **4,096 bytes**, including requests without a
+`Content-Length` header. Only eligible public paths are counted, with public
+content checked server-side. The frontend sends no query or fragment and only
+the referrer's origin; persisted referrers are further reduced to a hostname.
+
+- `204`, with no body, means processed **or intentionally skipped**. It is not
+  confirmation that a counter increased. Disabled collection, DNT/GPC, known
+  bots, signed-in staff, invalid origins and ineligible paths are skipped.
+- Payload validation can return bodyless `400` or `413`; throttling returns
+  `429` with `Retry-After`. See [Rate limits](/reference/rate-limits/#site-traffic-collection).
+- Successful counting issues the first-party visitor cookie when needed and
+  renews the 30-minute visit cookie. Neither is an authentication credential.
+- Aggregation is best-effort; the browser does not retry failures. The backend
+  does not retain an individual visit record to replay later.
+
+Use the [admin report](/reference/admin-api/#site-traffic) to read aggregates.
+The full measurement and privacy model is in [Site traffic](/self-hosting/traffic/).
+
 ## Reports, instance, setup, SEO
 
 | Method | Path                            | Purpose                                                                 |
@@ -332,6 +367,10 @@ information as sanitized HTML (`aboutHtml`, `rulesHtml`, `privacyPolicyHtml`)
 plus the contact and status links; each is `null` when the admin has not set
 it, in which case the page shows its built-in placeholder or environment
 fallback.
+
+The public payload also includes **`trafficEnabled`**, which tells the web app
+whether to send new site-traffic measurements. It defaults to `false` and is
+independent of the writer dashboard's view-counting setting.
 
 `GET /api/instance/tls-check?domain=…` is **internal only**: Caddy calls the
 backend directly before issuing a certificate. Both the public Caddy route and

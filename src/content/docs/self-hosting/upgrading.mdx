@@ -88,6 +88,32 @@ only** within a version:
 Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
 `src/db/migrate.ts`. `drizzle-kit` is **not** required inside the container.
 
+## Site traffic dashboard
+
+The traffic feature adds the `traffic_buckets` table through the additive
+`0044_daily_gateway.sql` migration. Back up and verify the snapshot **before**
+deploying the release containing it:
+
+```bash
+docker compose exec backup backup-now
+docker compose exec backup restic snapshots
+```
+
+Stop if either command fails or the new snapshot is missing. Then pull the
+release and rebuild both apps using the normal upgrade commands. Migrations
+run on backend startup. No Caddy configuration change or extra service is
+required for basic traffic reports.
+
+After deployment, collection stays **off** until an admin enables it in
+**Admin → Traffic**. It does not import earlier traffic or alter the writer
+dashboard's existing post-read counts. Update the instance privacy policy and
+arrange any required consent before enabling it; see [Site traffic](/self-hosting/traffic/).
+
+Country reports additionally need the optional `TRAFFIC_GEOIP_PATH`, a local
+MMDB directory mounted read-only into the backend, and backend recreation.
+Follow the [country setup](/self-hosting/traffic/#optional-country-lookup)
+instead of exposing a database or lookup endpoint to the public internet.
+
 ## One-time step: IP access rules
 
 The IP access-rule UI needs a managed insertion marker in the shipped

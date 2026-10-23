@@ -71,6 +71,28 @@ each process's memory; that fallback is not shared and resets on restart.
   across processes.
 </Callout>
 
+## Site traffic
+
+Collection is enabled in **Admin → Traffic**, not through an environment
+variable, and is **off by default**. No extra service or analytics account is
+needed for the basic report.
+
+| Variable             | Default   | Purpose                                                                                                        |
+| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
+| `TRAFFIC_GEOIP_PATH` | _(empty)_ | Optional backend-local path to a readable MaxMind-compatible Country/City `.mmdb` file for country aggregates. |
+
+The shipped Compose file passes this value to the backend, but does not mount
+or download a database. For example, `/data/geoip/country.mmdb` is a
+**container path**, not the host file location. Add a read-only directory mount
+and recreate the backend when configuring it. Once loaded, database file
+replacements are watched; an initial loading failure requires a restart after
+repair.
+
+Leaving the variable unset does not disable other traffic metrics; country is
+recorded as Unknown. No external lookup is performed, and reader IPs are not
+stored in traffic aggregates. See the [country setup walkthrough](/self-hosting/traffic/#optional-country-lookup)
+and its warning about trusted client addresses behind a CDN.
+
 ## Rate limiting
 
 | Variable                       | Default   | Purpose                                                                                                               |

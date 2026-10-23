@@ -1,0 +1,183 @@
+---
+title: Site traffic
+description: Enable the admin traffic dashboard, compare monthly audiences, and configure optional local country lookup.
+badge: Admin only
+---
+
+import Callout from "@/components/Callout.astro";
+
+**Admin → Traffic** shows your instance's web audience: pageviews, estimated
+unique visitors and visits, daily or monthly charts, and leading pages,
+referrers, devices, browsers and operating systems. A country map and ranking
+are available with an optional local country database.
+
+This is independent of the [writer dashboard](/using/analytics/), whose view
+counter recognizes a reader only once per post for its lifetime. Traffic
+pageviews count repeat loads. Neither dashboard can observe somebody reading
+your posts on another server.
+
+## Start collecting
+
+Traffic collection is **off by default**. Only admins can enable it or read the
+instance-wide report; moderators cannot.
+
+1. Deploy the feature in both apps, following the
+   [upgrade procedure](/self-hosting/upgrading/#site-traffic-dashboard).
+2. Review the [privacy and cookie details](#privacy-and-cookies). Update your
+   instance privacy policy, and obtain consent where your jurisdiction requires
+   it. Omicron does not supply a consent-management system.
+3. Sign in as an admin, open `/admin`, select **Traffic**, and turn on
+   **Traffic collection**. The setting takes effect without a restart.
+4. To check collection, open a public page in a separate browser where you are
+   **not signed in as an admin or moderator**, with JavaScript available and no
+   DNT/GPC signal or blocked analytics request. Back in the dashboard, select
+   **Refresh**.
+
+Already-open pages pick up enablement when their layout reloads. Disabling
+collection is enforced immediately by the backend. Turning it off does not
+erase historical reports; the retention period still applies.
+
+<Callout type="note" title="There is no historical import">
+  Collection starts with new measured pageviews. It cannot recover earlier visitors from post-read totals, fill a period
+  when collection was off, or import a Cloudflare traffic history.
+</Callout>
+
+## Read the numbers
+
+| Metric              | Meaning                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pageviews**       | Successful visible public-page loads and navigations inside the web app. Reloading a page counts again.                                      |
+| **Unique visitors** | An estimate of distinct browsers in the selected dates, not a count of verified people or signed-in accounts.                                |
+| **Visits**          | An estimate of visits identified by a separate cookie. After 30 minutes without a measured pageview, the next pageview starts another visit. |
+
+The date menu offers **Last 7 days**, **Last 30 days** (the default), **Last
+90 days**, **This month**, **Last month**, and **Last 12 months**. The last
+option covers 365 dates, including today. All boundaries and chart buckets use
+**UTC**, regardless of the reader's display timezone.
+
+- **Group by** switches the charts between days and calendar months. Monthly
+  grouping is selected initially for the 365-day preset.
+- Each chart has a **Show data table** control for its underlying values.
+- Growth compares the selection with the immediately preceding **equal number
+  of days**, not necessarily the previous calendar month. A zero comparison
+  produces **No previous traffic** or **No change**, not an infinite percentage.
+- Today and the current month are incomplete. Monthly buckets at either edge
+  of a range can also be partial. Check the displayed dates before comparing.
+
+Unique visitors and visits use mergeable statistical counters, with about
+**1.6% standard error**. This is not a guaranteed error bound. A returning
+browser is deduplicated across the selected days rather than adding up the
+daily visitor counts. The same applies to monthly groups. Clearing cookies,
+private browsing, another device, or a browser that refuses cookies can count
+one person more than once.
+
+A visit that crosses midnight appears in both daily buckets but is counted
+once in their combined report. Inactivity means time since the last measured
+pageview, not mouse movement, scrolling or time spent reading.
+
+### Pages and breakdowns
+
+The collector covers public home, information, search, tag, profile, post and
+reading-list pages. This includes cached federated profiles and posts viewed
+**on your instance**. Private lists and private, unpublished or withdrawn local
+content are excluded. Hash-only and query-only navigations do not add another
+pageview; search terms are never included in the stored path.
+
+Breakdowns count **pageviews**, not unique visitors. Referrers retain only a
+hostname, with a leading `www.` removed. Missing, internal and unusable
+referrers share **Direct / internal**. This describes individual pageviews,
+not a visit's original acquisition source. Technology categories omit versions
+and raw user-agent strings.
+
+Rankings show leading entries rather than every stored value. Each dimension
+accepts at most **500 distinct values per day**, with further new values grouped
+as **Other (daily limit)**. Existing values continue accumulating.
+
+## Privacy and cookies
+
+The traffic cookies contain random tokens, separate from sign-in cookies and
+the writer dashboard's reader cookie. They are not linked to an account ID.
+
+| Cookie                    | Lifetime                                     | Purpose                                  |
+| ------------------------- | -------------------------------------------- | ---------------------------------------- |
+| `omicron_traffic_visitor` | Up to 400 days from issue                    | Estimate distinct browsers across dates. |
+| `omicron_traffic_visit`   | 30 minutes, renewed on successful collection | Estimate visits.                         |
+
+Both are first-party, `HttpOnly`, `SameSite=Lax`, restricted to `/api/traffic`,
+and `Secure` on HTTPS. DNT or Global Privacy Control prevents counting and
+issuing traffic cookies. Previously issued cookies are not removed by switching
+collection off; they remain until expiry or browser removal.
+
+Storage contains daily aggregate pageviews and HyperLogLog register maxima,
+not the visitor tokens, their full hashes, individual events, or reader
+histories. Traffic analytics does not retain reader IPs, raw user agents,
+referrer paths, query strings or fragments, and does not send analytics data to
+another service. The built-in `/privacy` page explains this feature even when
+you supply your own privacy-policy text.
+
+Aggregates are kept for **730 days**, with older buckets pruned daily. A gap in
+collection is not evidence of zero real-world traffic. The earliest retained
+traffic and the limited-history warning help identify an incomplete baseline.
+
+<Callout type="warning" title="Not a network or fraud-detection dashboard">
+  Signed-in staff, known bots, account/admin routes, API requests, assets, federation deliveries and RSS requests are
+  excluded. Blocked JavaScript or requests cause missing measurements; unknown bots or forged events can inflate them.
+  These figures will differ from a CDN's total requests. There are no bandwidth, cache, security-event or data-center
+  metrics here.
+</Callout>
+
+## Optional country lookup
+
+Without a local database, geography is shown as unavailable and pageviews use
+**Unknown** for country. Other traffic metrics still work. Historical Unknown
+counts cannot be assigned countries later because no reader IP was retained.
+
+1. Obtain a MaxMind-compatible Country or City `.mmdb` database under its
+   provider's licence. Omicron does not download or update it for you. Place it
+   at `geoip/country.mmdb` beside the instance's `docker-compose.yml` and make
+   it readable by the backend.
+2. Create `compose.geoip.yml` beside the base Compose file:
+
+   ```yaml
+   services:
+     backend:
+       volumes:
+         - ./geoip:/data/geoip:ro
+   ```
+
+3. Set the **container path** in the instance's `.env`:
+
+   ```dotenv
+   TRAFFIC_GEOIP_PATH=/data/geoip/country.mmdb
+   ```
+
+4. Take and verify a [backup](/self-hosting/backups/), then recreate the backend
+   with both Compose files:
+
+   ```bash
+   docker compose -f docker-compose.yml -f compose.geoip.yml up -d --build --force-recreate backend
+   ```
+
+   Include that override in future deployment commands so the database mount
+   remains present. Podman Compose accepts the same files and flags; check
+   [SELinux labelling](/self-hosting/podman/#selinux) where applicable.
+
+Only the country code is kept; lookup happens locally, without an external
+IP-location request. Country is an approximate network location, not residence:
+VPNs and proxies affect it. Client-supplied country headers are not used.
+
+<Callout type="warning" title="Behind a CDN or another proxy">
+  The trusted forwarding chain must provide the real client address. Otherwise the lookup can locate the proxy or CDN
+  instead of the visitor, even with a valid country database. Do not fix this by blindly trusting headers from the
+  public internet; review your proxy's trust configuration first.
+</Callout>
+
+Mount the directory, not just an individual file, so the backend can see atomic
+file replacements. Updates to a successfully loaded database are watched. If
+initial loading fails, fix the file or path and **restart the backend** before
+retrying. **Refresh** reloads the report, not a failed database reader. Previously
+recorded countries remain available when geography is later disabled.
+
+For the report payload and collection endpoint, see the
+[Admin API](/reference/admin-api/#site-traffic) and
+[HTTP API](/reference/http-api/#site-traffic-collection).

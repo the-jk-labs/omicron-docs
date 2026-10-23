@@ -252,10 +252,17 @@ link to your instance land the visitor elsewhere. See
 
 ## Reader privacy
 
-Omicron does not profile readers. On-instance view counts are aggregate integers
-keyed by a one-way hash, with no IP address, fingerprint, or per-visit row stored
-anywhere. The full account, including what is deliberately never collected, is in
-[Writer dashboard](/using/analytics/).
+Omicron's analytics does not provide reader profiles or individual visit logs.
+The [writer dashboard](/using/analytics/) uses aggregate post-read counters and
+hashed de-duplication keys. The separate admin [site-traffic
+dashboard](/self-hosting/traffic/) is off by default and uses daily counters and
+statistical sketches, with random first-party cookies rather than account IDs.
+Neither analytics system stores reader IPs, raw user agents or fingerprints.
+Traffic's optional country lookup uses a local database, not an external service.
+
+Review the traffic cookies, DNT/GPC exclusions and consent responsibilities
+before enabling collection. Your custom privacy-policy text is shown alongside
+the built-in traffic disclosure, not instead of it.
 
 The web UI fetches remote images through the instance's
 [image proxy](/reference/http-api/#remote-images--apimediaproxy). Remote image

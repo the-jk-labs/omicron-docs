@@ -10,8 +10,8 @@ wizard set — and more — is editable here, subject to your role.
 
 <Callout type="note" title="Moderators share this panel">
   Moderators can use the **Reports** and **Users** tabs — the full moderation workflow. **Instance**, **Email**,
-  **Federation**, **Security**, **Discoverability**, and **Media** are admin-only: a moderator opening them sees a
-  notice saying so. See [Moderation tools](/using/moderation/).
+  **Traffic**, **Federation**, **Security**, **Discoverability**, and **Media** are admin-only: a moderator opening them
+  sees a notice saying so. See [Moderation tools](/using/moderation/).
 </Callout>
 
 ## Instance
@@ -39,7 +39,8 @@ sections accept Markdown and are rendered to sanitized HTML server-side:
 
 - **About this instance** appears on `/about` under "This instance".
 - **Instance rules** appears on `/about` under "Instance rules".
-- **Privacy policy** replaces `/privacy` entirely.
+- **Privacy policy** replaces the placeholder policy on `/privacy`. The built-in
+  site-traffic disclosure remains visible alongside it.
 
 Leave any of them blank to keep the built-in placeholder text. Placeholders are
 safe defaults, not legal advice: replace the privacy text with your own policy
@@ -96,6 +97,21 @@ section, tags, links — or its login email. A login-email change needs
 re-verification: the new address gets a confirmation link, the old address gets
 a security notice, and the account stays unverified until the new address is
 confirmed.
+
+## Traffic
+
+The instance-wide web-audience report: pageviews, estimated browsers and visits,
+daily/monthly trends, previous-period comparisons, leading pages/referrers and
+technology breakdowns. Country lookup and the map require an optional local
+database.
+
+Collection is **off by default**, separate from writer view counting, and
+admin-only. Update your privacy policy and arrange any required consent before
+enabling **Traffic collection**. Past traffic cannot be recovered, and
+signed-in admins/moderators are not counted when testing it.
+
+See [Site traffic](/self-hosting/traffic/) for the walkthrough, measurement
+limits, cookies and country-database setup.
 
 ## Federation
 
@@ -315,9 +331,9 @@ remove it — Openverse keeps working either way.
 
 ## Analytics and discoverability
 
-The admin settings also cover instance-level analytics behaviour and everything
-search engines see. What is and is not measured about readers is documented in
-full in [Writer dashboard](/using/analytics/).
+**Instance → Instance settings → On-instance view counting** controls the
+[writer dashboard](/using/analytics/). **Traffic** has its own collection switch
+and privacy model; changing one does not enable or disable the other.
 
 **Discoverability** holds the search-engine indexing switch, the sitemap,
 `robots.txt`, per-console verification tokens, and IndexNow — see

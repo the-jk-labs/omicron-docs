@@ -1,6 +1,6 @@
 ---
 title: Admin API
-description: The administrative endpoints under /api/admin — instance settings, email, moderation, users, and defederation.
+description: Administrative endpoints for instance settings, site traffic, email, moderation, users, and defederation.
 badge: Admins + moderators
 ---
 
@@ -9,7 +9,7 @@ import Callout from "@/components/Callout.astro";
 Everything under **`/api/admin`** requires an authenticated **admin or
 moderator** session — but not every endpoint accepts both. The **Users** and
 **Content and reports** sections below accept moderators; **Instance**,
-**Settings**, **Security**, **Discoverability**, **Media**, **Email**,
+**Settings**, **Site traffic**, **Security**, **Discoverability**, **Media**, **Email**,
 **Federation domains**, and both role-grant endpoints are admin-only, and a
 moderator calling them gets `403 Admin access required.` These are the
 endpoints the admin panel itself calls; they are documented here
@@ -44,13 +44,63 @@ issuance and public-key discovery pause until that restart completes. If
 
 ## Settings and analytics
 
-| Method | Path                            | Purpose               |
-| ------ | ------------------------------- | --------------------- |
-| `GET`  | `/api/admin/settings`           | All instance settings |
-| `PUT`  | `/api/admin/settings/analytics` | Analytics behaviour   |
+| Method | Path                            | Purpose                      |
+| ------ | ------------------------------- | ---------------------------- |
+| `GET`  | `/api/admin/settings`           | Writer view-counting setting |
+| `PUT`  | `/api/admin/settings/analytics` | Change writer view counting  |
 
-What analytics can and cannot be turned on is described in
-[Writer dashboard](/using/analytics/).
+Both use `{ "onInstanceViews": boolean }`. This controls the
+[writer dashboard](/using/analytics/), not the separate site-traffic collector.
+
+## Site traffic
+
+These endpoints are **admin-only**. Anonymous callers receive `401`; a signed-in
+non-admin, including a moderator, receives `403`.
+
+| Method | Path                          | Purpose                                                      |
+| ------ | ----------------------------- | ------------------------------------------------------------ |
+| `GET`  | `/api/admin/traffic`          | Read instance-wide traffic aggregates and collection status. |
+| `PUT`  | `/api/admin/traffic/settings` | Enable or disable collection with `{ "enabled": boolean }`.  |
+
+The settings write returns `{ "enabled": boolean }`. Collection is disabled
+until explicitly enabled. Disabling it preserves retained history and does not
+change writer post-read counting.
+
+### Report dates
+
+`GET /api/admin/traffic?from=YYYY-MM-DD&to=YYYY-MM-DD` accepts inclusive UTC
+calendar dates. With no parameters it selects the last 30 dates including
+today. `to` defaults to today; an omitted `from` starts 29 dates before `to`.
+
+A selection must span **1–365 days**, start within the last **730 dates** and
+end no later than today. Invalid ranges return `400`. The comparison is the
+immediately preceding equal number of days; it can extend beyond retained
+history, so consumers must account for missing data. Reports use
+`Cache-Control: no-store`.
+
+### Report fields
+
+| Field                | Contents                                                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`            | Whether new pageviews may be collected.                                                                                             |
+| `geographyAvailable` | Whether a local country database is currently available.                                                                            |
+| `firstDay`           | Earliest retained traffic date, or `null` without history. Not proof of continuous collection.                                      |
+| `range`              | `from`, `to`, `previousFrom`, `previousTo`, and inclusive `days`.                                                                   |
+| `totals`, `previous` | `{ pageviews, visitors, visits }` for the selected and comparison periods.                                                          |
+| `series`             | Zero-filled daily `{ day, pageviews, visitors, visits }` entries.                                                                   |
+| `monthly`            | The same metrics merged by calendar month, restricted to the selection. `day` is that month's first date, even for a partial month. |
+| `breakdowns`         | `path`, `referrer`, `country`, `device`, `browser`, and `os`, each an array of `{ value, pageviews }`.                              |
+
+Breakdowns are sorted by pageviews, returning at most **20 entries per
+dimension**, except country (up to **250**). They are not visitor counts.
+Visitors and visits are estimates formed by merging cardinality sketches,
+**not sums of daily uniques**. Do not sum the daily or monthly visitor fields
+to reconstruct the selected total.
+
+The UI, cookies, retention, measurement exclusions and optional geography setup
+are documented in [Site traffic](/self-hosting/traffic/). Browser collection is
+a separate [public endpoint](/reference/http-api/#site-traffic-collection), not
+an administrative write.
 
 ## Security
 
