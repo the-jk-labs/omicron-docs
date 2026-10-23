@@ -1,14 +1,14 @@
 ---
 title: Site traffic
-description: Enable the admin traffic dashboard, compare monthly audiences, and configure optional local country lookup.
+description: Enable cookieless pageview analytics, compare monthly traffic, and configure optional local country lookup.
 badge: Admin only
 ---
 
 import Callout from "@/components/Callout.astro";
 
-**Admin → Traffic** shows your instance's web audience: pageviews, estimated
-unique visitors and visits, daily or monthly charts, and leading pages,
-referrers, devices, browsers and operating systems. A country map and ranking
+**Admin → Traffic** shows your instance's public pageviews, daily or monthly
+charts, previous-period growth, and leading pages, referrers, devices, browsers
+and operating systems. A country map and ranking
 are available with an optional local country database.
 
 This is independent of the [writer dashboard](/using/analytics/), whose view
@@ -23,7 +23,7 @@ instance-wide report; moderators cannot.
 
 1. Deploy the feature in both apps, following the
    [upgrade procedure](/self-hosting/upgrading/#site-traffic-dashboard).
-2. Review the [privacy and cookie details](#privacy-and-cookies). Update your
+2. Review the [privacy details](#privacy-and-cookies). Update your
    instance privacy policy, and obtain consent where your jurisdiction requires
    it. Omicron does not supply a consent-management system.
 3. Sign in as an admin, open `/admin`, select **Traffic**, and turn on
@@ -38,17 +38,20 @@ collection is enforced immediately by the backend. Turning it off does not
 erase historical reports; the retention period still applies.
 
 <Callout type="note" title="There is no historical import">
-  Collection starts with new measured pageviews. It cannot recover earlier visitors from post-read totals, fill a period
+  Collection starts with new measured pageviews. It cannot recover earlier traffic from post-read totals, fill a period
   when collection was off, or import a Cloudflare traffic history.
 </Callout>
 
 ## Read the numbers
 
-| Metric              | Meaning                                                                                                                                      |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Pageviews**       | Successful visible public-page loads and navigations inside the web app. Reloading a page counts again.                                      |
-| **Unique visitors** | An estimate of distinct browsers in the selected dates, not a count of verified people or signed-in accounts.                                |
-| **Visits**          | An estimate of visits identified by a separate cookie. After 30 minutes without a measured pageview, the next pageview starts another visit. |
+**Pageviews** count successful visible public-page loads and navigations inside
+the web app. Reloading a page counts again. Monthly and range totals are sums
+of these pageviews.
+
+**Pageviews are not people.** The feature does not measure unique visitors,
+visits, returning readers, or session duration. It deliberately avoids the
+browser/session identifiers needed to deduplicate an audience across dates.
+Growth describes pageviews, not a change in the number of people reading.
 
 The date menu offers **Last 7 days**, **Last 30 days** (the default), **Last
 90 days**, **This month**, **Last month**, and **Last 12 months**. The last
@@ -64,17 +67,6 @@ option covers 365 dates, including today. All boundaries and chart buckets use
 - Today and the current month are incomplete. Monthly buckets at either edge
   of a range can also be partial. Check the displayed dates before comparing.
 
-Unique visitors and visits use mergeable statistical counters, with about
-**1.6% standard error**. This is not a guaranteed error bound. A returning
-browser is deduplicated across the selected days rather than adding up the
-daily visitor counts. The same applies to monthly groups. Clearing cookies,
-private browsing, another device, or a browser that refuses cookies can count
-one person more than once.
-
-A visit that crosses midnight appears in both daily buckets but is counted
-once in their combined report. Inactivity means time since the last measured
-pageview, not mouse movement, scrolling or time spent reading.
-
 ### Pages and breakdowns
 
 The collector covers public home, information, search, tag, profile, post and
@@ -86,7 +78,7 @@ pageview; search terms are never included in the stored path.
 Breakdowns count **pageviews**, not unique visitors. Referrers retain only a
 hostname, with a leading `www.` removed. Missing, internal and unusable
 referrers share **Direct / internal**. This describes individual pageviews,
-not a visit's original acquisition source. Technology categories omit versions
+not a person's browsing journey. Technology categories omit versions
 and raw user-agent strings.
 
 Rankings show leading entries rather than every stored value. Each dimension
@@ -95,25 +87,24 @@ as **Other (daily limit)**. Existing values continue accumulating.
 
 ## Privacy and cookies
 
-The traffic cookies contain random tokens, separate from sign-in cookies and
-the writer dashboard's reader cookie. They are not linked to an account ID.
+**Site traffic sets and reads no analytics cookies and uses no browser storage.**
+It does not generate browser/session IDs, fingerprint devices, or hash IPs into
+identifiers. Measurement requests omit sign-in cookies and the automatic
+Referer header. The only payload is a pathname and referring origin.
 
-| Cookie                    | Lifetime                                     | Purpose                                  |
-| ------------------------- | -------------------------------------------- | ---------------------------------------- |
-| `omicron_traffic_visitor` | Up to 400 days from issue                    | Estimate distinct browsers across dates. |
-| `omicron_traffic_visit`   | 30 minutes, renewed on successful collection | Estimate visits.                         |
+The [writer dashboard](/using/analytics/) remains separate: its existing
+post-read counter may still use a reader cookie. Cookieless site traffic does
+not mean the whole application is cookieless.
 
-Both are first-party, `HttpOnly`, `SameSite=Lax`, restricted to `/api/traffic`,
-and `Secure` on HTTPS. DNT or Global Privacy Control prevents counting and
-issuing traffic cookies. Previously issued cookies are not removed by switching
-collection off; they remain until expiry or browser removal.
-
-Storage contains daily aggregate pageviews and HyperLogLog register maxima,
-not the visitor tokens, their full hashes, individual events, or reader
-histories. Traffic analytics does not retain reader IPs, raw user agents,
+Storage contains only daily `(day, dimension, value, pageviews)` aggregates.
+Dimensions are independent counters, not records linking a page, country and
+device to one reader. There are no individual events or reader histories.
+Traffic analytics does not retain reader IPs, raw user agents,
 referrer paths, query strings or fragments, and does not send analytics data to
 another service. The built-in `/privacy` page explains this feature even when
-you supply your own privacy-policy text.
+you supply your own privacy-policy text. DNT and Global Privacy Control prevent
+counting. Cookie blocking alone does not prevent this cookieless measurement;
+blocking JavaScript or the collection request does.
 
 Aggregates are kept for **730 days**, with older buckets pruned daily. A gap in
 collection is not evidence of zero real-world traffic. The earliest retained

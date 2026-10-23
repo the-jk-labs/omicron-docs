@@ -306,7 +306,7 @@ resources.
 | `POST`   | `/tokens`     | Session | Mint one (plaintext returned once)      |
 | `DELETE` | `/tokens/:id` | Session | Revoke one                              |
 
-`/content` is the one endpoint that does **not** use the session cookie: it
+`/content` does **not** use the session cookie: it
 authenticates with a bearer credential in `X-Webhook-Secret` or
 `Authorization: Bearer`, and publishes as that credential's owner. Managing
 tokens is an ordinary session-authenticated call, so a token cannot mint or
@@ -333,14 +333,19 @@ request body is capped at **4,096 bytes**, including requests without a
 `Content-Length` header. Only eligible public paths are counted, with public
 content checked server-side. The frontend sends no query or fragment and only
 the referrer's origin; persisted referrers are further reduced to a hostname.
+The frontend uses `credentials: "omit"` and `referrerPolicy: "no-referrer"`, so
+sign-in cookies and the automatic Referer header are not sent. There is no
+browser/session identifier in the payload, and legacy traffic cookies or
+extra identifier fields are not used for measurement.
 
 - `204`, with no body, means processed **or intentionally skipped**. It is not
   confirmation that a counter increased. Disabled collection, DNT/GPC, known
   bots, signed-in staff, invalid origins and ineligible paths are skipped.
 - Payload validation can return bodyless `400` or `413`; throttling returns
   `429` with `Retry-After`. See [Rate limits](/reference/rate-limits/#site-traffic-collection).
-- Successful counting issues the first-party visitor cookie when needed and
-  renews the 30-minute visit cookie. Neither is an authentication credential.
+- The endpoint sets no analytics cookies. Repeat loads count again, whether
+  cookies are allowed or blocked. The frontend skips staff pages before sending;
+  the backend also skips any authenticated staff request it receives.
 - Aggregation is best-effort; the browser does not retry failures. The backend
   does not retain an individual visit record to replay later.
 

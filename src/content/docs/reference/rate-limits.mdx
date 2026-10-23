@@ -93,6 +93,9 @@ bulk re-sync while staying far below what a brute-force attempt would need.
 IP** budget, in addition to the general API-write limiter. Collection requests
 therefore also consume the signed-in user's or anonymous IP's shared write
 budget. These are request limits, not estimates of unique visitors.
+The web collector omits credentials, so its measurements use the anonymous IP
+budget even when the reader is signed in. IPs used for request throttling are
+not stored in traffic aggregates or converted into visitor identifiers.
 
 The route-specific limiter runs before traffic eligibility checks. A `429` may
 be returned even when collection would otherwise be skipped. The 4,096-byte

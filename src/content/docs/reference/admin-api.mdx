@@ -86,19 +86,19 @@ history, so consumers must account for missing data. Reports use
 | `geographyAvailable` | Whether a local country database is currently available.                                                                            |
 | `firstDay`           | Earliest retained traffic date, or `null` without history. Not proof of continuous collection.                                      |
 | `range`              | `from`, `to`, `previousFrom`, `previousTo`, and inclusive `days`.                                                                   |
-| `totals`, `previous` | `{ pageviews, visitors, visits }` for the selected and comparison periods.                                                          |
-| `series`             | Zero-filled daily `{ day, pageviews, visitors, visits }` entries.                                                                   |
+| `totals`, `previous` | `{ pageviews }` for the selected and comparison periods.                                                                            |
+| `series`             | Zero-filled daily `{ day, pageviews }` entries.                                                                                     |
 | `monthly`            | The same metrics merged by calendar month, restricted to the selection. `day` is that month's first date, even for a partial month. |
 | `breakdowns`         | `path`, `referrer`, `country`, `device`, `browser`, and `os`, each an array of `{ value, pageviews }`.                              |
 
 Breakdowns are sorted by pageviews, returning at most **20 entries per
 dimension**, except country (up to **250**). They are not visitor counts.
-Visitors and visits are estimates formed by merging cardinality sketches,
-**not sums of daily uniques**. Do not sum the daily or monthly visitor fields
-to reconstruct the selected total.
+Monthly and range totals sum pageviews. There are no `visitors` or `visits`
+fields: cookieless collection does not identify browsers or sessions, and the
+API does not present pageviews as people.
 
-The UI, cookies, retention, measurement exclusions and optional geography setup
-are documented in [Site traffic](/self-hosting/traffic/). Browser collection is
+The UI, cookieless privacy model, retention, measurement exclusions and optional
+geography setup are documented in [Site traffic](/self-hosting/traffic/). Browser collection is
 a separate [public endpoint](/reference/http-api/#site-traffic-collection), not
 an administrative write.
 

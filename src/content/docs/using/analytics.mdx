@@ -7,7 +7,7 @@ import Callout from "@/components/Callout.astro";
 
 Omicron gives writers a dashboard at **`/dashboard`** so they can see how their
 work travels. The admin-only [site-traffic dashboard](/self-hosting/traffic/) is
-separate: it reports browser and pageview trends for the instance, not this
+separate: it reports cookieless pageview trends for the instance, not this
 writer's lifetime post reads.
 
 The writer dashboard's analytics follow one rule:
@@ -53,7 +53,7 @@ you" view. Counts, and the same public interactions any fediverse client shows.
 
 For reads on this instance's own web pages, the writer dashboard uses a simple
 view count. An admin can additionally enable the separate site-traffic
-collector; its pageviews and visitor estimates do not change the writer
+collector; its pageview counts do not change the writer
 dashboard's lifetime de-duplication rule.
 
 How a view is counted:

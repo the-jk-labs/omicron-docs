@@ -90,9 +90,10 @@ Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
 
 ## Site traffic dashboard
 
-The traffic feature adds the `traffic_buckets` table through the additive
-`0044_daily_gateway.sql` migration. Back up and verify the snapshot **before**
-deploying the release containing it:
+The traffic feature adds the `traffic_buckets` table through
+`0044_daily_gateway.sql`; `0045_cookieless_traffic.sql` then removes the unused
+visitor/visit sketch columns, preserving pageview counters. Back up and verify
+the snapshot **before** deploying the release containing it:
 
 ```bash
 docker compose exec backup backup-now

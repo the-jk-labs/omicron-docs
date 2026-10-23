@@ -255,12 +255,14 @@ link to your instance land the visitor elsewhere. See
 Omicron's analytics does not provide reader profiles or individual visit logs.
 The [writer dashboard](/using/analytics/) uses aggregate post-read counters and
 hashed de-duplication keys. The separate admin [site-traffic
-dashboard](/self-hosting/traffic/) is off by default and uses daily counters and
-statistical sketches, with random first-party cookies rather than account IDs.
+dashboard](/self-hosting/traffic/) is off by default and uses independent daily
+pageview counters, with no analytics cookies, browser storage or browser/session
+IDs. Its requests omit sign-in cookies; it does not fingerprint devices or hash
+IPs into identifiers. It cannot measure unique visitors or visits.
 Neither analytics system stores reader IPs, raw user agents or fingerprints.
 Traffic's optional country lookup uses a local database, not an external service.
 
-Review the traffic cookies, DNT/GPC exclusions and consent responsibilities
+Review the traffic privacy model, DNT/GPC exclusions and local legal requirements
 before enabling collection. Your custom privacy-policy text is shown alongside
 the built-in traffic disclosure, not instead of it.
 
