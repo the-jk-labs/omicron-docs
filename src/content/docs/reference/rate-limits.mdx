@@ -7,7 +7,7 @@ import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
 media uploads, the federation inbox, remote-discovery browsing, and the content
-webhook, as well as identity OAuth.
+webhook, as well as identity OAuth and optional Umami Cloud collection.
 
 ## The limiters
 
@@ -22,8 +22,7 @@ webhook, as well as identity OAuth.
 | Remote cache-miss | `RL_REMOTE_MISS_MAX` | 20      | 1 min  | Signed-in user, else IP    |
 | Content webhook   | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
 
-Plus hard payload caps on the two endpoints that accept unauthenticated or
-machine-sent bodies:
+The inbox and content webhook have environment-configurable payload caps:
 
 | Variable                 | Default   | Meaning                                         |
 | ------------------------ | --------- | ----------------------------------------------- |
@@ -144,6 +143,20 @@ OAuth JSON and form request bodies have a fixed **16,384-byte** cap, enforced
 while reading the body. Requests over the cap return `413`, including those
 without a `Content-Length` header. Disabling `RATE_LIMIT_ENABLED` also disables
 these rate budgets, but does not disable the body cap.
+
+## Umami Cloud
+
+When [Umami Cloud](/self-hosting/umami/) is enabled,
+`POST /api/site/api/send` has a fixed **60 requests per minute per source IP**
+budget. It also passes through the general API-write limiter. There is no
+dedicated environment variable for the 60-request budget.
+
+The collection body is limited to **16,384 bytes**, checked both against
+`Content-Length` and while reading the stream. Oversized bodies return `413`;
+over-budget requests return `429` with `Retry-After` before any Cloud request.
+The rate checks also run on disabled collection and requests with privacy
+opt-outs. `RATE_LIMIT_ENABLED=false` disables the rate budgets, not the body
+cap for enabled collection.
 
 ## Redis changes the semantics
 
