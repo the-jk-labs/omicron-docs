@@ -44,13 +44,43 @@ issuance and public-key discovery pause until that restart completes. If
 
 ## Settings and analytics
 
-| Method | Path                            | Purpose               |
-| ------ | ------------------------------- | --------------------- |
-| `GET`  | `/api/admin/settings`           | All instance settings |
-| `PUT`  | `/api/admin/settings/analytics` | Analytics behaviour   |
+| Method | Path                            | Purpose                        |
+| ------ | ------------------------------- | ------------------------------ |
+| `GET`  | `/api/admin/settings`           | Built-in view-counting setting |
+| `PUT`  | `/api/admin/settings/analytics` | Built-in analytics behaviour   |
 
-What analytics can and cannot be turned on is described in
+The built-in analytics privacy model is described in
 [Writer dashboard](/using/analytics/).
+
+### Umami Cloud
+
+These routes require an **admin** account; moderators receive `403`.
+
+| Method | Path               | Purpose                              |
+| ------ | ------------------ | ------------------------------------ |
+| `GET`  | `/api/admin/umami` | Read the website ID and enabled flag |
+| `PUT`  | `/api/admin/umami` | Replace both settings                |
+
+Both return the same shape and use `Cache-Control: no-store`:
+
+```json
+{
+  "enabled": true,
+  "websiteId": "94db1cb1-74f4-4a40-ad6c-962362670409"
+}
+```
+
+`PUT` requires both fields. `enabled` is a boolean; `websiteId` is a string
+of at most **4,096 characters** after trimming. Supply a UUID or a script
+snippet containing exactly one quoted `data-website-id` attribute. Only the
+lowercase UUID is stored and returned; the snippet and its URLs are discarded.
+Invalid input returns `400` with `{ "error": string }`.
+
+The default is `{ "enabled": false, "websiteId": "" }`. Setting `enabled` to
+`false` keeps the supplied ID; send an empty string too to remove it. A blank
+ID with `enabled: true` is rejected. Changes apply live and do not delete data
+already held by Cloud. For the admin walkthrough and privacy implications,
+see [Umami Cloud](/self-hosting/umami/).
 
 ## Security
 

@@ -252,10 +252,16 @@ link to your instance land the visitor elsewhere. See
 
 ## Reader privacy
 
-Omicron does not profile readers. On-instance view counts are aggregate integers
-keyed by a one-way hash, with no IP address, fingerprint, or per-visit row stored
-anywhere. The full account, including what is deliberately never collected, is in
+Built-in on-instance view counts are aggregate integers keyed by a one-way hash,
+with no IP address, fingerprint, or per-visit row stored for those counts.
+The full account, including what built-in analytics deliberately never collect, is in
 [Writer dashboard](/using/analytics/).
+
+Admins can separately opt into [Umami Cloud](/self-hosting/umami/), which
+forwards visitor IPs and browser information to a third party. It is disabled
+by default and is not part of the writer dashboard. Its same-origin proxy does
+not make that processing local-only; review the privacy requirements before
+enabling it.
 
 The web UI fetches remote images through the instance's
 [image proxy](/reference/http-api/#remote-images--apimediaproxy). Remote image

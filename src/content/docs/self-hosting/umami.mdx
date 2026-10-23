@@ -1,0 +1,122 @@
+---
+title: Umami Cloud
+description: Enable optional Umami Cloud statistics from the admin panel, with same-origin proxying and reader privacy controls.
+---
+
+import Callout from "@/components/Callout.astro";
+
+An instance admin can connect [Umami Cloud](https://cloud.umami.is) from
+**Admin → Instance → Umami Cloud**. The integration starts **disabled** and
+is independent of the built-in [writer dashboard](/using/analytics/).
+Statistics are viewed in Umami Cloud, not in Omicron's dashboard.
+
+<Callout type="warning" title="Review privacy requirements before enabling">
+  Enabling this integration forwards visitor IP addresses and browser information to Umami Cloud, together with public
+  page paths, titles, and minimized referrers. Review [Umami's privacy policy](https://umami.is/privacy), update your
+  instance's policy, and obtain any consent your jurisdiction requires. Omicron does not provide a consent-management
+  flow for this integration.
+</Callout>
+
+## Connect a website
+
+1. Add a website in Umami Cloud for your instance's public domain. Copy its
+   website ID or tracking snippet.
+2. Sign in to Omicron with an **admin** account. Open `/admin?tab=settings`
+   and find the **Umami Cloud** section in the **Instance** tab. Moderators
+   cannot change these settings.
+3. Paste the value into **Website ID or tracking code**. A website ID is a UUID,
+   such as `94db1cb1-74f4-4a40-ad6c-962362670409`.
+4. Turn on **Enable Umami Cloud**, then select **Save Umami settings**. Changing
+   the switch alone does not save it.
+5. After a successful save, the field contains the extracted website ID and
+   the panel reports **Umami Cloud enabled.** Open a public article in a browser
+   without a privacy opt-out and check the website's statistics in Umami Cloud.
+
+Only the website ID and enabled state are saved. Pasted markup is not executed
+or kept, and any script URL in it is ignored. No Umami password or API key is
+needed; the website ID is public, not a secret.
+
+The settings persist in the instance database. Saving does not require a
+restart, environment variables, Caddy edits, or a Content Security Policy
+exception. This integration supports **Umami Cloud**, not a self-hosted Umami
+server or an arbitrary analytics provider.
+
+## Same-origin proxying
+
+Both browser requests stay on your Omicron instance's origin:
+
+| Browser request           | Fixed upstream                      |
+| ------------------------- | ----------------------------------- |
+| `GET /api/site/script.js` | `https://cloud.umami.is/script.js`  |
+| `POST /api/site/api/send` | `https://gateway.umami.is/api/send` |
+
+Omicron sets the script's `data-host-url` to its local proxy, so collection
+does not fall back to a direct browser request to the Cloud gateway. This
+implements Umami's [proxy approach to ad blockers](https://docs.umami.is/docs/bypass-ad-blockers).
+It can avoid third-party domain blocklists; it cannot guarantee that every
+extension or blocking rule permits the tracker.
+
+The backend keeps the script in memory for **one hour**, sharing concurrent
+fetches. Cloud requests have a **five-second** timeout. Browser-facing responses
+use `Cache-Control: no-store`; collection responses are not cached. Visitor
+cookies and authorization credentials are not forwarded to Cloud. Collection
+does forward the visitor IP and User-Agent, plus Umami's session-cache header
+when present.
+
+## What is measured
+
+Omicron sends pageviews after a successful page navigation, including
+client-side navigation without a full reload. A change to only the query string
+or fragment does not produce another pageview for the current page.
+
+| Included pages                     | Excluded pages and activity                                      |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| Home, profiles, published articles | Sign-in, registration, account recovery, and setup               |
+| Tag pages                          | Admin, settings, search, dashboards, and notifications           |
+| About, contact, privacy, status    | Editors, drafts, scheduled posts, and all reading-list pages     |
+|                                    | Error pages, custom events, identification, performance, replays |
+
+Page URLs contain only the path: queries and fragments are removed. Referrers
+from this instance retain only allowed public paths; private paths are omitted.
+External referrers are reduced to their origin, with no path, query, or fragment.
+No reader account ID is supplied, and the integration sets no analytics cookies.
+These pageviews do not change the writer dashboard's view counts.
+
+**Do Not Track** and **Global Privacy Control** are checked in the browser and
+on incoming collection requests. A browser with a truthy
+`localStorage['umami.disabled']` value also opts out. Visiting without JavaScript
+does not generate Umami pageviews. A proxy or tracker failure does not prevent
+reading the site.
+
+While enabled, `/privacy` includes an **Optional website statistics** disclosure,
+even if you have supplied a custom privacy policy. This disclosure does not
+replace your responsibility to maintain an appropriate policy.
+
+## Disable or remove
+
+- **Pause collection:** turn off **Enable Umami Cloud** and select
+  **Save Umami settings**. The saved website ID remains available for later use.
+- **Remove the configuration:** leave the switch off, clear the website field,
+  and save. An empty ID cannot be saved with the switch enabled.
+
+The backend stops forwarding pageviews when disabled and no longer serves the
+tracker. Neither action deletes historical statistics held by Umami Cloud;
+manage those in Cloud separately. Built-in writer analytics are unaffected.
+
+## Troubleshooting
+
+- **Invalid website ID:** use the website's UUID, not an account or team ID.
+  A snippet must contain exactly one quoted `data-website-id` attribute.
+- **No pageviews:** confirm the settings were saved and the Cloud website
+  matches your domain. Use a public page, check DNT/GPC and the browser's local
+  opt-out, and inspect extension blocking. Private pages are intentionally absent.
+- **Proxy unavailable:** a `502` from the script or collection route means
+  the Cloud request failed. Check outbound HTTPS access to `cloud.umami.is`
+  and `gateway.umami.is`; do not add a second direct tracking snippet.
+- **Rate limited:** collection has a fixed **60 requests per minute per IP**
+  budget, in addition to the general API-write budget. A request over the limit
+  gets `429` with `Retry-After`; see [Rate limits](/reference/rate-limits/#umami-cloud).
+
+For scripted configuration and the proxy route map, see
+[Admin API](/reference/admin-api/#umami-cloud) and
+[HTTP API](/reference/http-api/#umami-cloud--apisite).

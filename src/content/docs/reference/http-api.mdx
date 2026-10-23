@@ -143,6 +143,39 @@ samples across the full eligible archive rather than a recent page, and returns
 | `GET`  | `/api/search`    | Posts, accounts, and tags |
 | `GET`  | `/api/dashboard` | Writer dashboard figures  |
 
+## Umami Cloud — `/api/site`
+
+These routes are unauthenticated and support the optional
+[Umami Cloud integration](/self-hosting/umami/), not the writer dashboard.
+
+| Method | Path                  | Purpose                                     |
+| ------ | --------------------- | ------------------------------------------- |
+| `GET`  | `/api/site`           | Enabled website ID, or `null` when disabled |
+| `GET`  | `/api/site/script.js` | Proxy the fixed Cloud tracker               |
+| `POST` | `/api/site/api/send`  | Forward a validated public-page pageview    |
+
+`GET /api/site` returns `{ "websiteId": string | null }`. The script route
+returns JavaScript while enabled and `404` while disabled. All three routes
+use `Cache-Control: no-store`; the backend caches successful script fetches
+in memory for one hour.
+
+Collection accepts `application/json` with `{ "type": "event", "payload": {...} }`.
+The payload contains `website` (the configured UUID), `hostname`, `screen`,
+`language`, `title`, and `url`; `referrer` is optional. Unknown fields, reader
+identifiers, custom event names, and other event types are rejected. The server
+removes query strings and fragments and restricts page paths before forwarding.
+`X-Umami-Cache`, when present, is forwarded for Cloud session continuity; the
+successful Cloud JSON response is returned to the tracker.
+
+Disabled collection or a request carrying `DNT: 1` or `Sec-GPC: 1` returns
+`204` without contacting Cloud, subject to rate limits. Cross-site browser
+collection requests are refused with `403`. Invalid payloads return `400`,
+bodies over **16,384 bytes** return `413`, exhausted request budgets return
+`429` with `Retry-After`, and upstream failures return a generic `502`.
+See [Rate limits](/reference/rate-limits/#umami-cloud).
+
+Configuration uses the separate [admin-only API](/reference/admin-api/#umami-cloud).
+
 ## Users — `/api/users`
 
 | Method            | Path                                                               | Purpose                          |

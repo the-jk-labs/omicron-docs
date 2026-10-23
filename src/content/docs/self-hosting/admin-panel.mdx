@@ -21,6 +21,7 @@ wizard set — and more — is editable here, subject to your role.
 - The **signed-out visitor card** (tagline and banner image).
 - **Public information** — About, rules, privacy policy, and operator contact and status links.
 - **Session-secret rotation**.
+- Optional **Umami Cloud** website statistics, disabled by default.
 
 Domain and federation changes apply on the **next restart**; the page tells you
 when a restart is needed. Everything else on this tab applies immediately.
@@ -39,7 +40,8 @@ sections accept Markdown and are rendered to sanitized HTML server-side:
 
 - **About this instance** appears on `/about` under "This instance".
 - **Instance rules** appears on `/about` under "Instance rules".
-- **Privacy policy** replaces `/privacy` entirely.
+- **Privacy policy** replaces the placeholder notice on `/privacy`. If Umami
+  Cloud is enabled, its disclosure is shown alongside your policy.
 
 Leave any of them blank to keep the built-in placeholder text. Placeholders are
 safe defaults, not legal advice: replace the privacy text with your own policy
@@ -315,9 +317,16 @@ remove it — Openverse keeps working either way.
 
 ## Analytics and discoverability
 
-The admin settings also cover instance-level analytics behaviour and everything
-search engines see. What is and is not measured about readers is documented in
-full in [Writer dashboard](/using/analytics/).
+The **Instance** tab contains two separate analytics controls:
+
+- **On-instance view counting** controls built-in writer statistics, described
+  in [Writer dashboard](/using/analytics/).
+- **Umami Cloud** connects an optional third-party website-statistics service.
+  Paste a website ID or tracking snippet, enable it, and save. Both tracker and
+  collection requests use the instance's domain; no proxy configuration is
+  needed. Unlike built-in counts, this forwards visitor IPs and browser
+  information to Cloud. See the [Umami Cloud setup and privacy guide](/self-hosting/umami/)
+  before enabling it.
 
 **Discoverability** holds the search-engine indexing switch, the sitemap,
 `robots.txt`, per-console verification tokens, and IndexNow — see

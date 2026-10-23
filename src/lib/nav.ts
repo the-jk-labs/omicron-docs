@@ -33,6 +33,7 @@ export const nav: NavSection[] = [
       { slug: "self-hosting/email", label: "Email" },
       { slug: "self-hosting/federation", label: "Enabling federation" },
       { slug: "self-hosting/admin-panel", label: "Admin panel" },
+      { slug: "self-hosting/umami", label: "Umami Cloud" },
       { slug: "self-hosting/discoverability", label: "Discoverability" },
       { slug: "self-hosting/configuration", label: "Configuration" },
       { slug: "self-hosting/podman", label: "Running on Podman" },
