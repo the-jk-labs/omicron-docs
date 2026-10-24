@@ -92,6 +92,12 @@ While enabled, `/privacy` includes an **Optional website statistics** disclosure
 even if you have supplied a custom privacy policy. This disclosure does not
 replace your responsibility to maintain an appropriate policy.
 
+On `omicron.blog`, the disclosure names Umami Cloud's Europe region. That region
+wording is currently hard-coded in the frontend rather than read from the
+website settings. If your Umami Cloud website uses a different region, update
+`apps/frontend/src/routes/privacy/+page.svelte` to match before enabling the
+integration.
+
 ## Disable or remove
 
 - **Pause collection:** turn off **Enable Umami Cloud** and select
