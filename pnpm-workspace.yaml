@@ -8,4 +8,7 @@ allowBuilds:
   esbuild: true
   sharp: true
 overrides:
-  fast-uri: ">=3.1.5"
+  # Ajv requires 3.x; an open-ended range can select an incompatible major.
+  fast-uri: "^3.1.9"
+  # Tailwind 3 and postcss-nested 6 otherwise retain the vulnerable 6.x parser.
+  postcss-selector-parser@<7.1.6: "^7.1.7"
