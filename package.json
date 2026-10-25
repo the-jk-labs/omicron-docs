@@ -25,15 +25,15 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.10",
-    "autoprefixer": "10.4.20",
-    "greenly": "1.1.6",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
-    "oxlint-tsgolint": "7.0.2001",
+    "@astrojs/check": "0.9.12",
+    "autoprefixer": "10.6.1",
+    "greenly": "1.2.0",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
+    "oxlint-tsgolint": "7.0.2004",
     "pagefind": "1.5.2",
-    "postcss": "8.5.28",
-    "tailwindcss": "3.4.15",
+    "postcss": "8.5.31",
+    "tailwindcss": "3.4.19",
     "typescript": "6.0.3"
   },
   "engines": {
