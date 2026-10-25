@@ -1,15 +1,46 @@
 ---
 title: Connected applications
-description: Sign in to another service with your Omicron identity, review consent, and revoke access.
+description: Authorize an independent client or identity service, understand its permissions, and revoke access.
 ---
 
 import Callout from "@/components/Callout.astro";
 
-Services that support Omicron's [identity OAuth flow](/reference/identity-oauth/)
-can ask you to verify your identity using your existing account. This does not
-give them an Omicron session or permission to publish on your behalf.
+An independent Omicron app can ask for permission to use your account. An
+identity service can instead request only your public identity. In either case,
+sign-in happens on your own instance: do not give the application your password,
+session cookies, or passkey credentials.
+
+The permissions shown on the consent page determine what the application can
+do. For developers, see [Third-party clients](/development/third-party-clients/).
+
+## Authorize a client
+
+1. Choose your instance in the client and start its authorization flow.
+2. Your system browser opens the instance's consent page. Sign in there if
+   needed; returning from login does not approve the request automatically.
+3. Check the account, application name, and **Return to** destination. Names
+   are supplied by developers, not verified by the instance.
+4. Read every permission. `read` includes private account details such as email,
+   drafts, lists, and notifications. `write` allows changes and publishing.
+   Separate admin permissions work only if your account already holds the
+   necessary role.
+5. Choose **Authorize application** only if you trust the application with
+   those permissions, or **Deny** to stop.
+
+Access tokens expire after **one hour**, but a client API grant can renew
+access for up to **90 days** without another prompt. Revoking the grant ends
+that renewal ability too. Password, passkey, login-session, and other
+account-security changes still use the instance's own browser screens.
+
+<Callout type="warning" title="Publishing tokens can outlast an application grant">
+  An app with publishing-integration permission can create a separate publishing token. Revoking the OAuth grant does
+  not revoke that token. Review publishing tokens separately in Settings → Integrations if the application created one;
+  see [Content webhook](/reference/content-webhook/).
+</Callout>
 
 ## Sign in to another service
+
+For a service requesting only **`read:accounts`**:
 
 1. Start sign-in on the other service and select your Omicron instance or handle.
 2. Your browser opens your instance's **Sign in with Omicron** page. If you are
@@ -39,14 +70,16 @@ service.
 
 1. Open **Settings → Integrations → Connected applications**.
 2. Find the application by its name and callback origin. Each row represents a
-   still-valid identity token and shows when it expires.
-3. Choose **Revoke** to invalidate that token immediately.
+   active grant and shows its permissions and expiry. A native callback may
+   appear as an application URI rather than a website origin.
+3. Choose **Revoke** to invalidate the grant and prevent token renewal.
 
-Revocation stops future identity verification with that token. It does not
+Revocation stops subsequent requests using that grant. It does not
 delete the account or session the other service has already created, erase
 identity information it previously received, or revoke another token issued by
 a separate approval. Sign out or remove your account on the other service if
 you also want to end its session or remove its stored information.
 
-Expired tokens disappear from the list. Publishing tokens are a separate
+An expired access token can remain listed while its grant can still renew.
+Expired grants disappear from the list. Publishing tokens are a separate
 integration with different permissions; see [Content webhook](/reference/content-webhook/).

@@ -1,0 +1,258 @@
+---
+title: Third-party clients
+description: Build independent Omicron apps with registered applications, scoped OAuth, PKCE, and the shared JSON API.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Independent clients can use Omicron's reading, publishing, social, and
+administration APIs with permissions approved by the account owner. There is
+no developer-account requirement or administrator approval step for registering
+an application on an instance.
+
+Authorization follows the application-registration and browser-consent model
+used by Mastodon, but the resource API is **Omicron's `/api`**, not Mastodon's
+statuses/timelines API. Existing Mastodon clients cannot connect unchanged.
+ActivityPub handles communication between instances, not application sign-in.
+
+<Callout type="note" title="Check the instance's capabilities">
+  This guide requires a release with `GET /api/client`. An older identity-only instance cannot issue general API grants.
+  If discovery is unavailable, explain that the instance needs an upgrade; do not ask for its account password as a
+  fallback.
+</Callout>
+
+## Discover the API
+
+Use the instance's canonical HTTPS origin. Read these endpoints without sending
+any account credentials:
+
+| Endpoint                                      | Use                                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| `GET /api/instance`                           | Instance settings and federation availability                            |
+| `GET /api/client`                             | API version, supported scopes, token lifetimes, and delegated operations |
+| `GET /.well-known/oauth-authorization-server` | Issuer and OAuth endpoint/authentication metadata                        |
+
+Discovery works with federation disabled. `/api/client` currently reports
+`apiVersion: 1` and `apiBase: "/api"`. Its `operations` array provides the exact
+HTTP method, path template, and required scope for each delegated operation.
+Encode substituted path segments; do not treat `:id` as a literal identifier.
+
+Allow additional response fields and capabilities. Changes that remove or
+change existing contract fields require an API-version change. Use the
+[HTTP API](/reference/http-api/) and [admin API](/reference/admin-api/) references
+for payloads. The application repository's
+[client contract](https://github.com/the-jk-labs/omicron/blob/main/CLIENT_API.md)
+also links the typed requests and serializers.
+
+## Register your application
+
+`POST /api/v1/apps` accepts JSON or `application/x-www-form-urlencoded`.
+
+```json
+{
+  "client_name": "Example writing app",
+  "redirect_uris": ["org.example.writer:/oauth/callback"],
+  "scopes": "read write",
+  "token_endpoint_auth_method": "none",
+  "website": "https://writer.example"
+}
+```
+
+| Field                        | Rule                                                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `client_name`                | Required; nonblank, up to 100 characters                                                                    |
+| `redirect_uris`              | Required; array or whitespace-separated string, one to ten exact callbacks, up to 8,192 characters in total |
+| `scopes`                     | Space-separated supported scopes; omission defaults to identity-only `read:accounts`                        |
+| `token_endpoint_auth_method` | `none` for public clients; otherwise `client_secret_basic` or `client_secret_post`                          |
+| `website`                    | Optional HTTPS application website; loopback HTTP is allowed for development                                |
+
+Native applications and browser-only apps should register as **public clients**
+with `none`. The response supplies a `client_id` but no `client_secret`.
+Secrets distributed inside an installed app or browser bundle are not secret.
+
+Server-side applications can use confidential registration, the default when
+the authentication method is omitted. Store the returned `client_secret` on
+the server; it is shown only once. At token/revocation endpoints, authenticate
+using HTTP Basic or body credentials, never both. For Basic, form-encode the ID
+and secret individually before joining them with `:` and base64-encoding.
+
+Registration responses include `scopes` and `redirect_uris`. Confidential
+responses use `client_secret_expires_at: 0` for a secret with no scheduled
+expiry. The empty legacy `vapid_key` does not imply push-notification support.
+Save registrations per instance, not globally. Public and API-client
+registrations are retained through inactivity; only unused, never-approved
+legacy confidential identity registrations are eligible for 30-day cleanup.
+
+### Callback rules
+
+Use an HTTPS callback, a loopback HTTP callback, or a reverse-domain native
+scheme such as the example above. Register the selected loopback port before
+authorization. The full callback, including its query string, must match
+exactly; the authorization parameter limit is 2,048 characters.
+
+Callbacks cannot contain credentials, fragments, wildcards, or existing `code`,
+`state`, `error`, or `error_description` parameters. Executable schemes and
+out-of-band code display are not accepted. Prefer OS-verified HTTPS app links
+when available; use PKCE for either callback style.
+
+## Get the account owner's consent
+
+Generate a fresh random `state` and a 43–128-character PKCE `code_verifier`
+using OAuth's unreserved ASCII characters. Retain them with the pending
+instance/authorization attempt. Derive the challenge as unpadded base64url of
+the verifier's SHA-256 digest.
+
+Open `/oauth/authorize` in the system browser with URL-encoded parameters:
+
+| Parameter               | Value                                                                |
+| ----------------------- | -------------------------------------------------------------------- |
+| `client_id`             | Registered application ID                                            |
+| `redirect_uri`          | Exact registered callback                                            |
+| `response_type`         | `code`                                                               |
+| `scope`                 | Permissions requested for this account, within the registered scopes |
+| `state`                 | Your saved, unpredictable request-binding value                      |
+| `code_challenge`        | Derived SHA-256 challenge                                            |
+| `code_challenge_method` | `S256`                                                               |
+
+PKCE is mandatory for API access and public clients. The account owner signs
+in on the instance and sees the application, account, return destination, and
+permissions before deciding. Consent tickets last ten minutes and are tied to
+the exact live browser session.
+
+The callback contains either a one-use `code` or `error=access_denied`, plus the
+original `state`. Check the destination and saved state before handling either
+result. Authorization codes expire after five minutes. Clear the local pending
+attempt after handling it; do not log callback queries, codes, or verifiers.
+
+## Exchange the code
+
+Send JSON to `POST /oauth/token`:
+
+```json
+{
+  "client_id": "<application ID>",
+  "grant_type": "authorization_code",
+  "redirect_uri": "org.example.writer:/oauth/callback",
+  "code": "<callback code>",
+  "code_verifier": "<saved verifier>"
+}
+```
+
+Public clients omit the secret; confidential applications also authenticate.
+The response contains `access_token`, `refresh_token`, `token_type: "Bearer"`,
+`scope`, `created_at`, and `expires_in`. A grant consisting solely of
+`read:accounts` is instead a non-renewable identity grant; see
+[Identity OAuth](/reference/identity-oauth/).
+
+Attach the access token as `Authorization: Bearer <access_token>` on requests
+to the same instance's API. Do not mint a Better Auth JWT or collect session
+cookies. Keep credentials isolated by instance and account, protected at rest,
+and away from remote-media requests and logs.
+
+Browser apps use `credentials: "omit"`. Bearer-token CORS and preflights are
+supported, but cross-origin session cookies are not. Use JSON for browser
+mutations, including token exchange/revocation, to avoid SvelteKit's
+cross-origin form checks when developing through its proxy.
+
+## Choose permissions
+
+`read write` covers ordinary client features. Each broad scope includes its
+`read:*` or `write:*` children, but **never** administration scopes. Narrow
+clients can request only the categories they use:
+
+| Scopes                                                     | Feature                                                                     |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `read:accounts`                                            | Minimal public identity verification only                                   |
+| `read:profile`, `write:accounts`                           | Account/profile details and profile, avatar, privacy, or preference editing |
+| `read:posts`, `write:posts`                                | Feeds, posts, drafts, scheduling, publishing, likes, and recommendations    |
+| `read:comments`, `write:comments`                          | Comments, replies, and comment likes                                        |
+| `read:lists`, `write:lists`                                | Public/private reading lists and saved posts                                |
+| `read:follows`, `write:follows`                            | People/tag follows, followers, and follow requests                          |
+| `read:mutes`, `write:mutes`, `read:blocks`, `write:blocks` | Local and remote account safety controls                                    |
+| `read:notifications`, `write:notifications`                | Notifications and read state                                                |
+| `read:analytics`                                           | Writer statistics                                                           |
+| `read:search`                                              | People, tag, and article search                                             |
+| `write:media`                                              | Image uploads and stock-photo providers                                     |
+| `write:reports`                                            | Reporting content/accounts                                                  |
+| `read:integrations`, `write:integrations`                  | Publishing-token metadata and management                                    |
+| `admin:read`, `admin:write`                                | Role-permitted administration and moderation                                |
+
+Reading account details includes the login email; legacy `read:accounts` does
+not. Writing account preferences without a profile-read permission does not
+return that email. The instance's scope descriptions and operation list are
+the authoritative permission catalogue.
+
+An OAuth scope does not confer an admin/moderator role or override resource
+ownership, private-account visibility, instance settings, or rate limits.
+Moderators using ordinary content-write permissions do not automatically give
+their apps moderation powers. Account-security tasks and password-confirmed
+admin actions stay in the instance's browser UI (`/settings` or `/admin`), not
+in an app's password form. Usernames cannot be changed.
+
+<Callout type="warning" title="Publishing credentials are separate">
+  `write` includes publishing-token creation. A publishing token can remain usable after the OAuth grant is revoked.
+  Explain that consequence before creating one and remove publishing tokens separately when appropriate.
+</Callout>
+
+### Resource conventions
+
+Create a draft with `POST /api/posts` and a body such as
+`{ "title": "An article", "contentHtml": "<p>Text</p>", "status": "draft" }`.
+Publish through `PATCH /api/posts/:id`; schedule by using `status: "scheduled"`
+and an ISO `publishAt`. Clear `publishAt` when replacing a scheduled state.
+
+Editors can supply sanitized-on-write HTML without using Tiptap. Its optional
+`contentJson` field is opaque editor data; comments are plain text. Upload
+images as raw bytes with the correct image content type, not multipart data.
+Resolve root-relative media links against the connected instance.
+
+Treat IDs and cursors as opaque strings. Core paginated responses provide
+`items` and `nextCursor`; pass the cursor back unchanged and URL-encoded.
+Some administrative/photo/SEO endpoints use other collection or pagination
+shapes, so follow their endpoint-specific contract.
+
+`GET /api/v1/apps/verify_credentials` returns the current application's
+non-secret metadata and this grant's scopes. Public identity verification uses
+`GET /api/v1/accounts/verify_credentials` with `read:accounts` or `read`. These
+endpoints are not a complete Mastodon-compatible account model.
+
+## Renew or end access
+
+An access token lasts **one hour**. API grants support renewal up to **90 days
+from issuance**, without extending that absolute deadline. Request a replacement
+with `POST /oauth/token`, `grant_type: "refresh_token"`, `client_id`, and
+`refresh_token`, plus confidential authentication where applicable. Omit
+`scope` or send the unchanged approved scope.
+
+Persist the replacement access/refresh pair together. Only one refresh may be
+in flight per grant: both old credentials are replaced on success, and reusing
+an old refresh token revokes the grant and its successor. Do not automatically
+retry an ambiguous refresh after a network failure; start authorization again
+if the new pair cannot be recovered. Honor `expires_in`, which shortens near
+the absolute grant deadline.
+
+For sign-out, call `POST /oauth/revoke` using the application's authentication
+and a `token` value containing the current access token or a refresh token from
+that grant. Remove locally stored credentials and account data. Revocation
+returns `200 {}` for unknown/already-revoked credentials too and stops renewal.
+Users can revoke grants in [Connected applications](/using/connected-applications/).
+
+### Handle failures
+
+- OAuth errors return `error` and `error_description`. `invalid_grant` at
+  exchange/renewal requires a fresh authorization attempt.
+- `401 invalid_token` means the access credential is unavailable; renew once
+  if possible or return to authorization. Never fall back to an unrelated
+  browser session.
+- `403 insufficient_scope` advertises the required scope in
+  `WWW-Authenticate` where one exists. Additional permissions need new consent.
+  Other `403` responses can be ordinary ownership or role refusals.
+- Normal API errors use `{ error, field? }`; a proxy error need not be JSON.
+  Respect `429`, `Retry-After`, and [rate limits](/reference/rate-limits/#identity-oauth).
+- Suspension/deletion immediately stops API access and renewal. Current roles
+  are checked on each request. Federation-off instances still support local
+  clients; handle refusal of remote-only operations without disabling local
+  features.
+
+Operators enabling this on an older instance must follow the
+[third-party client upgrade steps](/self-hosting/upgrading/#third-party-clients).

@@ -7,7 +7,7 @@ import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
 media uploads, the federation inbox, remote-discovery browsing, and the content
-webhook, as well as identity OAuth and optional Umami Cloud collection.
+webhook, as well as OAuth authorization and optional Umami Cloud collection.
 
 ## The limiters
 
@@ -123,8 +123,9 @@ cascades to its posts, so the two grow and shrink together. Set the variable to
 
 ## Identity OAuth
 
-The [identity OAuth](/reference/identity-oauth/) endpoints have separate fixed
-source-IP budgets. They bypass the general API-write limiter; they do not share
+The [identity](/reference/identity-oauth/) and
+[client authorization](/development/third-party-clients/) endpoints have separate
+fixed source-IP budgets. They bypass the general API-write limiter; they do not share
 its per-user budget. These values are fixed in source rather than configured by
 individual environment variables.
 
@@ -136,6 +137,7 @@ individual environment variables.
 | `POST /oauth/token`                       | 60               | 1 minute |
 | `POST /oauth/revoke`                      | 60               | 1 minute |
 | `GET /api/v1/accounts/verify_credentials` | 120              | 1 minute |
+| `GET /api/v1/apps/verify_credentials`     | 120              | 1 minute |
 | `GET /api/oauth/connections`              | 60               | 1 minute |
 | `DELETE /api/oauth/connections/:id`       | 30               | 1 minute |
 
@@ -143,6 +145,11 @@ OAuth JSON and form request bodies have a fixed **16,384-byte** cap, enforced
 while reading the body. Requests over the cap return `413`, including those
 without a `Content-Length` header. Disabling `RATE_LIMIT_ENABLED` also disables
 these rate budgets, but does not disable the body cap.
+
+The `/oauth/token` budget covers both code exchange and token renewal. Once an
+OAuth client calls an ordinary API resource, the usual API-write/upload budgets
+apply to the account owner; each application does not receive a separate
+per-user allowance.
 
 ## Umami Cloud
 

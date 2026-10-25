@@ -5,18 +5,22 @@ description: The JSON API under /api — authentication, posts, users, feeds, ta
 
 import Callout from "@/components/Callout.astro";
 
-The backend serves a JSON API under **`/api`**. The web app is its first
-consumer: the frontend reverse-proxies `/api/*` to the backend, so the browser
-talks to one origin, there is no CORS configuration, and the session cookie flows
-naturally.
+The backend serves a JSON API under **`/api`**, shared by the web app and other
+clients. The bundled Caddy gateway forwards it directly to the backend at the
+same public origin. SvelteKit also provides a proxy for development and SSR.
 
 ## Authentication
 
 Signing in creates a server-side session, represented by an **httpOnly cookie**
 backed by the Postgres `sessions` table. Browsers use that cookie directly.
 
-Non-cookie clients use a short-lived JWT. First establish a Better Auth session,
-then request a token and send it with normal API calls:
+**Independent clients should use [scoped OAuth](/development/third-party-clients/).**
+Applications register on an instance, request consent through its browser UI,
+and send the resulting access token with API requests. They do not need the
+account's password, cookie, or a second JWT exchange.
+
+First-party non-cookie clients can instead use the existing short-lived JWT
+transport: establish a Better Auth session, request a token, then send:
 
 ```http
 Authorization: Bearer <token>
@@ -33,38 +37,29 @@ the session before expiry, and never send either credential to another origin.
 Session revocation prevents a new token from being minted; an issued token stays
 valid until it expires.
 
-There is no general-purpose personal-access-token flow. [Identity
-OAuth](/reference/identity-oauth/) is separate: its `read:accounts` tokens can
-verify a consenting account's minimal public identity, but cannot authenticate
-the normal API. The [content webhook](/reference/content-webhook/) has another
-separate credential type: its per-user tokens can only publish posts.
+There is no general-purpose personal-access-token flow. OAuth API grants use
+explicit scopes and can renew for up to 90 days. Existing [identity-only
+grants](/reference/identity-oauth/) remain limited to public identity
+verification; they cannot read `/api/me` or authorize normal app operations.
+The [content webhook](/reference/content-webhook/) uses separate publishing
+credentials.
 
 ### Public gateway origin checks
 
-The public `/api` routes pass through SvelteKit before reaching the backend.
-Native and scripted clients should send the destination's origin on mutations,
-including bodyless requests such as liking a post:
+The updated bundled gateway routes `/api/*`, `/oauth/token`, and `/oauth/revoke`
+directly to the backend. Native API requests do not need to manufacture an
+`Origin` header, and API calls/preflights must not receive an Anubis challenge.
+Upgrades must [recreate Caddy](/self-hosting/upgrading/#third-party-clients) to
+activate that routing.
 
-```http
-Authorization: Bearer <token>
-Origin: https://your-instance.example
-```
+Browser OAuth clients use bearer-token CORS with `credentials: "omit"`.
+Cross-origin session cookies are not supported. When calling through a
+SvelteKit development proxy or an older/custom gateway, use JSON for mutations:
+its browser-origin protection can reject bodyless or form-content-type writes
+before the backend sees them. Do not disable browser CSRF checks globally.
 
-An origin contains the scheme, hostname, and non-default port, without a path or
-trailing slash. For example, an instance on port 8443 uses
-`https://your-instance.example:8443`; the default HTTPS port 443 is omitted.
-
-The gateway checks the origin for `POST`, `PUT`, `PATCH`, and `DELETE` requests
-that have no `Content-Type` or use a form content type. A missing or mismatched
-origin can return `403 Cross-site POST form submissions are forbidden` before
-the backend authenticates the request. A Bearer token does not bypass this check.
-Send `Content-Type: application/json` when submitting a JSON request body.
-
-The shipped gateway routes identity OAuth's machine endpoints directly to the
-backend rather than through this browser proxy. They accept JSON and
-form-encoded bodies without a browser `Origin` header; their confidential-client
-or identity-token checks still apply. The browser consent and connection APIs
-remain session-protected; see [Identity OAuth](/reference/identity-oauth/).
+OAuth consent and connected-application management still require a live
+same-origin browser session; tokens cannot replace it.
 
 ## Conventions
 
@@ -73,13 +68,23 @@ remain session-protected; see [Identity OAuth](/reference/identity-oauth/).
 - **Rate limiting.** Writes are throttled per signed-in user, or per IP when
   anonymous; reads are not throttled by the general limiter. A limited request
   gets `429` with `Retry-After`.
-- **Backend errors** are JSON, always the same shape — `{"error": "…"}` — with an
+- **Backend errors** normally use JSON `{"error": "…"}` with an
   appropriate status code. A request body that fails validation gets `400` and a
   message naming the field, for example
   `{"error":"displayName: Invalid input: expected string, received number"}`. A
   body that is not valid JSON gets `400` too, not `500`.
   Gateway rejections can instead return plain text, including the origin-check
   error above; check the response status and content type before decoding JSON.
+  OAuth failures additionally use protocol `error` and `error_description`
+  values; a scoped denial can return `403 insufficient_scope`.
+
+## Client discovery — `/api/client`
+
+`GET /api/client` is public and reports `apiVersion`, `apiBase`, OAuth metadata,
+token lifetimes, human-readable scope descriptions, and a method/path/scope
+list of delegated operations. It also identifies the browser account-security
+URL. Discover capabilities before asking for authorization; see
+[Third-party clients](/development/third-party-clients/).
 
 ## Health
 
@@ -90,20 +95,12 @@ remain session-protected; see [Identity OAuth](/reference/identity-oauth/).
 
 These sit at the root, not under `/api`.
 
-## Auth — `/api/auth`
+## Browser account security — `/api/auth`
 
-| Method   | Path               | Purpose                             |
-| -------- | ------------------ | ----------------------------------- |
-| `POST`   | `/register`        | Create an account                   |
-| `POST`   | `/login`           | Sign in, setting the session cookie |
-| `POST`   | `/logout`          | End the session                     |
-| `GET`    | `/me`              | The current user                    |
-| `DELETE` | `/me`              | Delete the account                  |
-| `POST`   | `/password/forgot` | Send a reset email                  |
-| `POST`   | `/password/reset`  | Complete a reset with a token       |
-| `POST`   | `/password/change` | Change password while signed in     |
-| `POST`   | `/email/verify`    | Verify an address with a token      |
-| `POST`   | `/email/resend`    | Resend the verification email       |
+Better Auth owns `/api/auth/*`; these are not general OAuth resource endpoints.
+Independent apps should open the instance's login/registration or `/settings`
+screens for credential, email, passkey, and session management. The full
+application profile is `GET /api/me`, not a separate `/api/auth/me` resource.
 
 ## Posts — `/api/posts`
 
