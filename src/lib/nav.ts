@@ -70,6 +70,7 @@ export const nav: NavSection[] = [
     items: [
       { slug: "development/architecture", label: "Architecture" },
       { slug: "development/local-setup", label: "Local setup" },
+      { slug: "development/third-party-clients", label: "Third-party clients" },
       { slug: "development/backend", label: "Backend guide" },
       { slug: "development/frontend", label: "Frontend guide" },
       { slug: "development/database", label: "Database and migrations" },

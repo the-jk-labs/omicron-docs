@@ -270,6 +270,68 @@ The backend re-applies saved scraper-shield and access-rule settings when Caddy
 is reachable after startup. FediDB still needs its own Omicron support change;
 upgrading the instance alone does not remove that service's software allowlist.
 
+## Third-party clients
+
+The scoped client-authorization release builds on identity OAuth. Migration
+`0044_unknown_nico_minoru` adds a refresh-token table and application/grant
+permission fields. Existing applications, consent requests, codes, and access
+tokens default to the original identity-only permission; an upgrade does not
+give an already-connected application new powers. Existing clients need new
+registration/consent to request broader API access.
+
+No environment variable is added. Update backend, frontend, and proxy routing
+together:
+
+1. Create a backup and confirm that the new snapshot exists:
+
+   ```bash
+   podman compose exec backup backup-now
+   podman compose exec backup restic snapshots
+   ```
+
+   Do not proceed on a failed backup or missing snapshot. Keep every named
+   volume, including database, uploads, certificates, and secrets.
+
+2. Pull a release containing the feature and recreate the affected services:
+
+   ```bash
+   git pull --ff-only
+   podman compose up -d --build --force-recreate backend frontend caddy backup
+   ```
+
+   Docker Compose users can substitute `docker compose`. The migration runs on
+   backend startup. Recreating Caddy loads the new API routing, while recreating
+   backend and backup refreshes their views of the bind-mounted `Caddyfile`.
+   A plain restart or an unchanged Caddy container can keep the old routing.
+
+3. Validate configuration and status:
+
+   ```bash
+   podman compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   podman compose ps
+   ```
+
+   Confirm `/api/client` reports API version 1, OAuth metadata uses the correct
+   canonical issuer, and API calls/preflights return API responses rather than
+   Anubis challenge HTML. Test browser sign-in, normal reading, client consent,
+   and revocation from Settings → Integrations → Connected applications.
+
+All `/api` paths, OAuth token/revocation transports, and root health/version
+routes go directly to the backend in the updated gateway. Browser consent
+remains in SvelteKit. The updated backend enforces
+[origin checks for cookie-authenticated writes](/reference/http-api/#public-gateway-origin-checks).
+Do not apply this Caddy routing to an older backend: that would remove
+SvelteKit's form-origin protection without replacing it.
+
+Custom proxies must preserve Authorization, the browser's unchanged Origin,
+methods, bodies, OAuth/CORS headers, and preflights; keep
+`/api/instance/tls-check` inaccessible publicly. Do not rewrite a client's Origin
+to the instance origin or remove CSRF checks to make a client work.
+
+See [Third-party clients](/development/third-party-clients/) for protocol and
+permission details. Existing Mastodon apps do not become compatible merely
+because the instance supports these authorization endpoints.
+
 ## Rolling back
 
 Check out the previous tag and rebuild:
