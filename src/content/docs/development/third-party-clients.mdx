@@ -154,6 +154,13 @@ supported, but cross-origin session cookies are not. Use JSON for browser
 mutations, including token exchange/revocation, to avoid SvelteKit's
 cross-origin form checks when developing through its proxy.
 
+Cookie-authenticated API writes are different: `POST`, `PUT`, `PATCH`, and
+`DELETE` require an `Origin` matching the configured instance, even with a JSON
+body. This is not a requirement to spoof `Origin` in your OAuth client. Native
+bearer-token clients can omit it; browser clients send their actual client
+origin automatically. Do not collect session cookies or disable CSRF checks as
+a workaround. See [HTTP API origin checks](/reference/http-api/#public-gateway-origin-checks).
+
 ## Choose permissions
 
 `read write` covers ordinary client features. Each broad scope includes its

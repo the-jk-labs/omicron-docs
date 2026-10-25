@@ -318,9 +318,15 @@ together:
 
 All `/api` paths, OAuth token/revocation transports, and root health/version
 routes go directly to the backend in the updated gateway. Browser consent
-remains in SvelteKit. Custom proxies must preserve Authorization, methods,
-bodies, OAuth/CORS headers, and preflights; keep `/api/instance/tls-check`
-inaccessible publicly. Do not remove browser CSRF checks to make a client work.
+remains in SvelteKit. The updated backend enforces
+[origin checks for cookie-authenticated writes](/reference/http-api/#public-gateway-origin-checks).
+Do not apply this Caddy routing to an older backend: that would remove
+SvelteKit's form-origin protection without replacing it.
+
+Custom proxies must preserve Authorization, the browser's unchanged Origin,
+methods, bodies, OAuth/CORS headers, and preflights; keep
+`/api/instance/tls-check` inaccessible publicly. Do not rewrite a client's Origin
+to the instance origin or remove CSRF checks to make a client work.
 
 See [Third-party clients](/development/third-party-clients/) for protocol and
 permission details. Existing Mastodon apps do not become compatible merely

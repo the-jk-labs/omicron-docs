@@ -47,16 +47,37 @@ credentials.
 ### Public gateway origin checks
 
 The updated bundled gateway routes `/api/*`, `/oauth/token`, and `/oauth/revoke`
-directly to the backend. Native API requests do not need to manufacture an
-`Origin` header, and API calls/preflights must not receive an Anubis challenge.
+directly to the backend. Native clients using a valid OAuth or JWT bearer token
+do not need to manufacture an `Origin` header, and API calls/preflights must not
+receive an Anubis challenge.
 Upgrades must [recreate Caddy](/self-hosting/upgrading/#third-party-clients) to
 activate that routing.
 
+**Cookie-authenticated writes require the instance's exact `Origin`.** For
+ordinary API resources, `POST`, `PUT`, `PATCH`, and `DELETE` requests using an
+active browser session must carry an `Origin` matching the configured instance
+origin, including its scheme, hostname, and port. Missing, `null`, or mismatched
+origins receive `403` with `{"error":"A same-origin request is required."}`.
+A sibling subdomain is a different origin too.
+
+This backend check applies regardless of content type, including JSON, raw
+uploads, and bodyless writes, even when Caddy bypasses SvelteKit. `GET`, `HEAD`,
+and `OPTIONS` do not require an origin for this cookie check. The trusted origin
+comes from the instance's runtime configuration, not caller-supplied Host or
+forwarded-host headers. Browser fetch supplies `Origin` on writes; proxies must
+preserve it unchanged.
+
 Browser OAuth clients use bearer-token CORS with `credentials: "omit"`.
-Cross-origin session cookies are not supported. When calling through a
-SvelteKit development proxy or an older/custom gateway, use JSON for mutations:
-its browser-origin protection can reject bodyless or form-content-type writes
-before the backend sees them. Do not disable browser CSRF checks globally.
+Cross-origin session cookies are not supported. The cookie-write origin check
+does not restrict a request authenticated by a valid OAuth or JWT bearer token,
+even if a cookie is also present. Browser clients send their actual origin;
+they must not try to impersonate the instance's origin.
+
+When calling through a SvelteKit development proxy or an older/custom gateway,
+use JSON for bearer-token mutations: its browser-origin protection can reject
+bodyless or form-content-type writes before the backend sees them. JSON does
+not bypass the backend's cookie-write check. Do not disable browser CSRF checks
+globally.
 
 OAuth consent and connected-application management still require a live
 same-origin browser session; tokens cannot replace it.
@@ -73,8 +94,9 @@ same-origin browser session; tokens cannot replace it.
   message naming the field, for example
   `{"error":"displayName: Invalid input: expected string, received number"}`. A
   body that is not valid JSON gets `400` too, not `500`.
-  Gateway rejections can instead return plain text, including the origin-check
-  error above; check the response status and content type before decoding JSON.
+  SvelteKit or custom-gateway rejections can instead return plain text; check
+  the response status and content type before decoding JSON. The backend's
+  cookie-origin rejection uses the normal JSON error shape shown above.
   OAuth failures additionally use protocol `error` and `error_description`
   values; a scoped denial can return `403 insufficient_scope`.
 
