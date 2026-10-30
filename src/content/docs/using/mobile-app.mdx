@@ -1,298 +1,128 @@
 ---
-title: Android app
-description: Connect the Android app, read posts, interact with writers, and manage your account session.
+title: Mobile app
+description: The Omicron app for Android and iOS — connect an instance, read, write, and manage your account.
 ---
 
-The Android app supports guest reading, signed-in feeds and social actions,
-reading lists, a writer dashboard, notifications, and local or federated
-profiles. The instance you choose must use HTTPS.
+import Callout from "@/components/Callout.astro";
+
+The Omicron app for Android and iOS covers what the web app does: reading,
+writing, following, lists, notifications, settings, and moderation. It connects
+to one Omicron instance at a time and needs no Google Play Services.
 
 ## Choose an instance
 
-1. Open the app and enter your instance address, such as
-   `https://omicron.blog`.
-2. Select **Continue** after the app confirms the instance.
-3. Select **Change instance** at any time to connect to another server.
+On first launch, choose **omicron.blog** (the main instance) or select
+**Another instance** and enter an address such as `example.com`. The app checks
+that the server is an Omicron instance that has finished its setup before
+connecting.
 
-The app keeps each instance's session separate. Changing instances never sends
-an existing session to the new server.
+To switch, open **Settings → Change instance**. That signs you out of the
+current instance. Each instance keeps its own session and saved data, and the
+app never sends one instance's session to another.
 
 ## Sign in or create an account
 
-Use your email address or username and password to sign in. A username may be
-entered with or without its leading `@`.
+Sign in with your **username or email** and password. Passkeys are not
+supported in the app yet; sign in with your password.
 
-To create an account, select **Create an account** and provide a username,
-email address, and password. Usernames use 3 to 30 lowercase letters, numbers,
-or underscores. Passwords must be 12 to 128 characters.
+To create an account, select **Sign in**, then create one with a username,
+email address, and password. The username is permanent: it is your address on
+the fediverse. Passwords are 12 to 128 characters. If the instance requires a
+confirmed email, the app shows **Check your inbox**; open the link, then sign
+in. **Resend confirmation link** sends a fresh one.
 
-If you need another account on the same instance, sign out first, then sign in
-with the other account.
-
-## Confirm your email
-
-An instance can require new accounts to confirm their email address. In that
-case, the app shows **Check your inbox** after registration or an unverified
-sign-in attempt. Open the confirmation link in your email, then return to the
-app and sign in.
-
-The confirmation link opens the instance's web verification page. Android App
-Links are not currently available for this handoff.
+**Forgot password** sends a reset link to your email. If the instance cannot
+send email yet, the app says so; ask its administrator instead.
 
 ## Navigate the app
 
-The top bar provides **Search** and a theme toggle. When signed in, it also shows
-a notification bell with an unread count and an account menu. The bell opens a
-recent-notification preview; opening it marks unread notifications as read.
-Select **See all** to open the full notifications screen. When signed out, use
-the top-bar gear to open Settings.
+Signed in, the bottom bar holds **Home**, **Lists**, **Write**, **Stats**, and
+your **Profile**. Signed out, it holds **Home**, **Search**, and **Sign in**.
 
-Signed-in readers also have a bottom navigation bar:
+Home's header has **Notifications** (with the unread count) and **Search**.
+Your avatar opens the account menu: **Your posts**, **Follow requests**,
+**Settings**, and, for moderators and admins, **Moderation**.
 
-| Destination | Opens                                    |
-| ----------- | ---------------------------------------- |
-| **Home**    | The For you, Local, and Global feeds     |
-| **Lists**   | Your reading lists, including Read later |
-| **Write**   | A new post in the composer               |
-| **Stats**   | Your writer dashboard                    |
-| **Profile** | Your profile                             |
+## Read
 
-The account menu links to **Profile**, **Write**, **Your posts**, **Lists**,
-**Stats**, **Settings**, and **Sign out**. Guests can read the public Home feeds
-and use Search, but do not see the signed-in bottom navigation.
+Home shows **For you**, **Local**, and **Global**; choose which one it opens on
+in **Settings → Preferences**. Open a post to read it, then like, recommend,
+comment, share, or save it to a list. Search covers articles, people, and tags;
+its **Surprise me** button opens a random post.
 
-## Read posts
+Links to profiles, posts, tags, and lists on the connected instance open
+in the app; other links open in the browser.
 
-After connecting, browse **Global** and **Local** as a guest. When signed in, the
-**For you** feed adds posts from writers you follow and posts they recommend.
-Select a post's title, summary, or image to read its article, then continue to
-related posts below it. Author names open profiles, and topic tags open their
-tag pages.
+## Comments
 
-If your session expires while using **For you**, the app switches to **Global**
-and shows a sign-in action. After signing in again, select **Continue reading**
-to return to the screen you were using.
-
-### Returning to Home
-
-After you have loaded Home, later launches can show its saved feed cards while the
-app checks your session and refreshes posts in the background. Saved cards remain
-readable during a connection problem; retry the session or feed update from the
-message shown on screen. Account actions stay unavailable until the app confirms
-your session and loads a fresh feed. A rejected session or feed request removes
-the affected saved account cards rather than treating them as current content.
-
-Home data is encrypted on the device and kept separate for the selected instance
-and account. It holds up to 30 card previews (within a 1 MiB limit); feed previews
-expire after 24 hours and cached account details after 30 days. Signing out clears
-the saved Home data. A new installation or a Home feed that has not loaded before
-still needs a network connection to show posts. These startup previews are
-separate from **Settings → Offline reading** and do not include full article text.
-
-## Interact with posts and comments
-
-Use the actions on a feed card or open a post to **Like**, **Recommend**, or
-**Save for later**. Recommendations are reposts that federate to followers; see
-[Recommending](/using/reading/#recommending). **Save for later** adds the post
-to your private [Read later list](/using/lists/#read-later). Select an active
-action again to unlike, remove the recommendation, or remove the saved post.
-
-### Responses and replies
-
-1. Open an article and select its comment-count action to move to **Responses**.
-2. Sign in, then enter a response in **What are your thoughts?** and select
-   **Respond**. Responses are plain text, support multiple lines, and can contain
-   up to 2,000 characters. Wait for the initial responses list to finish loading
-   before submitting.
-3. Select **Reply** on a comment to move to the response composer. It shows
-   **Replying to** the selected author and focuses the reply field. Select
-   **Respond** to send the reply, or **Cancel reply** to return to a top-level
-   response. Changing or cancelling the reply target keeps the unfinished text.
-
-While sending, the field and reply-target controls are disabled. The new response
-shows **Posting…** and has no action controls until the server confirms it. The
-field clears after a successful submission. Replies to replies stay in the same
-top-level thread.
-
-Select a response's heart to like it; select the active heart again to unlike it.
-Your own responses also offer **Edit** and **Delete**. After editing, select
-**Save**. Deleting asks for confirmation. Deleting a top-level response also
-removes its replies and cannot be undone.
-
-### Failed actions and retries
-
-If an action fails, the app restores only that action's previous state and count;
-another successful like or recommendation stays active. Article errors appear
-beside the affected action, comment, or editor.
-
-| Feedback                  | Recovery                                                                               |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| Offline or failed request | Restore your connection if needed, then select **Try again** beside the failed action. |
-| Expired session           | Select **Sign in**, authenticate again, and return to the article.                     |
-| Action not allowed        | The account is not permitted to perform the action; the error has no retry button.     |
-
-A failed response keeps its text and reply target so **Try again** sends it to
-the same thread. A failed edit keeps the edited text ready to save again. Retrying
-a failed deletion asks for confirmation again. **Try again** for a failed Read
-later save or removal repeats that action.
-
-Response drafts and retry state are held in memory. They are not saved as offline
-drafts or queued to send automatically when connectivity returns.
-
-## Open profiles
-
-Select a writer's name on a post, or **Profile** in the account menu or bottom
-navigation, to open a profile. Profiles include **Articles**,
-**Recommendations**, and **About**.
-On an unlocked local profile, the **Followers** and **Following** counts open a
-separate people screen. Switch between the counted tabs, then select a person's
-avatar or name to open their profile. Remote profiles show the follower and
-following counts available from the remote instance, but do not have member
-lists. A private local profile keeps its counts visible, but its member lists
-stay hidden until you are an approved follower.
-
-Each person in a member list has a **Follow** action. Sign in to follow someone;
-the button then shows **Following** or, for a private local account, **Requested**
-until the writer approves you. Selecting **Following** asks you to confirm before
-unfollowing. Cancelling a pending **Requested** follow also asks for confirmation.
-On your own Following list, a successful follow or unfollow updates the list and
-count. Open **More actions** (the ellipsis button) on another writer's profile to
-mute or block them. A block also ends the follow relationship. Links in **About**
-open outside the app. Remote profiles and actions require federation to be enabled
-on the instance.
-
-If a local profile is private, you can still see its public header and counts, but
-its posts and member lists stay hidden until you are an approved follower.
+Comments are plain text, up to 2,000 characters. Reply to a comment, like it,
+or edit and delete your own.
 
 ## Write and manage posts
 
-Sign in, then select **Write** in the bottom navigation or account menu to open a
-new post.
-The composer supports a title and body blocks (paragraphs, headings, lists,
-quotes, code, and images), plus an optional description, tags, language, and
-banner. Save a draft, publish now, or schedule it for a later time. Scheduled
-times use your phone's timezone.
+**Write** opens the composer: a title and a rich-text body with headings,
+lists, quotes, code blocks, tables, dividers, links, and images. **Story
+settings** holds the banner, summary, tags, language, and the
+[AI-assisted](/using/writing/) disclosure. Publish now, save as a draft, or
+schedule for at least five minutes from now.
 
-The title and body are the main writing area. Use the **Add block** toolbar below
-the document to insert a paragraph, heading, quote, code block, list, divider, or
-image; each tool has its own icon and label. A new text block opens ready for
-typing. Use the block's **More actions** menu to remove it.
+**Your posts** (in the account menu) has **Drafts**, **Scheduled**, and
+**Published** tabs. From there you can open a post in the editor, publish a
+scheduled post now, unschedule it, move a published post back to drafts, or
+delete one. Deleting cannot be undone.
 
-Select **Post details** to add an optional cover, description, tags, or language.
-You can collapse this section while writing; its values stay in the post. **Save
-draft** and **Publish** stay above the document. To schedule a post, open
-**Publishing options** beside **Publish** and select **Schedule**. While the
-keyboard is open, the block toolbar remains above it and the bottom navigation
-is hidden.
+## Lists
 
-To manage posts, open **Your posts** in the account menu or select **Manage posts**
-on your own profile.
-The screen has **Drafts**, **Scheduled**, and **Published** tabs with a count on
-each. Select **Load more** when a list has another page.
+**Lists** shows **Read later** and your own lists. Create a list with a title,
+description, and an optional **Private list** switch. Save any post to a list
+from the post itself. See [Lists and read later](/using/lists/).
 
-| Tab           | Available actions                                                                                                 |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Drafts**    | Continue editing, schedule, or delete. Deleting asks for confirmation.                                            |
-| **Scheduled** | Continue editing, reschedule, publish now, unschedule back to a draft, or delete. Deleting asks for confirmation. |
-| **Published** | View, edit, unpublish back to a draft, or delete. Unpublish and delete ask for confirmation.                      |
+## Stats
 
-Drafts and scheduled posts autosave after you pause editing. Editing a scheduled
-post this way keeps its scheduled time; selecting **Save draft** explicitly
-unschedules it.
-Published edits are not autosaved: select **Save changes** to update the live
-post. It remains published, and the update is queued for remote followers.
-Unpublishing makes the post a draft and sends a deletion to remote followers, but
-remote servers are not guaranteed to remove every copy.
-
-## Reading lists
-
-Select **Lists** in the bottom navigation or account menu to open your lists.
-**Read later** is pinned at the top. Select **New list** to create a public or
-private list, then select a list to browse its articles. Longer lists use **Load
-more** to retrieve the next page.
-
-The bookmark action on a feed card or article adds or removes it from **Read
-later**. Open **Settings → Offline reading** to manage public articles cached on
-the device; offline copies are separate from reading lists.
-
-## Writer dashboard
-
-Select **Stats** in the bottom navigation or account menu to open your dashboard.
-It shows aggregate views when the instance enables view counting, plus likes,
-comments, engagement, followers, a views-over-time chart, and per-post totals.
-The dashboard reports aggregate counts only; it does not identify readers.
-When view counting is disabled, the views metrics are omitted.
-
-## Notifications
-
-The signed-in top-bar bell shows the unread count and a recent-notification
-preview. Opening the preview or the full screen marks notifications as read.
-Select **See all** to open the full list. Select a notification to open the
-related article or writer profile; use **Load more** to fetch older
-notifications.
+**Stats** is your [writer dashboard](/using/analytics/) over the last 7, 30, or
+90 days: views (when the instance counts them), likes, comments, and new
+followers, beside all-time totals and per-post figures.
 
 ## Settings
 
-When signed out, select the top-bar gear. When signed in, open **Settings** from
-the account menu. The screen remains available when signed out.
+| Section          | What it holds                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| **Profile**      | Photo, name, bio, links, public email, topics, and the About section (Markdown, with a preview) |
+| **Account**      | Email, password, signed-in devices, delete account                                              |
+| **Privacy**      | Private account; muted and blocked accounts                                                     |
+| **Preferences**  | Theme, the feed Home opens on, feed languages, AI-assisted posts, followed tags                 |
+| **Integrations** | Publishing tokens and connected applications                                                    |
 
-| Setting             | What it does                                                                                                                                                                                                     |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Instance**        | Shows the connected instance. Select **Change instance** to open the connection screen, then choose another address there.                                                                                       |
-| **Appearance**      | Choose **System**, **Light**, or **Dark**. The preference is saved on this device across restarts and instance changes. **System** follows Android's current appearance. It is not synced with your web account. |
-| **About Omicron**   | Identifies the app and its license.                                                                                                                                                                              |
-| **Offline reading** | Opens public articles saved on this device for the selected instance.                                                                                                                                            |
-| **Account**         | Shows the signed-in account and provides **Sign out**, or offers **Sign in** when signed out.                                                                                                                    |
+The **App** section links to the instance's About page, rules, and privacy
+policy, the source code, and the licence, and offers **Open on the web**,
+**Change instance**, and **Sign out**.
 
-Signing out clears the saved session on this device even when the instance cannot
-confirm the remote sign-out. In that case, Settings displays a warning.
+**Account** works like [Account and security](/using/account/) on the web:
+change your email (with a 6-digit code) or password, sign out other devices, or
+delete your account. **Passkeys** opens the instance's web settings, where
+passkeys are managed.
 
-### Offline reading
+## Moderation
 
-When you open a public article online, the app saves its article details on the
-device. Open **Settings → Offline reading** to see saved articles for the
-currently selected instance. Select **Read** to open one, **Remove** to remove
-an individual copy, or **Clear saved articles for this instance** to remove all
-of that instance's copies. Switching instances does not mix or clear their
-saved articles.
+Moderators and admins get **Moderation** in the account menu: open and resolved
+reports, and the user list (all, admins, suspended, unverified) with search.
+Resolve a report, optionally telling the author by email; remove a reported
+post or suspend an account. A post's menu also offers moderators **Mark as
+AI-assisted** or **Remove AI-assisted label**. Instance settings stay on the
+web. See [Moderation tools](/using/moderation/).
 
-Every article open checks the instance first. If a network connection fails, the
-app can show the saved copy, marked as possibly out of date. A server response
-such as **Not found** or a sign-in requirement is not replaced with cached content.
-This article library does not save drafts, scheduled posts, feed pages, comments,
-or account-specific likes and recommendations. The separate Home startup cache
-contains only the limited card previews described above.
+## Offline and updates
 
-Copies expire 30 days after their last online update. Across instances, the
-device cache is limited to 50 articles and 64 MB total; it removes the
-least-recently read copies first. Images use a separate 32 MB cache. An image
-may be missing if it was not downloaded before or has been evicted, and Android
-may clear that cache at any time.
+Everything the app has loaded is kept on the device for up to 7 days. Offline,
+it shows those saved posts with a **You're offline** banner and resumes when the
+connection returns. Search, moderation, and session lists are not saved.
 
-## Accessibility
-
-The Android reading and Settings screens support TalkBack and follow Android's
-font scale. Enable TalkBack in Android's accessibility settings to navigate
-controls by focus and hear their labels and selected states. Top-bar actions,
-account-menu items, bottom-navigation tabs, and article controls have accessible
-labels. The **For you**, **Local**, and **Global** scopes and bottom tabs expose
-their selected state. In Settings, **System**, **Light**, and **Dark** are radio
-choices with the selected appearance exposed to TalkBack. **Like**,
-**Recommend**, and **Save for later** expose whether each action is selected.
-Comment hearts expose their like count and selected state. Comment action rows
-wrap on narrow screens and at larger font scales, with 48dp minimum touch targets.
-
-Full-screen loading states keep progress centered and show a message describing
-what is loading. TalkBack exposes the same message on the progress indicator.
-
-Article headings are available for heading navigation. Inline article images use
-their supplied description when one is available; cover images and decorative
-images are not announced.
+When an instance runs a newer API than the app understands (its
+[`apiVersion`](/reference/http-api/#reports-instance-setup-seo) is ahead), the
+app shows a banner asking you to update it.
 
 ## Session security
 
-The app stores the session cookie securely on the device and only uses it with
-the instance that issued it. API access tokens remain in memory and are renewed
-before they expire. If the instance rejects a session, its saved cookie is cleared
-and the app offers a way to sign in again. Signing out removes the current
-in-memory session and asks the instance to end its session.
+The session is stored in the device's secure storage, separate for each
+instance, and is only ever sent to the instance that issued it. Other app data
+is kept in ordinary app storage and is excluded from Android backups.

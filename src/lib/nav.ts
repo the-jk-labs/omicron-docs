@@ -50,7 +50,7 @@ export const nav: NavSection[] = [
       { slug: "using/profiles", label: "Profiles" },
       { slug: "using/account", label: "Account and security" },
       { slug: "using/connected-applications", label: "Connected applications" },
-      { slug: "using/android", label: "Android app" },
+      { slug: "using/mobile-app", label: "Mobile app" },
       { slug: "using/reading", label: "Reading and following" },
       { slug: "using/lists", label: "Lists and read later" },
       { slug: "using/moderation", label: "Moderation tools" },
