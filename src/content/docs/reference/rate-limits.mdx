@@ -165,6 +165,20 @@ The rate checks also run on disabled collection and requests with privacy
 opt-outs. `RATE_LIMIT_ENABLED=false` disables the rate budgets, not the body
 cap for enabled collection.
 
+## Other fixed limits
+
+These sit on single endpoints, on top of the general write limiter, and are set
+in source rather than by their own variable:
+
+| Endpoint                                        | Budget                     | Keyed on       |
+| ----------------------------------------------- | -------------------------- | -------------- |
+| `POST /api/reports`                             | `RL_REGISTER_MAX` per hour | Source IP      |
+| `GET /api/photos/search`                        | 20 per minute              | Signed-in user |
+| `POST /api/setup/test-email`                    | 10 per 15 minutes          | Source IP      |
+| `POST /api/auth/email-otp/request-email-change` | 3 per minute               | Better Auth    |
+
+Reports reuse the registration budget, so raising `RL_REGISTER_MAX` raises both.
+
 ## Redis changes the semantics
 
 |                  | Without Redis       | With `REDIS_URL`        |
