@@ -53,25 +53,21 @@ About tab.
 
 ## Settings
 
-**Settings** (`/settings`) is organised into sections:
+**Settings** (`/settings`) has five tabs. The open tab is kept in `?tab=`, so
+it survives a reload and can be linked to.
 
-| Section               | What it controls                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Profile**           | Display name, bio, avatar, links, custom About section                                                  |
-| **Appearance**        | Theme: light, dark, or system                                                                           |
-| **Reading**           | Default feed tab, language filtering, and whether AI-assisted posts appear in in-app feeds and listings |
-| **Privacy**           | Follower approval and related visibility settings                                                       |
-| **Followed tags**     | The tags feeding your personalised timeline                                                             |
-| **Muted and blocked** | Accounts you have silenced, local or remote                                                             |
-| **Account**           | Email, password, and session management                                                                 |
-| **Delete account**    | Permanent removal                                                                                       |
-
-Changing your password sends a security notice to your login address. If you
-didn't make the change, follow the reset link in that email immediately.
+| Tab              | Sections                                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Profile**      | Display name, bio, avatar, links, custom About section                                                                             |
+| **Preferences**  | Appearance (light, dark, or system); Reading (default feed, language filter, whether AI-assisted posts appear); Followed tags      |
+| **Privacy**      | Private account (follower approval); muted and blocked accounts, local or remote                                                   |
+| **Account**      | Sign-in details, passkeys, active sessions, delete account — see [Account and security](/using/account/)                           |
+| **Integrations** | Publishing tokens for the [content webhook](/reference/content-webhook/); [connected applications](/using/connected-applications/) |
 
 ## Privacy and follower approval
 
-With approval enabled, inbound follows — local or federated — wait in
+Turn on **Private account** in Settings → Privacy so only followers you
+approve can read your articles. With approval enabled, inbound follows — local or federated — wait in
 **`/follow-requests`** until you approve or reject them. Nothing is delivered to
 an unapproved follower.
 
