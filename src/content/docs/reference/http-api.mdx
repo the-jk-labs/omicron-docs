@@ -146,6 +146,16 @@ application profile is `GET /api/me`, not a separate `/api/auth/me` resource.
 | `PATCH` / `DELETE` | `/:id/comments/:commentId`        | Edit / delete a comment                                                                                              |
 | `POST` / `DELETE`  | `/:id/comments/:commentId/like`   | Like / unlike a comment                                                                                              |
 
+Post payloads with an author carry the viewer's engagement: `likeCount`,
+`liked`, `commentCount`, `recommendCount`, `recommended`, and `saved` (`true`
+when the post is in one of the viewer's reading lists). Signed out, the
+booleans are `false`.
+
+Each comment's `author` is `{ id, username, displayName, avatarUrl, remote }`.
+`remote` is always present: `false` for a local account, `true` for a remote
+actor, whose `username` is its `user@host` handle. Replies nest in `replies`
+with the same shape.
+
 `GET /api/posts/random` returns `{"post": …}` or `{"post": null}` when no
 posts match. `scope` accepts `global` (the default), `local`, or `for-you`; the
 last requires a signed-in reader. `langMode=show|hide` and comma-separated
@@ -161,6 +171,17 @@ samples across the full eligible archive rather than a recent page, and returns
 | `GET`  | `/api/feed`      | The personalised feed     |
 | `GET`  | `/api/search`    | Posts, accounts, and tags |
 | `GET`  | `/api/dashboard` | Writer dashboard figures  |
+
+`GET /api/dashboard?days=N` covers the signed-in writer's published posts.
+`days` defaults to 30 and is clamped to 1–365. The response holds:
+
+| Field             | Contents                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| `onInstanceViews` | `false` when the instance disables view counting; view figures are then `0` and `series` empty    |
+| `totals`          | All-time `views`, `likes`, `comments`, and current `followers`                                    |
+| `period`          | `{ days, views, likes, comments, followers }` within the last `days`; `followers` counts new ones |
+| `series`          | Daily `{ day, views }` over the window                                                            |
+| `posts`           | Per post: `postId`, `title`, `slug`, `createdAt`, and all-time `views`, `likes`, `comments`       |
 
 ## Umami Cloud — `/api/site`
 
@@ -385,6 +406,11 @@ plus the contact and status links; each is `null` when the admin has not set
 it, in which case the page shows its built-in placeholder or environment
 fallback.
 
+It also reports `apiVersion`, the version of the API contract the instance
+speaks. It is bumped on every breaking change (a response field removed,
+renamed, or retyped), so a client older than the instance can tell its user to
+update.
+
 `GET /api/instance/tls-check?domain=…` is **internal only**: Caddy calls the
 backend directly before issuing a certificate. Both the public Caddy route and
 the frontend API proxy return `404` for it. A custom reverse proxy must preserve
@@ -399,6 +425,8 @@ Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).
 
 <Callout type="note" title="This is a route map, not a contract">
-  Request and response shapes evolve with the app. The authoritative definitions are `apps/backend/src/routes/` and the
-  serializers alongside them; the frontend's typed client in `apps/frontend/src/lib/api/` is the best worked example.
+  The authoritative response shapes are the zod/mini schemas in `packages/contract/src/index.ts` in the application
+  repository, one per payload, each field documented. The backend's tests prove its serializers fit them. Request bodies
+  are defined by the validators in `apps/backend/src/routes/`; the web app's typed client in
+  `apps/frontend/src/lib/api/` is the best worked example.
 </Callout>
