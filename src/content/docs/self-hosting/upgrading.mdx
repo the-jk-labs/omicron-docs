@@ -15,6 +15,35 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Better Auth, passkeys, and Android App Links
+
+This release updates Better Auth, enables native Omicron app sign-in, and allows
+passkey assertions on the instance's own origin. It also adds the optional
+Android App Links settings described in [Environment variables](/reference/environment/#android-app-links).
+No database migration is required.
+
+Before upgrading, create a backup and confirm the snapshot exists:
+
+```bash
+docker compose exec backup backup-now
+docker compose exec backup restic snapshots
+```
+
+For `omicron.blog`, set `ANDROID_APP_CERT_FINGERPRINTS` in the deployment
+`.env` to the SHA-256 fingerprints for the keys that sign the Android app.
+Leave it unset on instances that do not publish that app. Then rebuild and
+recreate the application services; Caddy must be recreated to load the updated
+`Caddyfile`:
+
+```bash
+docker compose up -d --build
+docker compose up -d --force-recreate caddy
+```
+
+Verify the public statement with
+`curl https://omicron.blog/.well-known/assetlinks.json`. The Android verifier
+and an installed release build still need to confirm the end-to-end link flow.
+
 ## Security-hardening upgrade
 
 The remote-image proxy, browser policy, and Caddy admin socket must ship
