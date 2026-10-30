@@ -21,13 +21,18 @@ upgrades, migrations, and anything involving the reverse proxy.
 
 ## Option B — run the apps directly
 
-You need **Deno**, **Node**, and a running **PostgreSQL** with `DATABASE_URL`
-set.
+You need **Deno** (it runs the backend), **Node 24+**, **pnpm 12.11+**, and a
+running **PostgreSQL** with `DATABASE_URL` set. A local `.env` is loaded too;
+variables already set in the environment win.
 
 ```bash
+# Once: the shared API contract both apps link
+cd packages/contract && pnpm install
+
 # Backend — http://localhost:8000
 cd apps/backend
-deno task dev
+pnpm install
+pnpm dev
 
 # Frontend — http://localhost:5173
 cd apps/frontend
@@ -45,12 +50,14 @@ Migrations run automatically on backend startup, so an empty database is fine.
 ## Checks before you push
 
 ```bash
-cd apps/backend  && deno task check && deno lint
-cd apps/frontend && pnpm check
+cd apps/backend  && pnpm fmt && pnpm check
+cd apps/frontend && pnpm fmt && pnpm check
 ```
 
-`deno task check` type-checks the backend, `deno lint` covers style, and
-`pnpm check` runs `svelte-check` against the frontend's TypeScript config.
+`pnpm check` runs [greenly](https://www.npmjs.com/package/greenly): in the
+backend `tsc`, oxfmt, oxlint, and the unit tests; in the frontend oxfmt,
+`svelte-check`, oxlint, and Vitest. Run `pnpm fmt` first so formatting never
+fails the check.
 
 <Callout type="note" title="Install the contract package first">
 Every app links `packages/contract`, the shared API schemas, so run
@@ -91,7 +98,7 @@ docker compose logs -f backend
 ```bash
 cd apps/backend
 # edit src/db/schema.ts, then:
-deno task db:generate     # writes new SQL into ./drizzle — commit it
+pnpm db:generate          # writes new SQL into ./drizzle — commit it
 ```
 
 See [Database and migrations](/development/database/).
@@ -99,8 +106,10 @@ See [Database and migrations](/development/database/).
 ## Project layout
 
 ```
-apps/backend/      Deno + Hono + Fedify + Drizzle
+apps/backend/      Hono + Fedify + Drizzle (runs on Deno)
 apps/frontend/     SvelteKit + Bits UI + Tailwind + Tiptap
+apps/mobile/       Expo (React Native) app for Android and iOS
+packages/contract/ zod/mini schemas for every API response
 docker-compose.yml The whole stack
 Caddyfile          Public entrypoint config
 install.sh         The one-line installer

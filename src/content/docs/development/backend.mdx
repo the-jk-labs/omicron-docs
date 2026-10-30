@@ -5,7 +5,17 @@ description: Working inside apps/backend — routes, services, repositories, the
 
 import Callout from "@/components/Callout.astro";
 
-Deno, Hono, Fedify, Drizzle, PostgreSQL.
+Hono, Fedify, Drizzle, PostgreSQL, Better Auth. Deno runs it in development and
+in the production container, but every command you run goes through **pnpm**,
+and the code stays runtime-agnostic: it must run unchanged on Node, Deno, and
+Bun.
+
+<Callout type="warning" title="No runtime-specific code">
+  Never use runtime globals (`Deno.*`, `Bun.*`) or runtime-specific import specifiers (`jsr:`, `npm:`, `bun:`, URL
+  imports). Import built-ins through `node:` (`node:fs/promises`, `node:crypto`, …) and prefer web-standard APIs. HTTP
+  is served through `srvx` in `src/main.ts`, which picks each runtime's native server; read the client IP from
+  `request.ip`.
+</Callout>
 
 ## Directory map
 
@@ -15,6 +25,7 @@ Deno, Hono, Fedify, Drizzle, PostgreSQL.
 | `src/services/`   | Business logic — no HTTP, no SQL                             |
 | `src/db/`         | Drizzle schema, migrations, and repositories                 |
 | `src/federation/` | ActivityPub, loaded only when federation is on               |
+| `src/auth/`       | Better Auth setup (accounts, sessions, passkeys)             |
 | `src/queue/`      | The `queue.add(name, payload)` abstraction and job handlers  |
 | `src/lib/`        | Small shared helpers (HTTP errors, rate limiting, body caps) |
 
@@ -48,26 +59,33 @@ postRoutes.get("/:id", async (c) => {
 `src/routes/index.ts` mounts every group under `/api`:
 
 ```ts
-apiRoutes.route("/auth", authRoutes);
+apiRoutes.route("/client", clientRoutes);
+apiRoutes.route("/me", meRoutes);
 apiRoutes.route("/posts", postRoutes);
-apiRoutes.route("/users", userRoutes);
 // …
 ```
 
 `src/app.ts` composes the whole application: the logger, the error handler,
-optional federation mounting, health routes, session middleware, the write rate
-limiter, and finally the API.
+client CORS and OAuth routes, optional federation mounting, health routes,
+Better Auth, session middleware, the rate limiters, and finally the API.
 
 ## Middleware order
 
 It matters, and it is deliberate:
 
 1. `logger()` and `onError` — always outermost.
-2. **Federation** paths (`/.well-known/`, `/users/`, `/inbox`, `/nodeinfo`) are
+2. **Client CORS** for bearer-token clients, then the **OAuth** routes
+   (`/.well-known/oauth-authorization-server`, `/oauth/*`, `/api/v1/*`,
+   `/api/oauth/*`).
+3. **Federation** paths (`/.well-known/`, `/users/`, `/inbox`, `/nodeinfo`) are
    intercepted before app routes when enabled.
-3. `sessionMiddleware` on `/api/*` — so later layers can key by user.
-4. The **write throttle** on `/api/*`, skipped for `GET`/`HEAD`/`OPTIONS`.
-5. The API routes themselves.
+4. Health routes (`/healthz`, `/version`).
+5. **Better Auth** on `/api/auth/*`, with its own session handling and rate
+   limits, ahead of the `/api/*` middleware.
+6. `sessionMiddleware` on `/api/*` — so later layers can key by user.
+7. The **write throttle** on `/api/*`, skipped for `GET`/`HEAD`/`OPTIONS`, then
+   the **upload throttle** on the three endpoints that store media.
+8. The API routes themselves.
 
 ## Rate limiting
 
@@ -100,15 +118,18 @@ there and calling `queue.add` from a service — never from a route.
 
 `src/federation/` is imported dynamically, only when federation is running:
 
-| File                        | Role                                                                         |
-| --------------------------- | ---------------------------------------------------------------------------- |
-| `mod.ts`                    | Fedify setup — actor, followers, outbox, inbox listeners, object dispatchers |
-| `actor.ts`                  | Building actor documents                                                     |
-| `article.ts`                | Mapping posts to ActivityPub objects                                         |
-| `deliver.ts`, `outbound.ts` | Sending activities                                                           |
-| `remote.ts`                 | Resolving and caching remote actors                                          |
-| `attribution.ts`            | Splicing Mastodon's `attributionDomains` into the actor doc                  |
-| `lists.ts`                  | Public reading lists as addressable objects                                  |
+| File                          | Role                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `mod.ts`                      | Fedify setup — actor, followers, outbox, inbox listeners, object dispatchers |
+| `actor.ts`                    | Building actor documents                                                     |
+| `article.ts`                  | Mapping posts to ActivityPub objects                                         |
+| `note.ts`                     | Federated replies: local comments ↔ ActivityPub `Note`s                      |
+| `deliver.ts`, `outbound.ts`   | Sending activities                                                           |
+| `remote.ts`                   | Resolving and caching remote actors                                          |
+| `outboundGuard.ts`, `ssrf.ts` | Guards for remote fetches that anonymous readers can trigger                 |
+| `nodeinfo.ts`                 | The NodeInfo document                                                        |
+| `attribution.ts`              | Splicing Mastodon's `attributionDomains` into the actor doc                  |
+| `lists.ts`                    | Public reading lists as addressable objects                                  |
 
 <Callout type="warning" title="Proxy scheme correction">
   Caddy terminates TLS and proxies over plain HTTP, so the request Fedify sees is `http://`. The app corrects the scheme
@@ -131,6 +152,9 @@ release.
 
 ```bash
 cd apps/backend
-deno task check     # type-check
-deno lint           # style
+pnpm fmt            # format first
+pnpm check          # tsc, oxfmt, oxlint, and the unit tests
 ```
+
+See [Contributing](/development/contributing/#the-workflow) for the
+integration suite.

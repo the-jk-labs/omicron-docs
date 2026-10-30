@@ -24,8 +24,9 @@ git clone https://github.com/the-jk-labs/omicron.git
 cd omicron
 git checkout -b your-change
 # … work …
-cd apps/backend  && deno task check && deno lint && deno fmt --check && deno task test
-cd apps/frontend && pnpm check
+cd apps/backend  && pnpm fmt && pnpm check
+cd apps/frontend && pnpm fmt && pnpm check
+cd apps/mobile   && pnpm fmt && pnpm check   # if you touched the app
 ```
 
 Each of these is a CI gate, so anything failing here fails the pull request
@@ -39,8 +40,14 @@ One CI gate is not in the list above, because it needs a database:
 
 ```bash
 cd apps/backend
-DATABASE_URL=postgres://… deno task test:integration
+DATABASE_URL=postgres://… pnpm test:integration
 ```
+
+Without `DATABASE_URL` it uses
+`postgres://omicron:omicron@localhost:5432/omicron_test` (`tests/test.env`), so
+any local Postgres with that role and database works, as does a throwaway
+`postgres:16-alpine` container. Vitest runs on Node, which must be **26+** for
+the built-in `Temporal` the federation code uses.
 
 It asserts on who can see what — drafts, private accounts, suspended authors —
 across feeds, tag pages, reading lists and the sitemap. Run it if you touched a
@@ -73,7 +80,7 @@ against its own throwaway Postgres either way.
 
 ## Migrations in a pull request
 
-Include the generated SQL from `deno task db:generate`, and state in the
+Include the generated SQL from `pnpm db:generate`, and state in the
 description whether the change is additive. A migration that drops or renames a
 column needs to be split across releases — see
 [Database and migrations](/development/database/).
