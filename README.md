@@ -33,6 +33,20 @@ Search uses [Pagefind](https://pagefind.app), whose index only exists after a
 build. In dev the search dialog falls back to matching page titles and
 descriptions, so it still works.
 
+## Dependency audit exception
+
+`pnpm audit --audit-level=low` remains the CI gate. One advisory has an explicit,
+owner-approved exception as of 2026-10-31:
+
+| Advisory                                                                 | Dependency path                                                    | Reason                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) | `@astrojs/svelte → @sveltejs/vite-plugin-svelte → deepmerge@4.3.1` | Low-severity prototype poisoning; no patched release is available. In this site, the plugin merges repository-controlled build configuration. The deployed output is static, not an HTTP service using deepmerge on visitor input. |
+
+This acknowledges the advisory; it does not patch `deepmerge` or ignore other
+advisories. Remove the exception when a patched release is available or the
+dependency is removed. Reassess it before introducing server rendering or
+externally supplied build configuration.
+
 ## Writing a page
 
 1. Add an `.mdx` file under `src/content/docs/`. The path becomes the URL:

@@ -47,6 +47,7 @@ export const nav: NavSection[] = [
     label: "Using Omicron",
     items: [
       { slug: "using/writing", label: "Writing posts" },
+      { slug: "using/import-export", label: "Import and export" },
       { slug: "using/profiles", label: "Profiles" },
       { slug: "using/connected-applications", label: "Connected applications" },
       { slug: "using/android", label: "Android app" },
