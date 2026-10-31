@@ -1,0 +1,128 @@
+---
+title: Mobile app
+description: The Omicron app for Android and iOS — connect an instance, read, write, and manage your account.
+---
+
+import Callout from "@/components/Callout.astro";
+
+The Omicron app for Android and iOS covers what the web app does: reading,
+writing, following, lists, notifications, settings, and moderation. It connects
+to one Omicron instance at a time and needs no Google Play Services.
+
+## Choose an instance
+
+On first launch, choose **omicron.blog** (the main instance) or select
+**Another instance** and enter an address such as `example.com`. The app checks
+that the server is an Omicron instance that has finished its setup before
+connecting.
+
+To switch, open **Settings → Change instance**. That signs you out of the
+current instance. Each instance keeps its own session and saved data, and the
+app never sends one instance's session to another.
+
+## Sign in or create an account
+
+Sign in with your **username or email** and password. Passkeys are not
+supported in the app yet; sign in with your password.
+
+To create an account, select **Sign in**, then create one with a username,
+email address, and password. The username is permanent: it is your address on
+the fediverse. Passwords are 12 to 128 characters. If the instance requires a
+confirmed email, the app shows **Check your inbox**; open the link, then sign
+in. **Resend confirmation link** sends a fresh one.
+
+**Forgot password** sends a reset link to your email. If the instance cannot
+send email yet, the app says so; ask its administrator instead.
+
+## Navigate the app
+
+Signed in, the bottom bar holds **Home**, **Lists**, **Write**, **Stats**, and
+your **Profile**. Signed out, it holds **Home**, **Search**, and **Sign in**.
+
+Home's header has **Notifications** (with the unread count) and **Search**.
+Your avatar opens the account menu: **Your posts**, **Follow requests**,
+**Settings**, and, for moderators and admins, **Moderation**.
+
+## Read
+
+Home shows **For you**, **Local**, and **Global**; choose which one it opens on
+in **Settings → Preferences**. Open a post to read it, then like, recommend,
+comment, share, or save it to a list. Search covers articles, people, and tags;
+its **Surprise me** button opens a random post.
+
+Links to profiles, posts, tags, and lists on the connected instance open
+in the app; other links open in the browser.
+
+## Comments
+
+Comments are plain text, up to 2,000 characters. Reply to a comment, like it,
+or edit and delete your own.
+
+## Write and manage posts
+
+**Write** opens the composer: a title and a rich-text body with headings,
+lists, quotes, code blocks, tables, dividers, links, and images. **Story
+settings** holds the banner, summary, tags, language, and the
+[AI-assisted](/using/writing/) disclosure. Publish now, save as a draft, or
+schedule for at least five minutes from now.
+
+**Your posts** (in the account menu) has **Drafts**, **Scheduled**, and
+**Published** tabs. From there you can open a post in the editor, publish a
+scheduled post now, unschedule it, move a published post back to drafts, or
+delete one. Deleting cannot be undone.
+
+## Lists
+
+**Lists** shows **Read later** and your own lists. Create a list with a title,
+description, and an optional **Private list** switch. Save any post to a list
+from the post itself. See [Lists and read later](/using/lists/).
+
+## Stats
+
+**Stats** is your [writer dashboard](/using/analytics/) over the last 7, 30, or
+90 days: views (when the instance counts them), likes, comments, and new
+followers, beside all-time totals and per-post figures.
+
+## Settings
+
+| Section          | What it holds                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| **Profile**      | Photo, name, bio, links, public email, topics, and the About section (Markdown, with a preview) |
+| **Account**      | Email, password, signed-in devices, delete account                                              |
+| **Privacy**      | Private account; muted and blocked accounts                                                     |
+| **Preferences**  | Theme, the feed Home opens on, feed languages, AI-assisted posts, followed tags                 |
+| **Integrations** | Publishing tokens and connected applications                                                    |
+
+The **App** section links to the instance's About page, rules, and privacy
+policy, the source code, and the licence, and offers **Open on the web**,
+**Change instance**, and **Sign out**.
+
+**Account** works like [Account and security](/using/account/) on the web:
+change your email (with a 6-digit code) or password, sign out other devices, or
+delete your account. **Passkeys** opens the instance's web settings, where
+passkeys are managed.
+
+## Moderation
+
+Moderators and admins get **Moderation** in the account menu: open and resolved
+reports, and the user list (all, admins, suspended, unverified) with search.
+Resolve a report, optionally telling the author by email; remove a reported
+post or suspend an account. A post's menu also offers moderators **Mark as
+AI-assisted** or **Remove AI-assisted label**. Instance settings stay on the
+web. See [Moderation tools](/using/moderation/).
+
+## Offline and updates
+
+Everything the app has loaded is kept on the device for up to 7 days. Offline,
+it shows those saved posts with a **You're offline** banner and resumes when the
+connection returns. Search, moderation, and session lists are not saved.
+
+When an instance runs a newer API than the app understands (its
+[`apiVersion`](/reference/http-api/#reports-instance-setup-seo) is ahead), the
+app shows a banner asking you to update it.
+
+## Session security
+
+The session is stored in the device's secure storage, separate for each
+instance, and is only ever sent to the instance that issued it. Other app data
+is kept in ordinary app storage and is excluded from Android backups.

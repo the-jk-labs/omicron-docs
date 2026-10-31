@@ -1,0 +1,85 @@
+---
+title: Account and security
+description: Your sign-in details, passkeys, sessions, changing your email or password, and deleting your account.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Everything here lives in **Settings → Account** (`/settings?tab=account`).
+Account-security changes always happen in the instance's own web pages: a
+[connected application](/using/connected-applications/) cannot make them for
+you.
+
+## Sign-in details
+
+| Detail       | Notes                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| **Username** | Your fediverse address, `@username@your-domain`. It is permanent and cannot be changed by anyone.       |
+| **Email**    | Your login email. Shows **Verified** or **Unverified**; an unverified address can resend its link here. |
+| **Password** | 12 to 128 characters.                                                                                   |
+
+You can sign in with either your username or your email. When the instance has
+the [leaked-password check](/reference/environment/#accounts) on (the default),
+a password found in a known breach is refused. Only a short hash prefix leaves
+the server for that check, never the password.
+
+<Callout type="note" title="Why the username is permanent">
+  Other servers store your follows, mentions and replies against `@username@your-domain`, and every profile and post
+  link is built from it. Renaming it would break all of them, and a freed name could be claimed by someone else. Your
+  **display name** can change freely in Settings → Profile.
+</Callout>
+
+## Changing your password
+
+Choose **Change password**, then enter your current password and the new one.
+Saving it signs out every other session, and a security notice goes to your
+login email. If you did not make the change, follow the reset link in that email
+immediately.
+
+Forgot it? Use **Forgot password** on the sign-in page; the reset link goes to
+your login email.
+
+## Changing your email
+
+**Change email** takes three steps:
+
+1. **Confirm your password.** The change has to follow a fresh password check,
+   within 15 minutes.
+2. **Enter the new address.** A 6-digit code is sent there. It lasts 10 minutes
+   and allows 5 attempts; you can request up to 3 codes a minute.
+3. **Enter the code.** The email changes, and every other session is signed
+   out.
+
+The old address then receives a notice with an **undo link**, valid for 7
+days. Use it if the change was not you: it puts the old address back and locks
+the account down as if it were stolen. Every session ends, all passkeys are
+removed, and the password is cleared. A password-reset link then goes to the
+restored address so you can get back in.
+
+<Callout type="warning" title="Undo is a lockdown, not a revert">
+  Following the undo link also cancels any later email change, and you have to set a new password and add your passkeys
+  again afterwards.
+</Callout>
+
+## Passkeys
+
+Passkeys sign you in with your fingerprint, face, or screen lock instead of a
+password. Add one under **Passkeys**; it is named after its provider (for
+example "Windows Hello" or "1Password") when that is known, and you can
+**Rename** it (up to 60 characters) or **Remove** it.
+
+Your login email gets a notice whenever a passkey is added or removed. The
+notice links back to this section so you can remove one you do not recognise.
+
+## Active sessions
+
+**Active sessions** lists every device signed in to your account, with your
+current one marked. Sign out a single device, or **Sign out all other
+sessions**. If you do not recognise a device, sign it out, then change your
+password. Sessions otherwise last 30 days.
+
+## Deleting your account
+
+**Delete account** asks for your password and permanently deletes your account,
+articles, and follows. See [Profiles](/using/profiles/#deleting-your-account)
+for what happens to copies already delivered to other servers.

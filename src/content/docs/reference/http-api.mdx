@@ -137,6 +137,7 @@ application profile is `GET /api/me`, not a separate `/api/auth/me` resource.
 | `GET`              | `/random?scope=&langMode=&langs=` | Choose a random post from a feed                                                                                     |
 | `GET`              | `/by/:username/:slug`             | A single post by its public URL                                                                                      |
 | `GET`              | `/:id`                            | A single post                                                                                                        |
+| `GET`              | `/:id/related`                    | Up to three posts to read next, topped up with recent posts                                                          |
 | `PATCH`            | `/:id`                            | Update a post                                                                                                        |
 | `DELETE`           | `/:id`                            | Delete a post                                                                                                        |
 | `POST` / `DELETE`  | `/:id/like`                       | Like / unlike                                                                                                        |
@@ -145,6 +146,16 @@ application profile is `GET /api/me`, not a separate `/api/auth/me` resource.
 | `POST`             | `/:id/comments`                   | Add a comment                                                                                                        |
 | `PATCH` / `DELETE` | `/:id/comments/:commentId`        | Edit / delete a comment                                                                                              |
 | `POST` / `DELETE`  | `/:id/comments/:commentId/like`   | Like / unlike a comment                                                                                              |
+
+Post payloads with an author carry the viewer's engagement: `likeCount`,
+`liked`, `commentCount`, `recommendCount`, `recommended`, and `saved` (`true`
+when the post is in one of the viewer's reading lists). Signed out, the
+booleans are `false`.
+
+Each comment's `author` is `{ id, username, displayName, avatarUrl, remote }`.
+`remote` is always present: `false` for a local account, `true` for a remote
+actor, whose `username` is its `user@host` handle. Replies nest in `replies`
+with the same shape.
 
 `GET /api/posts/random` returns `{"post": …}` or `{"post": null}` when no
 posts match. `scope` accepts `global` (the default), `local`, or `for-you`; the
@@ -161,6 +172,17 @@ samples across the full eligible archive rather than a recent page, and returns
 | `GET`  | `/api/feed`      | The personalised feed     |
 | `GET`  | `/api/search`    | Posts, accounts, and tags |
 | `GET`  | `/api/dashboard` | Writer dashboard figures  |
+
+`GET /api/dashboard?days=N` covers the signed-in writer's published posts.
+`days` defaults to 30 and is clamped to 1–365. The response holds:
+
+| Field             | Contents                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| `onInstanceViews` | `false` when the instance disables view counting; view figures are then `0` and `series` empty    |
+| `totals`          | All-time `views`, `likes`, `comments`, and current `followers`                                    |
+| `period`          | `{ days, views, likes, comments, followers }` within the last `days`; `followers` counts new ones |
+| `series`          | Daily `{ day, views }` over the window                                                            |
+| `posts`           | Per post: `postId`, `title`, `slug`, `createdAt`, and all-time `views`, `likes`, `comments`       |
 
 ## Umami Cloud — `/api/site`
 
@@ -201,6 +223,7 @@ Configuration uses the separate [admin-only API](/reference/admin-api/#umami-clo
 | ----------------- | ------------------------------------------------------------------ | -------------------------------- |
 | `PATCH`           | `/me`                                                              | Update the profile               |
 | `PATCH`           | `/me/privacy`                                                      | Update privacy settings          |
+| `PATCH`           | `/me/preferences`                                                  | `{ showAiAssistedPosts }`        |
 | `POST`            | `/me/custom-section/preview`                                       | Render the custom About Markdown |
 | `POST` / `DELETE` | `/me/avatar`                                                       | Upload / remove the avatar       |
 | `GET`             | `/me/follow-requests`                                              | Pending follow requests          |
@@ -233,7 +256,9 @@ Federated equivalents, keyed by handle (`user@domain`):
 
 | Method            | Path            | Purpose                 |
 | ----------------- | --------------- | ----------------------- |
-| `GET`             | `/`             | List tags               |
+| `GET`             | `/`             | Trending tags           |
+| `GET`             | `/suggest?q=`   | Composer autocomplete   |
+| `GET`             | `/search?q=`    | Search tags by name     |
 | `GET`             | `/following`    | Tags the user follows   |
 | `GET`             | `/:slug`        | One tag                 |
 | `GET`             | `/:slug/posts`  | Posts under a tag       |
@@ -306,9 +331,10 @@ concurrency budgets `429`.
 
 ## Share cards — `/api/og`
 
-| Method | Path             | Purpose                                                |
-| ------ | ---------------- | ------------------------------------------------------ |
-| `GET`  | `/posts/:id.jpg` | The card drawn for a post that has no image of its own |
+| Method | Path                      | Purpose                                                |
+| ------ | ------------------------- | ------------------------------------------------------ |
+| `GET`  | `/posts/:id.jpg`          | The card drawn for a post that has no image of its own |
+| `GET`  | `/profiles/:username.jpg` | A profile's card: its public header only, never posts  |
 
 A 1200×630 JPEG carrying the post's title, its author, and the instance —
 generated on first request and cached on disk. What a link-preview crawler
@@ -321,6 +347,11 @@ Answers `302` to the instance's brand image when no card can be drawn — a
 federated copy of someone else's post, an untitled one, or a title in a script
 the bundled font has no glyphs for. A redirect rather than a `404` because an
 `og:image` that fails puts no picture on the card at all.
+
+Profile cards are cached for a day rather than forever, since an edited
+profile draws a different card; the web app puts the profile's `updatedAt` in
+the URL. Private accounts get a card too, because it draws only the public
+header.
 
 Its own prefix rather than a path under `/api/posts/` so `robots.txt` can allow
 it by name — see [Discoverability](/self-hosting/discoverability/#robotstxt).
@@ -342,7 +373,7 @@ present. Unsplash joins it only when an admin has configured a key. Results from
 either provider come back in one shape, carrying the attribution to store with
 the post.
 
-`/use` exists for Unsplash's API terms, which require a per-photo call when an
+`/use` takes `{ provider, token }` and exists for Unsplash's API terms, which require a per-photo call when an
 image is actually used; it is a no-op for providers that ask for nothing.
 Search carries its own per-user rate limit on top of the general one, because a
 `GET` is not covered by the write throttle and both providers are shared
@@ -363,6 +394,18 @@ authenticates with a bearer credential in `X-Webhook-Secret` or
 tokens is an ordinary session-authenticated call, so a token cannot mint or
 revoke tokens. Full reference in
 [Content webhook](/reference/content-webhook/).
+
+## Email change undo — `/api/email-change`
+
+| Method | Path    | Purpose                                         |
+| ------ | ------- | ----------------------------------------------- |
+| `POST` | `/undo` | `{ token }` from the link sent to the old email |
+
+Public: the link reaches the old address, whose owner may be signed out. It
+restores the old email and locks the account down: every session ends, passkeys
+are removed, and the password is cleared, then a password-reset link goes to the
+restored address. Returns `{ email }`. Links last **7 days** and are single-use.
+See [Account and security](/using/account/#changing-your-email).
 
 ## Reports, instance, setup, SEO
 
@@ -385,6 +428,11 @@ plus the contact and status links; each is `null` when the admin has not set
 it, in which case the page shows its built-in placeholder or environment
 fallback.
 
+It also reports `apiVersion`, the version of the API contract the instance
+speaks. It is bumped on every breaking change (a response field removed,
+renamed, or retyped), so a client older than the instance can tell its user to
+update.
+
 `GET /api/instance/tls-check?domain=…` is **internal only**: Caddy calls the
 backend directly before issuing a certificate. Both the public Caddy route and
 the frontend API proxy return `404` for it. A custom reverse proxy must preserve
@@ -399,6 +447,8 @@ Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).
 
 <Callout type="note" title="This is a route map, not a contract">
-  Request and response shapes evolve with the app. The authoritative definitions are `apps/backend/src/routes/` and the
-  serializers alongside them; the frontend's typed client in `apps/frontend/src/lib/api/` is the best worked example.
+  The authoritative response shapes are the zod/mini schemas in `packages/contract/src/index.ts` in the application
+  repository, one per payload, each field documented. The backend's tests prove its serializers fit them. Request bodies
+  are defined by the validators in `apps/backend/src/routes/`; the web app's typed client in
+  `apps/frontend/src/lib/api/` is the best worked example.
 </Callout>
