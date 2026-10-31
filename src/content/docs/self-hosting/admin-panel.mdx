@@ -210,20 +210,22 @@ the request reaches the app — so it is not a page the admin panel can change.
 Left alone it arrives in that project's own colours, which look nothing like the
 rest of your site.
 
-Omicron replaces its stylesheet instead. `anubis-theme.css` at the repository
-root carries the app's palette, typography and dark mode, and Caddy serves it at
-the path the challenge page asks for. Edit that file to restyle the screen for
-your instance; the change shows up on the next page load, with nothing to
-restart.
+Omicron replaces the stylesheet and mascot artwork instead. `anubis-theme.css`
+at the repository root carries the app's palette, typography and dark mode, and
+Caddy serves it at the path the challenge page asks for. Caddy also serves the
+`pensive`, `happy` and `reject` artwork from `assets/anubis/`. Edit the stylesheet
+or replace those images to customize the screen; changes show up on the next page
+load.
 
 <Callout type="note">
   If an edit does not show up, your editor replaced the file rather than writing into it, and the container is still
   holding the old one. `docker compose up -d --force-recreate caddy` picks it up.
 </Callout>
 
-The mascot, the wording and the "Protected by Anubis" footer are left as the
-upstream project ships them. Custom images and custom titles are what its authors
-sell as [BotStopper](https://anubis.techaro.lol/docs/admin/botstopper).
+The challenge wording and Anubis/Techaro service attribution remain upstream.
+Omicron hides the upstream mascot-artist credit because its original artwork is
+replaced. Custom titles or removing the service attribution are available through
+[BotStopper](https://anubis.techaro.lol/docs/admin/botstopper).
 
 The wording is already translated, and by the challenge service rather than by
 Omicron: it reads the visitor's `Accept-Language` header and renders in whichever
