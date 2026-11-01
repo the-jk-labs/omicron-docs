@@ -154,6 +154,42 @@ visibility rules as those feeds. For you is not language-filtered. The endpoint
 samples across the full eligible archive rather than a recent page, and returns
 `Cache-Control: no-store`.
 
+## Content portability — `/api/content`
+
+These endpoints require a first-party session or JWT. They are deliberately
+not delegated to third-party OAuth grants. Cookie-authenticated POSTs retain
+the same-origin requirement described above. Successful content responses use
+`Cache-Control: no-store`.
+
+| Method | Path                                          | Purpose                                                            |
+| ------ | --------------------------------------------- | ------------------------------------------------------------------ |
+| `GET`  | `/api/content/export`                         | Download `omicron-content.zip` as an `application/zip` attachment. |
+| `POST` | `/api/content/preview`                        | Inspect an archive without writing posts or images.                |
+| `POST` | `/api/content/import?preservePublished=false` | Import content; publication preservation is opt-in.                |
+
+POST the file as **raw bytes**, for example with
+`Content-Type: application/octet-stream`, not JSON or multipart form data.
+The input may be an Omicron/Medium/Substack ZIP, a WordPress WXR file, or RSS XML.
+`preservePublished` accepts only `true` or `false`; omitted means `false`.
+
+The preview returns `format`, `items`, `imageCount`, and `warnings`. Each item
+has `key`, `title`, `status`, `createdAt`, `duplicate`, and `warnings`.
+The import result is `{ "imported": number, "skipped": number, "failed": [...] }`;
+each failure has `title` and `error`. A successful HTTP response can report
+per-post failures. Posts already imported remain in place and are skipped on retry.
+
+The archive manifest is defined by `ContentArchive` in `packages/contract`;
+JSON preview/results use `ContentImportPreview` and `ContentImportResult`.
+No existing response shape or API version changes.
+
+The fixed input cap is **50 MiB**; oversized inputs receive `400` from the
+backend or `413` from the SvelteKit proxy. Missing authentication is `401`;
+a delegated grant is rejected with `403 insufficient_scope`. Six transfer
+requests per account per minute share one budget, including downloads; import
+and preview also consume the ordinary API-write budget. `429` includes
+`Retry-After`. See [Import and export](/using/import-export/) for content,
+visibility, image, and destination-format limitations.
+
 ## Feed, search, dashboard
 
 | Method | Path             | Purpose                   |
