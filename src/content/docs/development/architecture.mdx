@@ -84,9 +84,10 @@ at all — not merely disabled ones.
 
 A signed-in user publishes a post:
 
-1. The browser calls the SvelteKit app, which reverse-proxies `/api/*` to the
-   backend — **same-origin**, so no CORS and cookies flow naturally.
-2. Hono resolves the session (`sessionMiddleware`), then applies the write rate
+1. The browser calls `/api/*` on its own origin. Caddy forwards those requests
+   directly to the backend; SvelteKit's proxy covers development/SSR calls.
+2. Hono resolves a session, first-party JWT, or scoped OAuth credential
+   (`sessionMiddleware`), then applies the write rate
    limiter, keyed by user id or IP.
 3. The route parses the body and calls the posts service.
 4. The service applies business rules and calls repositories to persist.
@@ -106,6 +107,10 @@ A signed-in user publishes a post:
 - **Lazy-load the heavy things** — Tiptap is loaded only on `/compose`.
 
 See [Frontend guide](/development/frontend/).
+
+Independent apps use [scoped client authorization](/development/third-party-clients/)
+instead of collecting browser credentials. The API endpoint policy requires an
+explicit delegation decision for every operation.
 
 ## Why this shape
 

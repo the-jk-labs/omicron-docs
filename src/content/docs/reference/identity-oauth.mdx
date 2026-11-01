@@ -1,20 +1,24 @@
 ---
 title: Identity OAuth
-description: The identity-only authorization code flow, Mastodon-compatible endpoints, security requirements, and limits.
+description: The public-identity-only OAuth permission, its compatibility flow, security requirements, and limits.
 ---
 
 import Callout from "@/components/Callout.astro";
 
-Omicron supports a deliberately small, Mastodon-compatible OAuth surface for
-**verifying the consenting account's public identity**. It is not the Mastodon
-API, OpenID Connect, or a way to obtain an Omicron browser session or general
-API JWT. NodeInfo continues to advertise `software.name: "omicron"`.
+The **`read:accounts`** scope lets a service verify the consenting account's
+public identity without obtaining access to private data or normal app
+operations. Existing identity-only authorizations retain those limits.
 
-Only confidential clients and the **authorization code** grant are supported.
-The only scope is **`read:accounts`**, and clients must request it explicitly at
-registration and authorization. Broad `read`, write scopes, implicit grants,
-password grants, client-credentials grants, public clients, refresh tokens, and
-out-of-band callbacks are not supported.
+Omicron also supports public applications, broader scoped API grants, and
+refresh tokens for independent clients; see
+[Third-party clients](/development/third-party-clients/). This page describes
+the narrower identity-only flow, not the complete authorization feature.
+Neither flow is OpenID Connect, a browser-session exchange, or a full Mastodon
+API implementation. NodeInfo still reports `software.name: "omicron"`.
+
+The identity flow uses the **authorization code** grant. Password, implicit,
+client-credentials, and out-of-band flows remain unsupported. An authorization
+consisting solely of `read:accounts` does not receive a refresh token.
 
 <Callout type="warning" title="Third-party support is separate">
   A service that selects an authentication implementation from a software allowlist must add Omicron itself. In
@@ -29,11 +33,12 @@ All paths are relative to the instance's canonical public origin.
 | Method | Path                                      | Purpose                                                                  |
 | ------ | ----------------------------------------- | ------------------------------------------------------------------------ |
 | `GET`  | `/.well-known/oauth-authorization-server` | Issuer, endpoint, grant, authentication-method, scope, and S256 metadata |
-| `POST` | `/api/v1/apps`                            | Register a confidential application                                      |
+| `POST` | `/api/v1/apps`                            | Register a public or confidential application                            |
 | `GET`  | `/oauth/authorize`                        | Browser sign-in and explicit consent                                     |
 | `POST` | `/oauth/token`                            | Exchange a single-use authorization code                                 |
 | `POST` | `/oauth/revoke`                           | Revoke one of the client's identity tokens                               |
 | `GET`  | `/api/v1/accounts/verify_credentials`     | Verify the token owner's minimal public identity                         |
+| `GET`  | `/api/v1/apps/verify_credentials`         | Inspect the application's non-secret metadata and approved scopes        |
 
 The browser consent page also uses `GET` and `POST /api/oauth/authorize`.
 `GET /api/oauth/connections` lists the signed-in user's active tokens, and
@@ -47,15 +52,17 @@ header matching the instance's canonical origin exactly.
 `POST /api/v1/apps` accepts a JSON object or
 `application/x-www-form-urlencoded` body.
 
-| Field           | Required | Meaning                                                                |
-| --------------- | -------- | ---------------------------------------------------------------------- |
-| `client_name`   | Yes      | Nonblank display name, at most 100 characters; not a verified identity |
-| `redirect_uris` | Yes      | One to ten exact callback URLs separated by whitespace or newlines     |
-| `scopes`        | Yes      | Exactly `read:accounts`                                                |
-| `website`       | No       | Application website, at most 2,048 characters                          |
+| Field                        | Required | Meaning                                                                |
+| ---------------------------- | -------- | ---------------------------------------------------------------------- |
+| `client_name`                | Yes      | Nonblank display name, at most 100 characters; not a verified identity |
+| `redirect_uris`              | Yes      | Array or whitespace-separated string with one to ten exact callbacks   |
+| `scopes`                     | No       | `read:accounts` for this identity-only flow; also the omission default |
+| `website`                    | No       | Application website, at most 2,048 characters                          |
+| `token_endpoint_auth_method` | No       | `none` for a public client; otherwise confidential authentication      |
 
-Callbacks and the website must use HTTPS, without credentials or fragments.
-HTTP is accepted only for `localhost`, `127.0.0.1`, or `[::1]` development URLs.
+The website must use HTTPS, without credentials or fragments. Callbacks also
+support reverse-domain native schemes. HTTP is accepted only for `localhost`,
+`127.0.0.1`, or `[::1]` loopback URLs. Wildcards are not allowed.
 Callbacks must not already contain `code`, `state`, `error`, or
 `error_description` query parameters. The complete callback list is capped at
 8,192 characters; an authorization callback must fit the 2,048-character
@@ -70,11 +77,13 @@ authorization parameter limit.
 }
 ```
 
-A successful response is `200` with `id`, `name`, `website`, `redirect_uri`,
-`client_id`, `client_secret`, and an empty legacy `vapid_key` field. The latter
-does not advertise Web Push support. The client secret is returned only at
-registration; Omicron stores its hash. Keep it server-side and out of browser
-storage, URLs, analytics, and logs.
+A successful response is `200` and includes `id`, `name`, `website`,
+`redirect_uris`, `scopes`, and `client_id`. The legacy `redirect_uri` and empty
+`vapid_key` fields remain for compatibility, without advertising Web Push.
+Confidential registration also returns a `client_secret` once, with no scheduled
+expiry (`client_secret_expires_at: 0`). Omicron stores its hash; keep the value
+server-side and out of browser storage, URLs, analytics, and logs. Public
+clients receive no secret and authenticate with their client ID and PKCE.
 
 ## 2. Request browser consent
 
@@ -87,15 +96,16 @@ Send the browser to `/oauth/authorize` with these query parameters:
 | `response_type`         | Yes              | `code`                                                               |
 | `scope`                 | Yes              | Exactly `read:accounts`                                              |
 | `state`                 | Recommended      | Unpredictable, browser-session-bound value, at most 2,048 characters |
-| `code_challenge`        | Recommended      | Base64url SHA-256 digest of the PKCE verifier, without padding       |
+| `code_challenge`        | See below        | Base64url SHA-256 digest of the PKCE verifier, without padding       |
 | `code_challenge_method` | With a challenge | `S256`; `plain` is not supported                                     |
 
 Always generate and validate `state` on the client side. Omicron preserves it,
 but does not replace the client's responsibility to bind a callback to the
 browser that initiated sign-in. Do not place private information in it.
 
-S256 PKCE is optional for compatibility with confidential clients, but is
-recommended even when the client has a secret. Generate a fresh 43–128-character
+S256 PKCE is optional only for the legacy confidential identity-only flow using
+a web callback. Public clients and native callbacks require it; all broader API
+grants do too. Generate a fresh 43–128-character
 verifier from OAuth's unreserved ASCII characters and retain it server-side for
 the exchange. A challenge must be 43 base64url characters. Once authorized,
 PKCE cannot be omitted or downgraded at the token endpoint.
@@ -118,7 +128,7 @@ Authorization codes expire after **5 minutes** and are single-use.
 | Parameter                       | Required                | Value                                                       |
 | ------------------------------- | ----------------------- | ----------------------------------------------------------- |
 | `grant_type`                    | Yes                     | `authorization_code`                                        |
-| `client_id` and `client_secret` | Unless using HTTP Basic | Registered confidential-client credentials                  |
+| `client_id` and `client_secret` | Unless using HTTP Basic | Confidential credentials; public clients send only the ID   |
 | `code`                          | Yes                     | The authorization code                                      |
 | `redirect_uri`                  | Yes                     | Exactly the callback authorized with this code              |
 | `code_verifier`                 | If PKCE was authorized  | The original verifier                                       |
@@ -139,7 +149,9 @@ credentials both in the header and in the body.
 ```
 
 The timestamp above is illustrative. The token lasts **one hour**, has no
-refresh token, and works only on the identity endpoint. Credentials are stored
+refresh token, and can verify public identity or inspect its own application's
+non-secret metadata, but cannot authenticate the ordinary `/api` resources.
+Credentials are stored
 hashed. Code consumption and token creation are atomic: parallel exchanges
 cannot both succeed. Detected reuse revokes a previously issued token for that
 code and client, so do not blindly retry an exchange after an ambiguous network
@@ -170,8 +182,8 @@ with `401`.
 
 ## Revoke access
 
-`POST /oauth/revoke` accepts the same two client-authentication methods as the
-token endpoint plus a `token` parameter. It returns `200 {}` for an unknown,
+`POST /oauth/revoke` uses the same client authentication as the token endpoint
+plus a `token` parameter. Public clients send their ID without a secret. It returns `200 {}` for an unknown,
 already-revoked, or differently owned token as well; only the authenticated
 client's token is affected. Users can independently revoke their own tokens in
 [Connected applications](/using/connected-applications/).
@@ -195,15 +207,16 @@ invalid client authentication carries an HTTP Basic challenge.
   `Referrer-Policy: no-referrer` and cannot be framed.
 - Endpoint-specific source-IP limits apply separately from normal API writes;
   see [Rate limits](/reference/rate-limits/#identity-oauth).
-- Cleanup runs at startup and hourly. Expired tickets, codes, and tokens are
-  removed. Never-approved application registrations older than **30 days** are
-  removed when they have no live pending credentials; previously approved
-  clients are retained.
+- Cleanup runs at startup and hourly. Expired tickets, codes, and non-renewable
+  tokens are removed. Never-approved confidential identity-only registrations
+  older than **30 days** are removed when they have no pending credentials.
+  Previously approved applications, public registrations, and registrations
+  requesting client-API scopes are retained.
 
 ## Reverse proxy and upgrades
 
-The shipped Caddyfile sends application registration, token exchange, revocation,
-and identity verification directly to the backend. These machine endpoints
+The shipped Caddyfile sends the entire API, token exchange, and revocation
+directly to the backend. These machine endpoints
 must not receive bot challenges or the frontend's browser form-origin checks.
 The consent page remains in the frontend; OAuth browser endpoints are also
 exempt from the managed IP access rules.
@@ -214,6 +227,8 @@ server-to-server client. Plain frontend-only development proxies are subject
 to SvelteKit's form-origin checks; use the bundled gateway or the backend
 directly for form-encoded machine requests.
 
-The feature needs no new environment variables. Existing instances must apply
-the additive migration and refresh the bind-mounted proxy and bot-policy files;
-see [Upgrading → Identity OAuth](/self-hosting/upgrading/#identity-oauth).
+There are no new environment variables for scoped client support. Existing
+identity-only rows remain narrow after the additive migration; see
+[Upgrading → Third-party clients](/self-hosting/upgrading/#third-party-clients).
+The [original identity release steps](/self-hosting/upgrading/#identity-oauth)
+also apply when upgrading an instance that predates identity OAuth entirely.

@@ -244,9 +244,17 @@ avatar or deleting a post therefore leaves the old file on disk for up to a
 month before the sweep collects it. That delay is what keeps images working on
 the fediverse; it is not a bug.
 
-`BODY_SIZE_LIMIT` (the frontend proxy's request-body cap) is set to match the
-backend's 5 MB image limit by `docker-compose.yml`; you only need to touch it
-if you raise `MAX_IMAGE_BYTES` in the backend source.
+`BODY_SIZE_LIMIT` (adapter-node's request-body cap) is **`50m`** in the bundled
+frontend image and `docker-compose.yml`, to allow content archive uploads.
+The SvelteKit API proxy separately caps raw POSTs to `/api/content/preview`
+and `/api/content/import` at **50 MiB**, retaining **5 MiB** for other API
+writes. The backend still enforces its own image and archive limits. The
+bundled Caddy gateway routes public API requests directly to the backend.
+
+When running the production frontend outside the supplied image, set
+`BODY_SIZE_LIMIT=50m` in its environment. A lower adapter or custom-gateway cap
+rejects archives before they reach the backend. See
+[Upgrading → Content portability](/self-hosting/upgrading/#content-portability).
 
 ## Applying changes
 

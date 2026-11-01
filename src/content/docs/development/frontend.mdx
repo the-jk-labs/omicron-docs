@@ -19,9 +19,11 @@ SvelteKit (Svelte 5), Bits UI, Tailwind CSS 3.4, Tiptap, Lucide.
 
 ## The reverse proxy
 
-`/api/[...path]` proxies to the backend, so the browser only ever talks to its
-own origin. That means **no CORS configuration and cookies that just work** —
-the session cookie is same-origin by construction.
+The web UI calls the same-origin `/api` and uses normal session cookies. Caddy
+routes public API requests directly to the backend. `/api/[...path]` remains a
+development/SSR proxy and preserves CORS headers and preflights for independent
+bearer-token clients. OAuth token/revocation and metadata routes also proxy to
+their root backend paths during local development.
 
 `INTERNAL_API_URL` tells the frontend how to reach the backend inside the
 container network.

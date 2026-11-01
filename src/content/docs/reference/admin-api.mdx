@@ -7,7 +7,7 @@ badge: Admins + moderators
 import Callout from "@/components/Callout.astro";
 
 Everything under **`/api/admin`** requires an authenticated **admin or
-moderator** session — but not every endpoint accepts both. The **Users** and
+moderator** account — but not every endpoint accepts both. The **Users** and
 **Content and reports** sections below accept moderators; **Instance**,
 **Settings**, **Security**, **Discoverability**, **Media**, **Email**,
 **Federation domains**, and both role-grant endpoints are admin-only, and a
@@ -19,6 +19,13 @@ because operators sometimes need to script against them.
   Scripts can use a 15-minute bearer JWT minted from a Better Auth session. Treat the session cookie or JWT as holding
   that account's role and rights; see [HTTP API authentication](/reference/http-api/#authentication).
 </Callout>
+
+Independent apps can instead request `admin:read` or `admin:write` through
+[client OAuth](/development/third-party-clients/). These permissions are not
+included in ordinary `read write`, and they never grant a role or bypass the
+endpoint's ownership/confirmation rules. The account's current role is checked
+for each request. Password-confirmed account deletion and role changes should
+open `/admin` in the system browser rather than collect an operator's password.
 
 ## Instance
 

@@ -47,6 +47,7 @@ export const nav: NavSection[] = [
     label: "Using Omicron",
     items: [
       { slug: "using/writing", label: "Writing posts" },
+      { slug: "using/import-export", label: "Import and export" },
       { slug: "using/profiles", label: "Profiles" },
       { slug: "using/connected-applications", label: "Connected applications" },
       { slug: "using/android", label: "Android app" },
@@ -70,6 +71,7 @@ export const nav: NavSection[] = [
     items: [
       { slug: "development/architecture", label: "Architecture" },
       { slug: "development/local-setup", label: "Local setup" },
+      { slug: "development/third-party-clients", label: "Third-party clients" },
       { slug: "development/backend", label: "Backend guide" },
       { slug: "development/frontend", label: "Frontend guide" },
       { slug: "development/database", label: "Database and migrations" },
