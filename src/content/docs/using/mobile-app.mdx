@@ -53,6 +53,14 @@ its **Surprise me** button opens a random post.
 Links to profiles, posts, tags, and lists on the connected instance open
 in the app; other links open in the browser.
 
+On Android, `omicron.blog` publishes an Android App Links association for
+`blog.omicron.app`. Android can route eligible HTTPS links to a compatible
+installed app after verifying the domain. Other instances do not publish this
+association by default; operators can configure it as described in
+[Environment variables](/reference/environment/#android-app-links). Server-side
+association alone does not verify an installed release's complete email-confirmation
+or sign-in handoff.
+
 ## Comments
 
 Comments are plain text, up to 2,000 characters. Reply to a comment, like it,
@@ -113,9 +121,12 @@ web. See [Moderation tools](/using/moderation/).
 
 ## Offline and updates
 
-Everything the app has loaded is kept on the device for up to 7 days. Offline,
-it shows those saved posts with a **You're offline** banner and resumes when the
-connection returns. Search, moderation, and session lists are not saved.
+Loaded posts, profiles, and lists can be kept on the device for up to 7 days
+after their last successful update. Only the first two pages of paginated lists
+are persisted. Offline, the app can show that saved data with a **You're offline**
+banner and resumes when the connection returns. Search, moderation, and session
+lists are not saved. A new app build, over-the-air update, or API contract version
+invalidates the saved query cache.
 
 When an instance runs a newer API than the app understands (its
 [`apiVersion`](/reference/http-api/#reports-instance-setup-seo) is ahead), the

@@ -1,0 +1,130 @@
+---
+title: Import and export
+description: Move posts between Omicron instances, import existing publications, and download portable content archives.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Open **Settings → Content** (`/settings?tab=content`) in the web app. Exporting
+and importing copies content; it does **not** move an ActivityPub account or its
+followers, rename a username, or delete anything at the source.
+
+## Export your content
+
+1. Sign in to the source instance and open **Settings → Content**.
+2. Select **Download content** and save `omicron-content.zip`.
+3. Keep the original instance and archive until you have verified the imported
+   posts and images at the destination.
+
+The export contains your locally authored published posts, drafts, and scheduled
+posts. It preserves their HTML, titles, creation/update dates, tags, language,
+description, AI-assistance disclosure, and cover-image metadata and credits.
+It does not export your profile, credentials, sessions, comments, likes,
+reading lists, followers, subscribers, or payments.
+
+| File or directory | Contents                                                       |
+| ----------------- | -------------------------------------------------------------- |
+| `omicron.json`    | Version 1 manifest for importing into another Omicron instance |
+| `posts/`          | Standalone HTML files                                          |
+| `media/`          | Local uploaded images referenced by post bodies or covers      |
+| `wordpress.xml`   | WordPress WXR export                                           |
+| `README.txt`      | Format notes and destination limitations                       |
+
+<Callout type="warning" title="Store the archive privately">
+  The archive includes unpublished drafts and content from private accounts. Local uploaded images are bundled; external
+  images remain linked and are not downloaded or backed up. Save a separate copy of external images before their source
+  disappears. A missing local image makes the export fail rather than silently producing an incomplete backup.
+</Callout>
+
+A content archive is not an instance backup. Administrators still need
+[database, upload, and configuration backups](/self-hosting/backups/).
+
+## Import into Omicron
+
+1. Create or sign in to an account on the destination instance.
+2. Open **Settings → Content** and choose the export file.
+3. Select **Preview import**. Review the post titles, source statuses, dates,
+   duplicate markers, image count, and warnings. The preview writes nothing.
+4. Leave **Keep previously public posts published** unchecked to import drafts.
+   Enable it only after reviewing the publication warnings.
+5. Select **Import … posts**, then open **Manage your posts** to review the result.
+
+### Supported sources
+
+| Source    | File to choose             | Notes                                                                                                                                                    |
+| --------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Omicron   | The complete export ZIP    | Keep `omicron.json` and bundled images together.                                                                                                         |
+| Medium    | The account export ZIP     | Reads HTML posts from `posts/`. All Medium posts become drafts because the export does not reliably identify member-only content.                        |
+| Substack  | The publication export ZIP | Requires `posts.csv` and the corresponding `posts/<post_id>.html` files. Audience-restricted posts remain drafts. Subscriber CSV files are not imported. |
+| WordPress | A WXR `.xml` export        | Imports posts, not pages or attachment records. Password-protected and non-published posts remain drafts.                                                |
+| RSS       | An RSS `.xml` file         | Imports only the entries and content present in that feed, which may be a recent subset or excerpts. Atom is not supported.                              |
+
+Imported HTML passes through Omicron's sanitizer. Unsupported scripts, embeds,
+and styling are removed; review formatting before publishing. Bundled raster
+images are uploaded to the destination and their references are rewritten.
+External images remain linked; the importer never fetches their URLs.
+
+### Publication and dates
+
+- Imports default to **drafts**, even when the source was published.
+- Opting in restores published status only for titled, unrestricted source
+  posts whose creation date is not in the future. These posts go live
+  immediately and may be delivered to followers.
+- Scheduled posts always become drafts; the importer never activates a schedule.
+- Content marked restricted, and all Medium imports, remain drafts even with
+  publication preservation enabled. Review access restrictions before manually
+  publishing them.
+- Valid source creation/update dates are retained on import. An absent or
+  invalid date uses the import time, with a preview warning for the creation
+  date. Publishing an imported draft later follows the normal editor rule: its
+  first publication is dated from that later publication time.
+- Tags are normalized; only the first five are imported. Descriptions are
+  shortened to 150 characters when necessary. The preview warns about truncation.
+
+### Duplicates and retries
+
+Source identities are tracked per destination account. A repeated import skips
+already known posts; it never overwrites an existing post or updates it with a
+new source revision. Re-exporting imported content keeps that import identity,
+so a chain of instance-to-instance imports still detects it.
+
+The result reports imported, skipped, and failed posts. Each post and its tags
+commit together, but the whole archive is not one transaction: successful posts
+remain if another fails. Fix the reported problem, preview the same file again,
+and retry. Already imported posts are skipped. Missing/invalid bundled images
+are rejected before posts are written. Destination upload quotas still apply.
+
+## Moving to another platform
+
+| Destination              | Available route                                                                                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Another Omicron instance | Import the complete ZIP using the steps above.                                                                                                            |
+| WordPress                | Import `wordpress.xml` with its WordPress importer. Image URLs in WXR point to the original instance; keep it online while the destination copies images. |
+| Medium                   | Use Medium's importer with individual published article URLs, or copy the exported HTML.                                                                  |
+| Substack                 | Use its importer with a supported website or RSS feed URL, or copy the exported HTML.                                                                     |
+| Other tools              | Use the HTML files or the versioned manifest, subject to the destination's supported formats.                                                             |
+
+Medium and Substack are not guaranteed to accept the Omicron ZIP directly.
+Their destination importers determine which URLs, formatting, and metadata they
+accept. Review the resulting publication before removing the source. No route
+here transfers paid subscriptions, payments, or social relationships.
+
+## Limits
+
+| Limit                              | Value                                               |
+| ---------------------------------- | --------------------------------------------------- |
+| Posts per archive                  | 1,000                                               |
+| Input/compressed export size       | 50 MiB                                              |
+| Expanded ZIP size                  | 100 MiB                                             |
+| Individual ZIP file                | 10 MiB                                              |
+| ZIP entries, including directories | 5,000                                               |
+| Bundled image                      | 5 MiB; PNG, JPEG, WebP, or GIF                      |
+| Post HTML before sanitizing        | 1,000,000 characters                                |
+| Imported title                     | 1,000 characters                                    |
+| Transfer requests per account      | 6 per minute, shared by export, preview, and import |
+
+The UI labels binary-megabyte limits as MB. Storage quotas can impose a lower
+effective image allowance. These archive limits are fixed in source; there is
+no dedicated environment variable to raise them. A larger account export fails
+instead of silently dropping posts. See [Rate limits](/reference/rate-limits/#content-portability)
+and the [HTTP API](/reference/http-api/#content-portability--apicontent).

@@ -21,23 +21,27 @@ upgrades, migrations, and anything involving the reverse proxy.
 
 ## Option B — run the apps directly
 
-You need **Deno** (it runs the backend), **Node 24+**, **pnpm 12.11+**, and a
+You need **Deno** (it runs the backend), **Node 26+** for the backend tests, **pnpm 12.11+**, and a
 running **PostgreSQL** with `DATABASE_URL` set. A local `.env` is loaded too;
 variables already set in the environment win.
 
 ```bash
-# Once: the shared API contract both apps link
-cd packages/contract && pnpm install
+# From the repository root, install the shared contract and both apps:
+pnpm --dir packages/contract install
+pnpm --dir apps/backend install
+pnpm --dir apps/frontend install
+```
 
-# Backend — http://localhost:8000
-cd apps/backend
-pnpm install
-pnpm dev
+Start the backend in one terminal:
 
-# Frontend — http://localhost:5173
-cd apps/frontend
-pnpm install
-pnpm dev
+```bash
+pnpm --dir apps/backend dev   # http://localhost:8000
+```
+
+Start the frontend in a second terminal, also from the repository root:
+
+```bash
+pnpm --dir apps/frontend dev  # http://localhost:5173
 ```
 
 Migrations run automatically on backend startup, so an empty database is fine.
@@ -50,8 +54,8 @@ Migrations run automatically on backend startup, so an empty database is fine.
 ## Checks before you push
 
 ```bash
-cd apps/backend  && pnpm fmt && pnpm check
-cd apps/frontend && pnpm fmt && pnpm check
+(cd apps/backend && pnpm fmt && pnpm check)
+(cd apps/frontend && pnpm fmt && pnpm check)
 ```
 
 `pnpm check` runs [greenly](https://www.npmjs.com/package/greenly): in the

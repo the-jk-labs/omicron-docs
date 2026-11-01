@@ -8,6 +8,15 @@ import Callout from "@/components/Callout.astro";
 You do **not** need a `.env` file. `docker compose up -d --build` works with none
 at all. Create one next to `docker-compose.yml` only to override a default.
 
+<Callout type="warning" title="Compose only forwards declared variables">
+  Compose reads `.env` for interpolation; it does not automatically pass every entry into the backend. Only variables
+  declared in `docker-compose.yml` reach the bundled containers. Backend options not wired there, such as `RL_*`,
+  `SMTP_*`, `EMAIL_VERIFICATION_REQUIRED`, and `HIBP_CHECK_ENABLED`, need explicit entries under the backend's
+  `environment` in a Compose override file, followed by container recreation. The tables below describe application
+  defaults, not a promise that every variable is already forwarded. Prefer the setup wizard and admin panel for settings
+  they expose.
+</Callout>
+
 <Callout type="note">
   Web settings (setup wizard and admin panel) **take precedence** over these values. Environment variables are defaults,
   not overrides.
@@ -134,6 +143,25 @@ These are fallbacks.
 | -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `HIBP_CHECK_ENABLED` | `true`  | Refuse passwords found in Have I Been Pwned breaches. Uses k-anonymity: only a hash prefix leaves the server. `"false"` skips it (air-gapped installs). |
 
+## Android App Links
+
+The backend serves `/.well-known/assetlinks.json` when signing-certificate
+fingerprints are configured. Android uses this public statement to verify that
+the site is allowed to open links in the named app. With no fingerprints, the
+route returns 404; malformed fingerprints prevent the backend from starting.
+
+| Variable                        | Default            | Purpose                                                                     |
+| ------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `ANDROID_APP_CERT_FINGERPRINTS` | _(empty)_          | Comma-separated SHA-256 signing-certificate fingerprints in `AA:BB:…` form. |
+| `ANDROID_APP_ID`                | `blog.omicron.app` | Android package name named in the Digital Asset Links statement.            |
+
+The Omicron-operated `omicron.blog` instance sets the fingerprints for its
+Android app. Leave them unset on other instances unless you operate an app
+signed by those keys; otherwise the instance would claim an app it does not
+ship. Set these values in the deployment `.env`; Compose passes them to the
+backend. The endpoint works with federation disabled and is publicly accessible
+at `/.well-known/assetlinks.json`.
+
 ## Public entrypoint
 
 | Variable     | Default | Purpose                    |
@@ -146,12 +174,14 @@ and 443. Change them only when those ports are genuinely unavailable.
 
 ## AI-scraper protection
 
-| Variable                  | Default             | Purpose                                                                                               |
-| ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| `CADDY_ADMIN_URL`         | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
-| `ANUBIS_REDIRECT_DOMAINS` | _(empty)_           | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain.     |
+| Variable                  | Default   | Purpose                                                                                           |
+| ------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
+| `CADDY_ADMIN_URL`         | _(empty)_ | Optional custom admin HTTP URL; overrides the bundled Unix-socket transport when set.             |
+| `ANUBIS_REDIRECT_DOMAINS` | _(empty)_ | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain. |
 
 The shield itself is turned on from **Admin → Security**, not from here.
+The bundled stack uses `CADDY_ADMIN_SOCKET=/run/caddy-admin/admin.sock`; do not
+restore the old `http://caddy:2019` override.
 
 Set `ANUBIS_REDIRECT_DOMAINS` on a public instance. Left empty, the endpoint that
 redeems a solved challenge will forward a reader to whatever domain a `redir`
@@ -250,9 +280,17 @@ avatar or deleting a post therefore leaves the old file on disk for up to a
 month before the sweep collects it. That delay is what keeps images working on
 the fediverse; it is not a bug.
 
-`BODY_SIZE_LIMIT` (the frontend proxy's request-body cap) is set to match the
-backend's 5 MB image limit by `docker-compose.yml`; you only need to touch it
-if you raise `MAX_IMAGE_BYTES` in the backend source.
+`BODY_SIZE_LIMIT` (adapter-node's request-body cap) is **`50m`** in the bundled
+frontend image and `docker-compose.yml`, to allow content archive uploads.
+The SvelteKit API proxy separately caps raw POSTs to `/api/content/preview`
+and `/api/content/import` at **50 MiB**, retaining **5 MiB** for other API
+writes. The backend still enforces its own image and archive limits. The
+bundled Caddy gateway routes public API requests directly to the backend.
+
+When running the production frontend outside the supplied image, set
+`BODY_SIZE_LIMIT=50m` in its environment. A lower adapter or custom-gateway cap
+rejects archives before they reach the backend. See
+[Upgrading → Content portability](/self-hosting/upgrading/#content-portability).
 
 ## Applying changes
 

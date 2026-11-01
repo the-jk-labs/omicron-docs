@@ -24,9 +24,9 @@ git clone https://github.com/the-jk-labs/omicron.git
 cd omicron
 git checkout -b your-change
 # … work …
-cd apps/backend  && pnpm fmt && pnpm check
-cd apps/frontend && pnpm fmt && pnpm check
-cd apps/mobile   && pnpm fmt && pnpm check   # if you touched the app
+(cd apps/backend && pnpm fmt && pnpm check)
+(cd apps/frontend && pnpm fmt && pnpm check)
+(cd apps/mobile && pnpm fmt && pnpm check)   # if you touched the app
 ```
 
 Each of these is a CI gate, so anything failing here fails the pull request

@@ -11,16 +11,17 @@ webhook, as well as OAuth authorization and optional Umami Cloud collection.
 
 ## The limiters
 
-| Limiter           | Variable             | Default | Window | Keyed on                   |
-| ----------------- | -------------------- | ------- | ------ | -------------------------- |
-| Login             | `RL_LOGIN_MAX`       | 15      | 15 min | Source IP                  |
-| Registration      | `RL_REGISTER_MAX`    | 5       | 1 hour | Source IP                  |
-| API writes        | `RL_API_WRITE_MAX`   | 120     | 1 min  | Signed-in user, else IP    |
-| Media uploads     | `RL_UPLOAD_MAX`      | 10      | 1 min  | Signed-in user, else IP    |
-| Federation inbox  | `RL_INBOX_MAX`       | 300     | 1 min  | Source IP                  |
-| Remote discovery  | `RL_REMOTE_MAX`      | 30      | 1 min  | Source IP (anonymous only) |
-| Remote cache-miss | `RL_REMOTE_MISS_MAX` | 20      | 1 min  | Signed-in user, else IP    |
-| Content webhook   | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
+| Limiter             | Variable             | Default | Window | Keyed on                   |
+| ------------------- | -------------------- | ------- | ------ | -------------------------- |
+| Login               | `RL_LOGIN_MAX`       | 15      | 15 min | Source IP                  |
+| Registration        | `RL_REGISTER_MAX`    | 5       | 1 hour | Source IP                  |
+| API writes          | `RL_API_WRITE_MAX`   | 120     | 1 min  | Signed-in user, else IP    |
+| Media uploads       | `RL_UPLOAD_MAX`      | 10      | 1 min  | Signed-in user, else IP    |
+| Federation inbox    | `RL_INBOX_MAX`       | 300     | 1 min  | Source IP                  |
+| Remote discovery    | `RL_REMOTE_MAX`      | 30      | 1 min  | Source IP (anonymous only) |
+| Remote cache-miss   | `RL_REMOTE_MISS_MAX` | 20      | 1 min  | Signed-in user, else IP    |
+| Content webhook     | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
+| Content portability | Fixed in source      | 6       | 1 min  | Signed-in account          |
 
 The inbox and content webhook have environment-configurable payload caps:
 
@@ -84,6 +85,22 @@ an unbounded payload into the JSON parser.
 
 A CMS publishing a batch is bursty but never fast, so 30/min leaves room for a
 bulk re-sync while staying far below what a brute-force attempt would need.
+
+## Content portability
+
+The [content import/export endpoints](/reference/http-api/#content-portability--apicontent)
+share a fixed **6 requests per minute per signed-in account** budget.
+`GET /api/content/export` consumes it too; preview and import POSTs also pass
+through the general API-write limiter. There is no dedicated environment
+variable for this budget. `RATE_LIMIT_ENABLED=false` disables the rate budget,
+not the payload or storage bounds.
+
+Archive input is capped at **50 MiB**, with **100 MiB** of total ZIP expansion,
+**10 MiB** per file, **5,000** entries, and **1,000** posts. Bundled images must
+be supported raster files no larger than **5 MiB**, and normal storage quotas
+still apply. Both declared sizes and actual expanded bytes are bounded.
+Imported images are read only from the archive, never downloaded from an
+archive-supplied URL. See [Import and export](/using/import-export/).
 
 ## Remote discovery (outbound bounds)
 

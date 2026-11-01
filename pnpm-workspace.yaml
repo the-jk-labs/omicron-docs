@@ -4,6 +4,10 @@ minimumReleaseAge: 0
 minimumReleaseAgeExcludePrune: true
 trustPolicy: "off"
 trustPolicyExcludePrune: true
+auditConfig:
+  # Unpatched static-build dependency; scope and removal condition are in README.
+  ignoreGhsas:
+    - GHSA-gcqx-w48m-w2h4
 allowBuilds:
   esbuild: true
   sharp: true
@@ -12,8 +16,3 @@ overrides:
   fast-uri: "^3.1.9"
   # Tailwind 3 and postcss-nested 6 otherwise retain the vulnerable 6.x parser.
   postcss-selector-parser@<7.1.6: "^7.1.7"
-auditConfig:
-  ignoreGhsas:
-    # deepmerge has no patched release, and vite-plugin-svelte only merges this
-    # site's own build config with it, so no untrusted input reaches it.
-    - GHSA-gcqx-w48m-w2h4
