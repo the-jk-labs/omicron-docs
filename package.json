@@ -26,13 +26,13 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
-    "autoprefixer": "10.6.1",
+    "autoprefixer": "10.6.2",
     "greenly": "1.2.0",
-    "oxfmt": "0.74.0",
-    "oxlint": "1.89.0",
-    "oxlint-tsgolint": "7.0.2004",
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
+    "oxlint-tsgolint": "7.0.2005",
     "pagefind": "1.5.2",
-    "postcss": "8.5.31",
+    "postcss": "8.5.32",
     "tailwindcss": "3.4.19",
     "typescript": "6.0.3"
   },
