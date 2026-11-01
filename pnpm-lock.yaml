@@ -14,25 +14,25 @@ importers:
     dependencies:
       '@astrojs/mdx':
         specifier: 8.1.1
-        version: 8.1.1(@astrojs/markdown-satteri@0.4.5)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
+        version: 8.1.1(@astrojs/markdown-satteri@0.4.5)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       '@astrojs/sitemap':
         specifier: 3.7.4
         version: 3.7.4
       '@astrojs/svelte':
         specifier: 9.1.1
-        version: 9.1.1(@types/node@24.13.4)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(esbuild@0.28.2)(jiti@2.7.0)(svelte@5.57.0)(typescript@6.0.3)(yaml@2.9.0)
+        version: 9.1.1(@types/node@24.13.4)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(esbuild@0.28.2)(jiti@2.7.0)(svelte@5.57.2)(typescript@6.0.3)(yaml@2.9.1)
       '@fontsource-variable/inter':
         specifier: 5.3.0
         version: 5.3.0
       astro:
         specifier: 7.4.2
-        version: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
+        version: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
       bits-ui:
         specifier: 2.20.0
-        version: 2.20.0(@internationalized/date@3.12.4)(svelte@5.57.0)
+        version: 2.20.0(@internationalized/date@3.12.4)(svelte@5.57.2)
       svelte:
-        specifier: 5.57.0
-        version: 5.57.0
+        specifier: 5.57.2
+        version: 5.57.2
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -48,7 +48,7 @@ importers:
         version: 1.2.0
       oxfmt:
         specifier: 0.74.0
-        version: 0.74.0(@astrojs/compiler-rs@0.5.2)(svelte@5.57.0)
+        version: 0.74.0(@astrojs/compiler-rs@0.5.2)(svelte@5.57.2)
       oxlint:
         specifier: 1.89.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -1785,9 +1785,6 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  magic-string@1.3.1:
-    resolution: {integrity: sha512-rm91zr2Ou+XueDTohjQQjdQEcYM6zVi8KVUCG8Ec3vHwUEKrhSdCNyfuIywkA6hcCAteIn0ZOtAHA6eGpiX+Pg==}
-
   magic-string@1.4.5:
     resolution: {integrity: sha512-oLLC2+YvQUfAa+vxoufE/yc1icb87M9iXIRqAoR/2EhE/8cb3SF/+Gi0c2By1B+5Vz2e2vQtUvHiu1+63Znh+w==}
 
@@ -2180,8 +2177,8 @@ packages:
       svelte: ^3.55 || ^4.0.0-next.0 || ^4.0 || ^5.0.0-next.0
       typescript: ^4.9.4 || ^5.0.0 || ^6.0.0
 
-  svelte@5.57.0:
-    resolution: {integrity: sha512-NdbDn7fl4be1ViUG0oq/lvG6OZy3oENolV2ONjiqqsfVoeAfzaQAKUcEX3MrQod/Bebv1PgwET9rfXhgn9s4Kg==}
+  svelte@5.57.2:
+    resolution: {integrity: sha512-1YiPCAXT0Ct6g1vOMmSLa0Nsc3QRMvtDF32ihgglGVrugIuIK38RyDiFNXVDhtQ81TJjSO57NdMw6DyYLqSGDQ==}
     engines: {node: '>=18'}
 
   svgo@4.1.0:
@@ -2550,11 +2547,6 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
-  yaml@2.9.0:
-    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
-
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
@@ -2698,11 +2690,11 @@ snapshots:
       github-slugger: 2.0.0
       satteri: 0.10.5
 
-  '@astrojs/mdx@8.1.1(@astrojs/markdown-satteri@0.4.5)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))':
+  '@astrojs/mdx@8.1.1(@astrojs/markdown-satteri@0.4.5)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@astrojs/internal-helpers': 0.13.0
       '@astrojs/markdown-satteri': 0.4.5
-      astro: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
+      astro: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
       es-module-lexer: 3.0.4
 
   '@astrojs/prism@4.1.1':
@@ -2714,15 +2706,15 @@ snapshots:
       sitemap: 9.0.1
       zod: 4.6.7
 
-  '@astrojs/svelte@9.1.1(@types/node@24.13.4)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(esbuild@0.28.2)(jiti@2.7.0)(svelte@5.57.0)(typescript@6.0.3)(yaml@2.9.0)':
+  '@astrojs/svelte@9.1.1(@types/node@24.13.4)(astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(esbuild@0.28.2)(jiti@2.7.0)(svelte@5.57.2)(typescript@6.0.3)(yaml@2.9.1)':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 7.3.1(svelte@5.57.0)(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
-      astro: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
-      svelte: 5.57.0
-      svelte2tsx: 0.7.61(svelte@5.57.0)(typescript@6.0.3)
+      '@sveltejs/vite-plugin-svelte': 7.3.1(svelte@5.57.2)(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      astro: 7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
+      svelte: 5.57.2
+      svelte2tsx: 0.7.61(svelte@5.57.2)(typescript@6.0.3)
       typescript: 6.0.3
-      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
+      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
+      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
     transitivePeerDependencies:
       - '@types/node'
       - '@vitejs/devtools'
@@ -2746,7 +2738,7 @@ snapshots:
 
   '@astrojs/yaml2ts@0.2.4':
     dependencies:
-      yaml: 2.9.0
+      yaml: 2.9.1
 
   '@babel/helper-string-parser@7.29.7': {}
 
@@ -2783,7 +2775,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.2.4(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@bruits/satteri-win32-arm64-msvc@0.10.5':
@@ -3081,18 +3073,18 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
-    dependencies:
-      '@emnapi/core': 1.11.1
-      '@emnapi/runtime': 1.11.1
-      '@tybys/wasm-util': 0.10.3
-    optional: true
-
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
       '@emnapi/core': 1.11.3
       '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.3
+
+  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
+    dependencies:
+      '@emnapi/core': 1.11.1
+      '@emnapi/runtime': 1.11.1
+      '@tybys/wasm-util': 0.10.3
+    optional: true
 
   '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
@@ -3361,14 +3353,14 @@ snapshots:
     dependencies:
       acorn: 8.18.0
 
-  '@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.0)(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))':
+  '@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2)(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       deepmerge: 4.3.1
-      magic-string: 1.3.1
+      magic-string: 1.4.5
       obug: 2.2.1
-      svelte: 5.57.0
-      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
+      svelte: 5.57.2
+      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
+      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
   '@swc/helpers@0.5.23':
     dependencies:
@@ -3502,7 +3494,7 @@ snapshots:
 
   aria-query@5.3.2: {}
 
-  astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0):
+  astro@7.4.2(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
       '@astrojs/compiler-rs': 0.5.2
       '@astrojs/internal-helpers': 0.13.0
@@ -3551,8 +3543,8 @@ snapshots:
       unifont: 1.0.3
       unstorage: 1.17.5
       verkit: 0.5.0
-      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
+      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
+      vitefu: 1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       xxhash-wasm: 1.1.0
       yargs-parser: 22.0.0
       zod: 4.6.7
@@ -3608,15 +3600,15 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@2.20.0(@internationalized/date@3.12.4)(svelte@5.57.0):
+  bits-ui@2.20.0(@internationalized/date@3.12.4)(svelte@5.57.2):
     dependencies:
       '@floating-ui/core': 1.8.0
       '@floating-ui/dom': 1.8.0
       '@internationalized/date': 3.12.4
       esm-env: 1.2.2
-      runed: 0.35.1(svelte@5.57.0)
-      svelte: 5.57.0
-      svelte-toolbelt: 0.10.6(svelte@5.57.0)
+      runed: 0.35.1(svelte@5.57.2)
+      svelte: 5.57.2
+      svelte-toolbelt: 0.10.6(svelte@5.57.2)
       tabbable: 6.5.0
     transitivePeerDependencies:
       - '@sveltejs/kit'
@@ -4034,10 +4026,6 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  magic-string@1.3.1:
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.6.0
-
   magic-string@1.4.5:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -4140,7 +4128,7 @@ snapshots:
       regex: 6.1.0
       regex-recursion: 6.0.2
 
-  oxfmt@0.74.0(@astrojs/compiler-rs@0.5.2)(svelte@5.57.0):
+  oxfmt@0.74.0(@astrojs/compiler-rs@0.5.2)(svelte@5.57.2):
     dependencies:
       tinypool: 2.2.0
     optionalDependencies:
@@ -4164,7 +4152,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.74.0
       '@oxfmt/binding-win32-ia32-msvc': 0.74.0
       '@oxfmt/binding-win32-x64-msvc': 0.74.0
-      svelte: 5.57.0
+      svelte: 5.57.2
 
   oxlint-tsgolint@7.0.2004:
     optionalDependencies:
@@ -4250,7 +4238,7 @@ snapshots:
   postcss-load-config@4.0.2(postcss@8.5.31):
     dependencies:
       lilconfig: 3.1.3
-      yaml: 2.9.0
+      yaml: 2.9.1
     optionalDependencies:
       postcss: 8.5.31
 
@@ -4350,12 +4338,12 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  runed@0.35.1(svelte@5.57.0):
+  runed@0.35.1(svelte@5.57.2):
     dependencies:
       dequal: 2.0.3
       esm-env: 1.2.2
       lz-string: 1.5.0
-      svelte: 5.57.0
+      svelte: 5.57.2
 
   satteri@0.10.5:
     dependencies:
@@ -4478,23 +4466,23 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-toolbelt@0.10.6(svelte@5.57.0):
+  svelte-toolbelt@0.10.6(svelte@5.57.2):
     dependencies:
       clsx: 2.1.1
-      runed: 0.35.1(svelte@5.57.0)
+      runed: 0.35.1(svelte@5.57.2)
       style-to-object: 1.0.14
-      svelte: 5.57.0
+      svelte: 5.57.2
     transitivePeerDependencies:
       - '@sveltejs/kit'
 
-  svelte2tsx@0.7.61(svelte@5.57.0)(typescript@6.0.3):
+  svelte2tsx@0.7.61(svelte@5.57.2)(typescript@6.0.3):
     dependencies:
       dedent-js: 1.0.1
       scule: 1.3.0
-      svelte: 5.57.0
+      svelte: 5.57.2
       typescript: 6.0.3
 
-  svelte@5.57.0:
+  svelte@5.57.2:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -4677,7 +4665,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0):
+  vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -4689,11 +4677,11 @@ snapshots:
       esbuild: 0.28.2
       fsevents: 2.3.3
       jiti: 2.7.0
-      yaml: 2.9.0
+      yaml: 2.9.1
 
-  vitefu@1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)):
+  vitefu@1.1.3(vite@8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)):
     optionalDependencies:
-      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
+      vite: 8.3.5(@types/node@24.13.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 
   volar-service-css@0.0.71(@volar/language-service@2.4.28(typescript@6.0.3)):
     dependencies:
@@ -4829,8 +4817,6 @@ snapshots:
       yaml: 2.8.3
 
   yaml@2.8.3: {}
-
-  yaml@2.9.0: {}
 
   yaml@2.9.1: {}
 
