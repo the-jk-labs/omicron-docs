@@ -15,6 +15,39 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Content portability
+
+The [import/export workflow](/using/import-export/) ships new backend routes
+and a **Settings → Content** tab. Deploy backend and frontend together. It adds
+no database migration or backfill.
+
+1. Create a backup and verify that its new snapshot exists. Stop on failure:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+2. Pull the release, rebuild, and recreate the affected services:
+
+   ```bash
+   git pull --ff-only
+   docker compose up -d --build backend frontend
+   ```
+
+   Compose picks up the frontend's updated `BODY_SIZE_LIMIT=50m`. Preserve all
+   volumes. No Caddy recreation is needed for this release; Podman Compose
+   users can run the equivalent commands.
+
+3. If you maintain a custom Compose file, frontend environment override, or
+   gateway body cap, allow **50 MiB** archive requests. The SvelteKit proxy
+   still limits other API writes to **5 MiB**; backend image limits remain
+   unchanged.
+4. Verify normal reading and sign-in, then open **Settings → Content**. A
+   signed-out request to `/api/content/export` must return `401`, not a ZIP.
+   Use the preview to inspect an archive before importing. Do not use the
+   integration test suite against your instance database.
+
 ## Security-hardening upgrade
 
 The remote-image proxy, browser policy, and Caddy admin socket must ship
