@@ -48,6 +48,17 @@ natively in a client designed for 500-character posts.
 
 ## Where the edges are
 
+Omicron retains supported image alternatives, passage language/direction,
+captions, and table-header references in sanitized article HTML. Outgoing Article
+bodies resolve relative image sources and link destinations against the
+publishing post's permalink so they retain their URL context on another server.
+This is not a guarantee that another implementation preserves or presents the
+same metadata.
+
+The URL fix applies when an updated backend builds a new Article or Update. It
+does not rewrite stored posts, resend old remote copies automatically, or restore
+metadata already removed by earlier processing.
+
 - **No retroactive backfill.** A new follower gets what you publish afterwards.
   Some software fetches your outbox to fill history; some does not.
 - **Formatting is renegotiated by the receiver.** Each server sanitises HTML to

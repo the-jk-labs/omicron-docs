@@ -64,6 +64,15 @@ and styling are removed; review formatting before publishing. Bundled raster
 images are uploaded to the destination and their references are rewritten.
 External images remain linked; the importer never fetches their URLs.
 
+Supported image alternatives, passage language/direction, captions, and table
+header references can survive the content pipeline, but not every source format
+or destination preserves every relationship. When opening imported HTML in the
+rich editor would lose detected structure or accessibility information, it stays
+read-only until you choose **Edit simplified content**. Opening it or changing
+only its title does not replace its stored body. Keep the original archive before
+accepting simplification; review the resulting article before publishing. See
+[content-loss warnings](/using/accessibility/#imported-pasted-and-dropped-content).
+
 ### Publication and dates
 
 - Imports default to **drafts**, even when the source was published.

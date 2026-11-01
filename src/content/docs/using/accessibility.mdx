@@ -1,0 +1,170 @@
+---
+title: Accessibility and authoring
+description: Image display preferences, keyboard navigation, image descriptions, passage language, tables, and content-loss warnings in the web app.
+---
+
+import Callout from "@/components/Callout.astro";
+
+This guide covers the **web application** and its article editor. The
+[mobile app](/using/mobile-app/) has a separate interface. Older instances need
+to [upgrade](/self-hosting/upgrading/#web-accessibility-and-content-preservation)
+before these controls are available.
+
+<Callout type="note" title="Features, not a conformance claim">
+  Omicron has automated accessibility checks and authoring aids, but WCAG 2.2 AA and ATAG 2.0 AA conformance has not
+  been established. Complete screen-reader workflows and other manual evaluation remain unverified. The application's
+  [engineering verification record](https://github.com/the-jk-labs/omicron/blob/main/ACCESSIBILITY.md) describes the
+  evidence and limitations.
+</Callout>
+
+## Image display
+
+Open **Image display**, the image-icon button in the web navigation:
+
+| Choice                            | Effect                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Follow reduced-motion setting** | Default. Hide images when the browser reports a reduced-motion preference.                 |
+| **Show images**                   | Show images even when reduced motion is requested.                                         |
+| **Hide images**                   | Hide all images, including animated images, while preserving their space and alternatives. |
+
+The choice stays in this browser; it is not an account setting and is not
+synchronized to another device. Hiding changes display only: it does not delete
+images, edit articles, or change what is exported or sent to other servers.
+
+Images keep their alternatives in the accessibility tree. Outside editing
+surfaces, images with descriptions also receive visible **Image hidden: …**
+text. The editor does not insert that text into your article; use **Image
+settings** or description search to review alternatives there.
+
+Hiding is not an animation pause/resume control or a guarantee against all
+flashing content. Prefer still images and avoid flashing media when publishing.
+
+## Keyboard navigation
+
+- Use **Skip to content**, the first keyboard-focusable link, to move past the
+  shared navigation to the main content.
+- In the article editor, use arrow keys within the formatting toolbar and Tab
+  to move between control groups and the body.
+- Use the usual undo and redo shortcuts in the body. Pasted or dropped content
+  that you explicitly accept can be undone.
+
+### Find and navigate
+
+Below the article body, expand **Find and navigate**:
+
+1. Enter text in **Find in article**. Results include body text, image
+   descriptions, and table captions.
+2. Use **Previous result** and **Next result** to choose a match.
+3. Choose **Edit result** to select matching body text or open the image/table
+   settings for an alternative.
+
+**Go to document element** jumps to a heading, paragraph, image, table, or other
+document element. To move an image without dragging, select it there, cut it,
+move the text cursor to the destination, and paste it. Its supported description
+and metadata travel with it.
+
+## Image descriptions and sizing
+
+1. Select an image and choose **Image settings** in the toolbar, or use its
+   **Alt** button.
+2. In **Describe this image**, enter **Alt text** explaining its information or
+   function. Explain complex graphs in nearby article text too.
+3. To resize without dragging, set **Image width (%)** to a whole number from
+   **10 to 100**. The aspect ratio stays unchanged.
+4. Choose **Save**.
+
+Saving an empty alternative explicitly marks the image decorative. Do that
+only when it adds no information. A newly uploaded image without a reviewed
+alternative remains an item for **Check accessibility**; the editor does not
+invent a description from its filename.
+
+Banners are presented decoratively. Put an informative image in the article
+body with a description rather than relying on the banner to convey meaning.
+
+For profile photos, **Adjust photo** provides **Left**, **Right**, **Up**, and
+**Down** buttons as an alternative to dragging, plus **Photo zoom**. Arrow keys
+also reposition the photo when the photo control has focus.
+
+## Passage language
+
+The article's **Language** is its primary language. To mark a passage that uses
+another language:
+
+1. Select the passage and open **Text language** in the formatting toolbar.
+2. Enter a language tag, such as `fr` or `pt-BR`.
+3. Choose the text direction: **Inherit**, **Automatic**, **Left to right**, or
+   **Right to left**.
+4. Choose **Save**. An empty language tag inherits the surrounding language.
+
+In Markdown/HTML authoring surfaces, a passage can use markup such as
+`<span lang="fr">Bonjour</span>`. The article's language setting and its passage
+languages serve different purposes; a feed filter uses the article language.
+
+## Table captions and headers
+
+Use **Table** in the toolbar to insert a table. With the cursor inside it,
+open **Edit table → Table accessibility**:
+
+- Set **Table caption** to explain the table's purpose. It appears in both the
+  editor and saved article.
+- Select **Header row** or **Header column** to identify the corresponding
+  cells as headers.
+- With a header cell selected, the table menu offers **Header applies to
+  column** and **Header applies to row**.
+
+Review header relationships again after merging or splitting cells. These
+controls do not automatically establish correct relationships for every complex
+table. Avoid tables used only for visual layout.
+
+## Review before publishing
+
+Expand **Check accessibility (N)** below the editor. It prompts for missing
+image alternatives, empty or out-of-order headings, table descriptions/headers,
+and some ambiguous link text. Choose an item's **Review** button to locate it.
+
+This review is advisory: it does not block publishing. A count of zero is not
+a standards pass; these checks cannot judge whether a description is meaningful,
+whether every header association is correct, or whether the complete article is
+usable with assistive technology.
+
+The **Accessible writing guide** below the editor explains images, structure,
+links, languages, motion, and final review. The same guide is available in the
+profile Markdown editor and the administrator's public-information editor.
+
+## Imported, pasted, and dropped content
+
+The rich editor supports less markup than imported or external HTML can contain.
+It compares an inventory of elements, selected attributes, and text to detect
+some losses; this is not a complete comparison of meaning or relationships.
+
+### Opening an imported article
+
+When detected structure or accessibility information would be lost, the editor
+shows **Rich editing may simplify imported content** and stays read-only.
+The stored body remains unchanged, including during a title-only autosave.
+
+Keep an [export](/using/import-export/) before continuing if the original markup
+matters. **Edit simplified content** unlocks editing; acknowledgement alone does
+not save a simplified body, but a later body edit can. Information removed by
+that simplification is not reconstructed automatically.
+
+### Paste and drop review
+
+**Review pasted content** or **Review dropped content** lists detected losses:
+
+- **Cancel** leaves the article unchanged and does not upload the pending files.
+- **Paste simplified content** or **Insert simplified content** accepts the
+  simplified result. Review the remaining descriptions and relationships; undo
+  is available after insertion.
+
+A single image file accompanied by matching HTML can keep its supplied
+description and surrounding text when uploaded. File-only images still need
+alternative-text review. Unsupported files, ambiguous image/description matches,
+or unmatched text with files are rejected with instructions rather than guessed.
+Insert one image at a time when descriptions cannot be matched reliably, and
+insert unmatched text separately.
+
+Paste or use the toolbar image-upload button instead of dragging. Use the
+browser's paste-as-plain-text command when you deliberately want text without
+the source formatting. Cross-application formats, partial selections, and
+complex table transfers can still need additional review.

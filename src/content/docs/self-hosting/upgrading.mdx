@@ -15,6 +15,37 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Web accessibility and content preservation
+
+Deploy backend and frontend together for the
+[accessibility controls and content-loss warnings](/using/accessibility/).
+This change adds no migration, environment variable, or automatic content backfill.
+
+1. Take a backup and confirm the new snapshot exists. Stop on failure:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+2. Pull the release, rebuild, and recreate both application services:
+
+   ```bash
+   git pull --ff-only
+   docker compose up -d --build backend frontend
+   ```
+
+   Preserve all named volumes. Podman Compose users can run the equivalent
+   commands. This change alone needs no Caddy recreation; older releases below
+   may have their own one-time steps.
+
+3. Check health and normal sign-in/reading, then confirm **Image display** in the
+   navigation and the authoring controls below the article editor.
+
+Federated body URL corrections apply to newly built Articles and later Updates;
+existing remote copies are not automatically resent. Metadata stripped from
+previously saved content cannot be recovered by this upgrade.
+
 ## Better Auth, passkeys, and Android App Links
 
 This release updates Better Auth, enables native Omicron app sign-in, and allows
