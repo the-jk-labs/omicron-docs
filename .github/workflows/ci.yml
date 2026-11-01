@@ -21,4 +21,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm audit --audit-level=low
+
       - run: pnpm check

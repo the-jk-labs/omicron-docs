@@ -5,21 +5,82 @@ description: The JSON API under /api — authentication, posts, users, feeds, ta
 
 import Callout from "@/components/Callout.astro";
 
-The backend serves a JSON API under **`/api`**. The web app is its first
-consumer: the frontend reverse-proxies `/api/*` to the backend, so the browser
-talks to one origin, there is no CORS configuration, and the session cookie flows
-naturally.
+The backend serves a JSON API under **`/api`**, shared by the web app and other
+clients. The bundled Caddy gateway forwards it directly to the backend at the
+same public origin. SvelteKit also provides a proxy for development and SSR.
 
 ## Authentication
 
-Session-based. Signing in sets an **httpOnly cookie** backed by a row in the
-Postgres `sessions` table. Send that cookie with subsequent requests.
+Signing in creates a server-side session, represented by an **httpOnly cookie**
+backed by the Postgres `sessions` table. Browsers use that cookie directly.
 
-<Callout type="warning" title="No API tokens yet">
-  There is no personal-access-token or OAuth flow for the API at large. Programmatic clients authenticate the same way
-  the browser does — by signing in and keeping the cookie. The one exception is the [content
-  webhook](/reference/content-webhook/), whose per-user tokens can only publish posts and nothing else.
-</Callout>
+**Independent clients should use [scoped OAuth](/development/third-party-clients/).**
+Applications register on an instance, request consent through its browser UI,
+and send the resulting access token with API requests. They do not need the
+account's password, cookie, or a second JWT exchange.
+
+First-party non-cookie clients can instead use the existing short-lived JWT
+transport: establish a Better Auth session, request a token, then send:
+
+```http
+Authorization: Bearer <token>
+```
+
+| Method | Path              | Authentication      | Purpose                                  |
+| ------ | ----------------- | ------------------- | ---------------------------------------- |
+| `GET`  | `/api/auth/jwks`  | None                | Public keys for JWT signature validation |
+| `GET`  | `/api/auth/token` | Better Auth session | Mint a JWT for normal API calls          |
+
+`/api/auth/token` returns `{"token":"ey…"}`. Tokens contain only standard
+claims and expire after 15 minutes. Keep the JWT in memory, refresh it through
+the session before expiry, and never send either credential to another origin.
+Session revocation prevents a new token from being minted; an issued token stays
+valid until it expires.
+
+There is no general-purpose personal-access-token flow. OAuth API grants use
+explicit scopes and can renew for up to 90 days. Existing [identity-only
+grants](/reference/identity-oauth/) remain limited to public identity
+verification; they cannot read `/api/me` or authorize normal app operations.
+The [content webhook](/reference/content-webhook/) uses separate publishing
+credentials.
+
+### Public gateway origin checks
+
+The updated bundled gateway routes `/api/*`, `/oauth/token`, and `/oauth/revoke`
+directly to the backend. Native clients using a valid OAuth or JWT bearer token
+do not need to manufacture an `Origin` header, and API calls/preflights must not
+receive an Anubis challenge.
+Upgrades must [recreate Caddy](/self-hosting/upgrading/#third-party-clients) to
+activate that routing.
+
+**Cookie-authenticated writes require the instance's exact `Origin`.** For
+ordinary API resources, `POST`, `PUT`, `PATCH`, and `DELETE` requests using an
+active browser session must carry an `Origin` matching the configured instance
+origin, including its scheme, hostname, and port. Missing, `null`, or mismatched
+origins receive `403` with `{"error":"A same-origin request is required."}`.
+A sibling subdomain is a different origin too.
+
+This backend check applies regardless of content type, including JSON, raw
+uploads, and bodyless writes, even when Caddy bypasses SvelteKit. `GET`, `HEAD`,
+and `OPTIONS` do not require an origin for this cookie check. The trusted origin
+comes from the instance's runtime configuration, not caller-supplied Host or
+forwarded-host headers. Browser fetch supplies `Origin` on writes; proxies must
+preserve it unchanged.
+
+Browser OAuth clients use bearer-token CORS with `credentials: "omit"`.
+Cross-origin session cookies are not supported. The cookie-write origin check
+does not restrict a request authenticated by a valid OAuth or JWT bearer token,
+even if a cookie is also present. Browser clients send their actual origin;
+they must not try to impersonate the instance's origin.
+
+When calling through a SvelteKit development proxy or an older/custom gateway,
+use JSON for bearer-token mutations: its browser-origin protection can reject
+bodyless or form-content-type writes before the backend sees them. JSON does
+not bypass the backend's cookie-write check. Do not disable browser CSRF checks
+globally.
+
+OAuth consent and connected-application management still require a live
+same-origin browser session; tokens cannot replace it.
 
 ## Conventions
 
@@ -28,11 +89,24 @@ Postgres `sessions` table. Send that cookie with subsequent requests.
 - **Rate limiting.** Writes are throttled per signed-in user, or per IP when
   anonymous; reads are not throttled by the general limiter. A limited request
   gets `429` with `Retry-After`.
-- **Errors** are JSON, always the same shape — `{"error": "…"}` — with an
+- **Backend errors** normally use JSON `{"error": "…"}` with an
   appropriate status code. A request body that fails validation gets `400` and a
   message naming the field, for example
   `{"error":"displayName: Invalid input: expected string, received number"}`. A
   body that is not valid JSON gets `400` too, not `500`.
+  SvelteKit or custom-gateway rejections can instead return plain text; check
+  the response status and content type before decoding JSON. The backend's
+  cookie-origin rejection uses the normal JSON error shape shown above.
+  OAuth failures additionally use protocol `error` and `error_description`
+  values; a scoped denial can return `403 insufficient_scope`.
+
+## Client discovery — `/api/client`
+
+`GET /api/client` is public and reports `apiVersion`, `apiBase`, OAuth metadata,
+token lifetimes, human-readable scope descriptions, and a method/path/scope
+list of delegated operations. It also identifies the browser account-security
+URL. Discover capabilities before asking for authorization; see
+[Third-party clients](/development/third-party-clients/).
 
 ## Health
 
@@ -43,41 +117,78 @@ Postgres `sessions` table. Send that cookie with subsequent requests.
 
 These sit at the root, not under `/api`.
 
-## Auth — `/api/auth`
+## Browser account security — `/api/auth`
 
-| Method   | Path               | Purpose                             |
-| -------- | ------------------ | ----------------------------------- |
-| `POST`   | `/register`        | Create an account                   |
-| `POST`   | `/login`           | Sign in, setting the session cookie |
-| `POST`   | `/logout`          | End the session                     |
-| `GET`    | `/me`              | The current user                    |
-| `DELETE` | `/me`              | Delete the account                  |
-| `POST`   | `/password/forgot` | Send a reset email                  |
-| `POST`   | `/password/reset`  | Complete a reset with a token       |
-| `POST`   | `/password/change` | Change password while signed in     |
-| `POST`   | `/email/verify`    | Verify an address with a token      |
-| `POST`   | `/email/resend`    | Resend the verification email       |
+Better Auth owns `/api/auth/*`; these are not general OAuth resource endpoints.
+Independent apps should open the instance's login/registration or `/settings`
+screens for credential, email, passkey, and session management. The full
+application profile is `GET /api/me`, not a separate `/api/auth/me` resource.
 
 ## Posts — `/api/posts`
 
-| Method             | Path                            | Purpose                                                                                                              |
-| ------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `GET`              | `/`                             | List posts — the Global timeline, assembled with per-author diversity (see [Reading and following](/using/reading/)) |
-| `POST`             | `/`                             | Create a post (draft, scheduled, or published)                                                                       |
-| `GET`              | `/drafts`                       | The current user's drafts                                                                                            |
-| `GET`              | `/mine?status=`                 | The current user's posts in one state — `draft`, `scheduled`, or `published`                                         |
-| `GET`              | `/mine/counts`                  | How many the current user holds in each state                                                                        |
-| `GET`              | `/trending`                     | Trending posts                                                                                                       |
-| `GET`              | `/by/:username/:slug`           | A single post by its public URL                                                                                      |
-| `GET`              | `/:id`                          | A single post                                                                                                        |
-| `PATCH`            | `/:id`                          | Update a post                                                                                                        |
-| `DELETE`           | `/:id`                          | Delete a post                                                                                                        |
-| `POST` / `DELETE`  | `/:id/like`                     | Like / unlike                                                                                                        |
-| `POST` / `DELETE`  | `/:id/recommend`                | Recommend / un-recommend (federates as `Announce`/`Undo(Announce)`)                                                  |
-| `GET`              | `/:id/comments`                 | List comments                                                                                                        |
-| `POST`             | `/:id/comments`                 | Add a comment                                                                                                        |
-| `PATCH` / `DELETE` | `/:id/comments/:commentId`      | Edit / delete a comment                                                                                              |
-| `POST` / `DELETE`  | `/:id/comments/:commentId/like` | Like / unlike a comment                                                                                              |
+| Method             | Path                              | Purpose                                                                                                              |
+| ------------------ | --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GET`              | `/`                               | List posts — the Global timeline, assembled with per-author diversity (see [Reading and following](/using/reading/)) |
+| `POST`             | `/`                               | Create a post (draft, scheduled, or published)                                                                       |
+| `GET`              | `/drafts`                         | The current user's drafts                                                                                            |
+| `GET`              | `/mine?status=`                   | The current user's posts in one state — `draft`, `scheduled`, or `published`                                         |
+| `GET`              | `/mine/counts`                    | How many the current user holds in each state                                                                        |
+| `GET`              | `/trending`                       | Trending posts                                                                                                       |
+| `GET`              | `/random?scope=&langMode=&langs=` | Choose a random post from a feed                                                                                     |
+| `GET`              | `/by/:username/:slug`             | A single post by its public URL                                                                                      |
+| `GET`              | `/:id`                            | A single post                                                                                                        |
+| `PATCH`            | `/:id`                            | Update a post                                                                                                        |
+| `DELETE`           | `/:id`                            | Delete a post                                                                                                        |
+| `POST` / `DELETE`  | `/:id/like`                       | Like / unlike                                                                                                        |
+| `POST` / `DELETE`  | `/:id/recommend`                  | Recommend / un-recommend (federates as `Announce`/`Undo(Announce)`)                                                  |
+| `GET`              | `/:id/comments`                   | List comments                                                                                                        |
+| `POST`             | `/:id/comments`                   | Add a comment                                                                                                        |
+| `PATCH` / `DELETE` | `/:id/comments/:commentId`        | Edit / delete a comment                                                                                              |
+| `POST` / `DELETE`  | `/:id/comments/:commentId/like`   | Like / unlike a comment                                                                                              |
+
+`GET /api/posts/random` returns `{"post": …}` or `{"post": null}` when no
+posts match. `scope` accepts `global` (the default), `local`, or `for-you`; the
+last requires a signed-in reader. `langMode=show|hide` and comma-separated
+`langs=en,az` apply to Local and Global, using the same unknown-language and
+visibility rules as those feeds. For you is not language-filtered. The endpoint
+samples across the full eligible archive rather than a recent page, and returns
+`Cache-Control: no-store`.
+
+## Content portability — `/api/content`
+
+These endpoints require a first-party session or JWT. They are deliberately
+not delegated to third-party OAuth grants. Cookie-authenticated POSTs retain
+the same-origin requirement described above. Successful content responses use
+`Cache-Control: no-store`.
+
+| Method | Path                                          | Purpose                                                            |
+| ------ | --------------------------------------------- | ------------------------------------------------------------------ |
+| `GET`  | `/api/content/export`                         | Download `omicron-content.zip` as an `application/zip` attachment. |
+| `POST` | `/api/content/preview`                        | Inspect an archive without writing posts or images.                |
+| `POST` | `/api/content/import?preservePublished=false` | Import content; publication preservation is opt-in.                |
+
+POST the file as **raw bytes**, for example with
+`Content-Type: application/octet-stream`, not JSON or multipart form data.
+The input may be an Omicron/Medium/Substack ZIP, a WordPress WXR file, or RSS XML.
+`preservePublished` accepts only `true` or `false`; omitted means `false`.
+
+The preview returns `format`, `items`, `imageCount`, and `warnings`. Each item
+has `key`, `title`, `status`, `createdAt`, `duplicate`, and `warnings`.
+The import result is `{ "imported": number, "skipped": number, "failed": [...] }`;
+each failure has `title` and `error`. A successful HTTP response can report
+per-post failures. Posts already imported remain in place and are skipped on retry.
+
+The archive manifest is defined by `ContentArchive` in `packages/contract`;
+JSON preview/results use `ContentImportPreview` and `ContentImportResult`.
+No existing response shape or API version changes.
+
+The fixed input cap is **50 MiB**; oversized inputs receive `400` from the
+backend or `413` from the SvelteKit proxy. Missing authentication is `401`;
+a delegated grant is rejected with `403 insufficient_scope`. Six transfer
+requests per account per minute share one budget, including downloads; import
+and preview also consume the ordinary API-write budget. `429` includes
+`Retry-After`. See [Import and export](/using/import-export/) for content,
+visibility, image, and destination-format limitations.
 
 ## Feed, search, dashboard
 
@@ -86,6 +197,39 @@ These sit at the root, not under `/api`.
 | `GET`  | `/api/feed`      | The personalised feed     |
 | `GET`  | `/api/search`    | Posts, accounts, and tags |
 | `GET`  | `/api/dashboard` | Writer dashboard figures  |
+
+## Umami Cloud — `/api/site`
+
+These routes are unauthenticated and support the optional
+[Umami Cloud integration](/self-hosting/umami/), not the writer dashboard.
+
+| Method | Path                  | Purpose                                     |
+| ------ | --------------------- | ------------------------------------------- |
+| `GET`  | `/api/site`           | Enabled website ID, or `null` when disabled |
+| `GET`  | `/api/site/script.js` | Proxy the fixed Cloud tracker               |
+| `POST` | `/api/site/api/send`  | Forward a validated public-page pageview    |
+
+`GET /api/site` returns `{ "websiteId": string | null }`. The script route
+returns JavaScript while enabled and `404` while disabled. All three routes
+use `Cache-Control: no-store`; the backend caches successful script fetches
+in memory for one hour.
+
+Collection accepts `application/json` with `{ "type": "event", "payload": {...} }`.
+The payload contains `website` (the configured UUID), `hostname`, `screen`,
+`language`, `title`, and `url`; `referrer` is optional. Unknown fields, reader
+identifiers, custom event names, and other event types are rejected. The server
+removes query strings and fragments and restricts page paths before forwarding.
+`X-Umami-Cache`, when present, is forwarded for Cloud session continuity; the
+successful Cloud JSON response is returned to the tracker.
+
+Disabled collection or a request carrying `DNT: 1` or `Sec-GPC: 1` returns
+`204` without contacting Cloud, subject to rate limits. Cross-site browser
+collection requests are refused with `403`. Invalid payloads return `400`,
+bodies over **16,384 bytes** return `413`, exhausted request budgets return
+`429` with `Retry-After`, and upstream failures return a generic `502`.
+See [Rate limits](/reference/rate-limits/#umami-cloud).
+
+Configuration uses the separate [admin-only API](/reference/admin-api/#umami-cloud).
 
 ## Users — `/api/users`
 
@@ -170,6 +314,32 @@ preview crawlers refuse, and because a share image has to be a format every one
 of them reads. Unauthenticated by necessity: the caller is a crawler with no
 session.
 
+## Remote images — `/api/media/proxy`
+
+`GET /api/media/proxy?url=<encoded-absolute-url>` is an unauthenticated image
+endpoint. The web UI uses it for remote avatars, covers, body images, and image
+previews so the remote host receives the instance's request, not the reader's.
+Stored URLs and ActivityPub payloads are unchanged.
+
+- Only public HTTPS destinations on the default port are fetched. Legacy HTTP
+  URLs are upgraded to HTTPS; HTTP-only sources stop displaying.
+- PNG, JPEG, GIF, and WebP must match their declared MIME type and raster
+  signature. SVG and other active content are refused.
+- Transfers are capped at **5 MiB**, **10 seconds total**, and **3 redirects**.
+  Each redirect is revalidated; DNS answers are checked and pinned to the socket.
+- The process-local cache lasts **1 hour**, with at most **64 entries / 16 MiB**.
+  Concurrent misses for one URL share a fetch. There are at most **8** fetches
+  globally and **2** per initial origin, per backend process.
+- The request limiter allows **240 requests per minute per source IP**. These
+  image-proxy limits are source constants, not environment variables.
+
+A successful response contains image bytes, `Cache-Control: public, max-age=3600`,
+`X-Content-Type-Options: nosniff`, and
+`Cross-Origin-Resource-Policy: same-origin`. Visitor cookies and request headers
+are not forwarded upstream; upstream cookies are not returned. Invalid targets
+return `400`, unavailable or rejected images `404`, and exhausted request or
+concurrency budgets `429`.
+
 ## Share cards — `/api/og`
 
 | Method | Path             | Purpose                                                |
@@ -232,17 +402,34 @@ revoke tokens. Full reference in
 
 ## Reports, instance, setup, SEO
 
-| Method | Path                            | Purpose                                                               |
-| ------ | ------------------------------- | --------------------------------------------------------------------- |
-| `POST` | `/api/reports`                  | Report a post or actor                                                |
-| `GET`  | `/api/instance`                 | Public instance metadata                                              |
-| `GET`  | `/api/instance/tls-check`       | Whether a hostname may be issued a certificate                        |
-| `POST` | `/api/setup`                    | Complete the first-run wizard                                         |
-| `POST` | `/api/setup/test-email`         | Send a test email during setup                                        |
-| `GET`  | `/api/seo`                      | Indexing flag and verification tokens (the IndexNow key is withheld)  |
-| `GET`  | `/api/seo/sitemap-entries`      | Profiles, tags, and public lists for the sitemap, plus the post count |
-| `GET`  | `/api/seo/sitemap-posts?page=N` | One page of published local posts for the sitemap                     |
-| `GET`  | `/api/seo/indexnow-key/:key`    | Whether `key` is this instance's IndexNow key                         |
+| Method | Path                            | Purpose                                                                 |
+| ------ | ------------------------------- | ----------------------------------------------------------------------- |
+| `POST` | `/api/reports`                  | Report a post or actor                                                  |
+| `GET`  | `/api/instance`                 | Public instance metadata, including visitor card and public information |
+| `POST` | `/api/setup`                    | Complete the first-run wizard                                           |
+| `POST` | `/api/setup/test-email`         | Send a test email during setup                                          |
+| `GET`  | `/api/seo`                      | Indexing flag and verification tokens (the IndexNow key is withheld)    |
+| `GET`  | `/api/seo/sitemap-entries`      | Profiles, tags, and public lists for the sitemap, plus the post count   |
+| `GET`  | `/api/seo/sitemap-posts?page=N` | One page of published local posts for the sitemap                       |
+| `GET`  | `/api/seo/indexnow-key/:key`    | Whether `key` is this instance's IndexNow key                           |
+
+`GET /api/instance` is unauthenticated and powers the site chrome and the
+public About, privacy, contact, and status pages. Alongside the name, domain,
+federation flag, and visitor card it returns the admin-managed public
+information as sanitized HTML (`aboutHtml`, `rulesHtml`, `privacyPolicyHtml`)
+plus the contact and status links; each is `null` when the admin has not set
+it, in which case the page shows its built-in placeholder or environment
+fallback.
+
+`GET /api/instance/tls-check?domain=…` is **internal only**: Caddy calls the
+backend directly before issuing a certificate. Both the public Caddy route and
+the frontend API proxy return `404` for it. A custom reverse proxy must preserve
+that boundary rather than publishing the backend directly.
+
+`GET /.well-known/security.txt` publishes the project's vulnerability-reporting
+contact, an expiry 180 days ahead, and the preferred language. It is served as
+plain text with a one-day cache and bypasses federation routing and the bot
+challenge.
 
 Administrative endpoints are documented separately in
 [Admin API](/reference/admin-api/).

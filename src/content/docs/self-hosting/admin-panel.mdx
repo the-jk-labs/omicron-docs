@@ -5,17 +5,59 @@ description: Every instance setting, moderation queue, and security switch — a
 
 import Callout from "@/components/Callout.astro";
 
-Sign in as the admin and open **`/admin`**. Everything the setup wizard set — and
-more — is editable here.
+Sign in as an admin or a moderator and open **`/admin`**. Everything the setup
+wizard set — and more — is editable here, subject to your role.
+
+<Callout type="note" title="Moderators share this panel">
+  Moderators can use the **Reports** and **Users** tabs — the full moderation workflow. **Instance**, **Email**,
+  **Federation**, **Security**, **Discoverability**, and **Media** are admin-only: a moderator opening them sees a
+  notice saying so. See [Moderation tools](/using/moderation/).
+</Callout>
 
 ## Instance
 
 - **Name** and **public domain**.
 - The **federation** toggle.
+- The **signed-out visitor card** (tagline and banner image).
+- **Public information** — About, rules, privacy policy, and operator contact and status links.
 - **Session-secret rotation**.
+- Optional **Umami Cloud** website statistics, disabled by default.
 
 Domain and federation changes apply on the **next restart**; the page tells you
-when a restart is needed.
+when a restart is needed. Everything else on this tab applies immediately.
+
+### Visitor card
+
+The card shown to signed-out visitors. Leave the tagline blank to use the
+built-in sentence, and upload a banner image or revert to the bundled artwork.
+Images are resized and re-encoded automatically.
+
+### Public information
+
+The instance-specific pages linked from the footer — About, instance rules,
+privacy, contact, and status — are edited here, by admins only. The three page
+sections accept Markdown and are rendered to sanitized HTML server-side:
+
+- **About this instance** appears on `/about` under "This instance".
+- **Instance rules** appears on `/about` under "Instance rules".
+- **Privacy policy** replaces the placeholder notice on `/privacy`. If Umami
+  Cloud is enabled, its disclosure is shown alongside your policy.
+
+Leave any of them blank to keep the built-in placeholder text. Placeholders are
+safe defaults, not legal advice: replace the privacy text with your own policy
+before operating a public service.
+
+Contact and status fields may each be left blank:
+
+- **Contact email** and **abuse email** are shown on `/contact`. The abuse
+  address falls back to the contact email when unset.
+- **Contact page URL** replaces the footer's Contact link when set.
+- **Status page URL** replaces the footer's Status link when set.
+
+When an instance value is unset, the corresponding `PUBLIC_*` environment
+fallback applies if configured — see
+[Environment variables](/reference/environment/#legal-and-footer). Instance
+settings take precedence over the environment.
 
 ### Rotating the session secret
 
@@ -37,13 +79,15 @@ Full detail: [Email](/self-hosting/email/).
 
 ## Reports
 
-The moderation queue. Review user-reported posts and actors, remove posts, and
-dismiss reports. Reports cover both local and remote content.
+The moderation queue, shared with moderators. Review user-reported posts and
+actors, remove posts, and dismiss reports. Reports cover both local and remote
+content.
 
 ## Users
 
 Suspend or reinstate local accounts. A suspended account cannot sign in, and its
-content stops being served.
+content stops being served. Moderators share this tab but can only act on
+regular accounts — never on admins or fellow moderators.
 
 Deleting an account hides it everywhere but keeps it restorable for 30 days —
 see [Moderation tools](/using/moderation/#users). Erasing it from Recently
@@ -114,6 +158,8 @@ for, which a search engine reads as a soft 404 and, since every challenged URL
 returns the same interstitial, as a set of duplicates of one another.
 
 A denial (no rule issues one in the shipped policy) answers **`403 Forbidden`**.
+Custom [IP block rules](#ip-access-rules) also return `403`, independently of
+the challenge switch.
 
 None of this changes anything for a reader: browsers render an error page and run
 its scripts exactly as they would a 200, so the challenge is solved and the page
@@ -164,20 +210,22 @@ the request reaches the app — so it is not a page the admin panel can change.
 Left alone it arrives in that project's own colours, which look nothing like the
 rest of your site.
 
-Omicron replaces its stylesheet instead. `anubis-theme.css` at the repository
-root carries the app's palette, typography and dark mode, and Caddy serves it at
-the path the challenge page asks for. Edit that file to restyle the screen for
-your instance; the change shows up on the next page load, with nothing to
-restart.
+Omicron replaces the stylesheet and mascot artwork instead. `anubis-theme.css`
+at the repository root carries the app's palette, typography and dark mode, and
+Caddy serves it at the path the challenge page asks for. Caddy also serves the
+`pensive`, `happy` and `reject` artwork from `assets/anubis/`. Edit the stylesheet
+or replace those images to customize the screen; changes show up on the next page
+load.
 
 <Callout type="note">
   If an edit does not show up, your editor replaced the file rather than writing into it, and the container is still
   holding the old one. `docker compose up -d --force-recreate caddy` picks it up.
 </Callout>
 
-The mascot, the wording and the "Protected by Anubis" footer are left as the
-upstream project ships them. Custom images and custom titles are what its authors
-sell as [BotStopper](https://anubis.techaro.lol/docs/admin/botstopper).
+The challenge wording and Anubis/Techaro service attribution remain upstream.
+Omicron hides the upstream mascot-artist credit because its original artwork is
+replaced. Custom titles or removing the service attribution are available through
+[BotStopper](https://anubis.techaro.lol/docs/admin/botstopper).
 
 The wording is already translated, and by the challenge service rather than by
 Omicron: it reads the visitor's `Accept-Language` header and renders in whichever
@@ -186,6 +234,63 @@ others — falling back to English. Azerbaijani is not among them. The one part
 that stays English whatever it picks is the footer line and imprint page above,
 which are your instance's own words; translate them in `botPolicy.yaml` if your
 readers need it.
+
+### IP access rules
+
+In **Admin → Security → IP access rules**, an admin can temporarily allow or
+block an IPv4/IPv6 address or CIDR range without editing deployment files.
+These rules apply **even when AI-scraper protection is off**. No rules are
+configured by default.
+
+1. Enter an **IP address or CIDR range**, such as `192.0.2.10` or
+   `2001:db8::/64`. Use a single address where possible; a network range can
+   affect many readers. Use plain IPv4 rather than IPv4-mapped IPv6 ranges;
+   scoped IPv6 addresses such as link-local addresses with an interface suffix
+   are not accepted.
+2. Choose **Block web pages (403)** or **Allow without an Anubis challenge**.
+   Allowing does not bypass sign-in, authorization, or rate limits.
+3. Choose an expiry: **1 hour**, **24 hours** (the default), **7 days**, or
+   **30 days**. Permanent rules are not supported. Add an optional reason
+   (up to 300 characters).
+4. Before applying, enter a visitor IP and URL path under **Test an IP and
+   path**, then select **Test draft rule**. The draft takes precedence for
+   this preview only. **Test saved rules** checks the current stored list.
+   Neither button changes the live configuration or simulates Anubis's
+   built-in bot policy.
+5. Select **Apply rule**. A successful save takes effect immediately through
+   Caddy. Invalid configuration is rejected without replacing its running
+   configuration; an error keeps your form input available to correct.
+
+The **first enabled, unexpired matching rule wins, newest first**. A newer
+allow can make an exception to an older block. Disable a rule to stop applying
+it, re-enable it before its expiry, or remove it. Removing is immediate; it
+does not wait for expiry. There is a limit of **100 unexpired rules**, including
+disabled ones. Expired rules cannot be re-enabled; they can be removed and are
+pruned when another rule is added.
+
+Expiry is checked by Caddy **on each request**, without a restart or cleanup
+timer. Saved rules are restored when the backend reconciles Caddy after a stack
+restart; there is a brief fail-open window while Caddy becomes reachable.
+
+<Callout type="warning" title="Not a host firewall or a CDN-aware IP filter">
+  Rules match the peer connecting directly to Caddy, not an IP supplied in forwarding headers. Do not use this first
+  version behind another reverse proxy or CDN: it can match the proxy instead of the visitor. Manage network-wide bans
+  in your host/provider firewall separately. Omicron does not change SSH access or firewall rules.
+</Callout>
+
+**Compatibility and recovery paths are exempt from custom IP rules:** the API,
+federation/discovery, feeds and sitemaps, `robots.txt`, IndexNow verification,
+app/challenge assets, `/admin`, `/login`, and account-recovery pages. Exemption
+leaves the normal routing and Anubis policy intact; a sign-in/admin page may
+still show the ordinary challenge when protection is on. A custom block is
+therefore not a complete ban on API access, federation, or authentication.
+
+The list remains readable and previews remain available without a managed
+proxy, but changing rules requires a managed Caddy deployment. If applying a
+rule reports a missing configuration marker, follow the
+[one-time upgrade steps](/self-hosting/upgrading/#one-time-step-ip-access-rules).
+Advanced bot/path rules remain in `botPolicy.yaml`; the UI does not edit that
+file or provide request logs.
 
 ## Media
 
@@ -214,9 +319,16 @@ remove it — Openverse keeps working either way.
 
 ## Analytics and discoverability
 
-The admin settings also cover instance-level analytics behaviour and everything
-search engines see. What is and is not measured about readers is documented in
-full in [Writer dashboard](/using/analytics/).
+The **Instance** tab contains two separate analytics controls:
+
+- **On-instance view counting** controls built-in writer statistics, described
+  in [Writer dashboard](/using/analytics/).
+- **Umami Cloud** connects an optional third-party website-statistics service.
+  Paste a website ID or tracking snippet, enable it, and save. Both tracker and
+  collection requests use the instance's domain; no proxy configuration is
+  needed. Unlike built-in counts, this forwards visitor IPs and browser
+  information to Cloud. See the [Umami Cloud setup and privacy guide](/self-hosting/umami/)
+  before enabling it.
 
 **Discoverability** holds the search-engine indexing switch, the sitemap,
 `robots.txt`, per-console verification tokens, and IndexNow — see

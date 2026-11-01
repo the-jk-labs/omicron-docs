@@ -50,7 +50,7 @@ Other servers POST activities to an actor's inbox, or to the **shared inbox** at
 | Incoming           | What Omicron does                                                                                                                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Follow`           | Auto-accepts (or holds for approval if the account requires it) and replies with `Accept`                                                                                                                                  |
-| `Create` (Article) | Stores the post and shows it in the appropriate feed                                                                                                                                                                       |
+| `Create` (Article) | Stores the post, including a recognized Omicron AI-assistance disclosure, and shows it in the appropriate feed                                                                                                             |
 | `Create` (Note)    | Stores it as a **response** when it replies to one of your posts (or to a known response) — see [Compatibility](/federation/compatibility/). Any other microblog `Note` is ignored                                         |
 | `Announce`         | Records a **recommendation**: caches the boosted Article if not already fetched, and notifies its local author. Surfaces on the booster's local followers' For you feed — see [Recommending](/using/reading/#recommending) |
 | `Undo`             | Reverses the referenced Follow or Announce                                                                                                                                                                                 |
@@ -77,6 +77,20 @@ remote servers render the whole thread. Replies on a private author's posts
 stay local-only. See [Compatibility](/federation/compatibility/).
 
 See [Delivery and queues](/federation/delivery/).
+
+## AI-assisted post disclosure
+
+When an author marks a post as AI-assisted, Omicron includes the Boolean property
+`https://docs.omicron.blog/federation/overview/#ai-assisted-post-disclosure`
+with value `true` on the federated ActivityPub `Article`. The property is omitted
+when the author has not marked the post. Omicron reads it from incoming Articles
+and Updates, so another Omicron instance can show the badge and apply each local
+reader's filtering preference.
+
+This is an Omicron-specific JSON-LD extension, not a standard ActivityStreams
+property. Other ActivityPub software may preserve or ignore it, and is not
+expected to display the badge. The disclosure is self-reported; Omicron does not
+verify how AI was used.
 
 ## Author attribution on link cards
 

@@ -19,6 +19,12 @@ Pick your default tab in **Settings → Reading**. There is no engagement-ranked
 algorithm — ordering is chronological, and "For you" is simply the union of what
 you chose to follow.
 
+On the web homepage, switching tabs updates the URL (for example, `/?tab=local`).
+Refreshing keeps that tab open without changing your saved default. Opening the
+homepage without a `tab` parameter uses your saved default, or **For you** when
+signed in and **Global** for guests if no default is set. Guests can browse
+**Local** and **Global**; **For you** requires signing in.
+
 ### Author diversity on Local and Global
 
 **Local** and **Global** thin out any author who would otherwise dominate a
@@ -62,6 +68,28 @@ shown at all. The author's own audience is what decides, not the recommender's.
 
 Also in **Settings → Reading**: choose languages to **hide**, or to **show only**.
 Posts carry the language their author selected in the composer.
+
+### Random post
+
+Use the dice button in the signed-in web header to open a randomly selected post
+from the active feed. It samples the full set of posts available to that feed,
+not just the page currently loaded, and does not prefer recent or popular posts.
+**Local** and **Global** respect the language filter above; **For you** keeps its
+usual behavior and is not language-filtered. Mutes, blocks, AI-post preferences,
+and post visibility rules still apply. If no posts match, the button reports
+that without leaving the current page.
+
+### AI-assisted posts
+
+In **Settings → Reading**, **Show AI-Assisted Posts** is on by default. Turn it
+off to omit disclosed posts from your in-app feeds and listings, including
+timelines, profile and tag pages, search, recommendations, and reading lists.
+This is a per-reader preference: it does not change the post or block its direct
+page, and other readers' choices are unaffected. Normal post visibility rules
+still apply to direct links. Omicron shares the disclosure with other Omicron
+instances; other ActivityPub software may ignore the extension, so the badge is
+not guaranteed on every remote service. See
+[AI-assisted post disclosure](/federation/overview/#ai-assisted-post-disclosure).
 
 ## Following
 

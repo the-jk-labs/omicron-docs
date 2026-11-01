@@ -15,6 +15,112 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Better Auth, passkeys, and Android App Links
+
+This release updates Better Auth, enables native Omicron app sign-in, and allows
+passkey assertions on the instance's own origin. It also adds the optional
+Android App Links settings described in [Environment variables](/reference/environment/#android-app-links).
+No database migration is required.
+
+Before upgrading, create a backup and confirm the snapshot exists:
+
+```bash
+docker compose exec backup backup-now
+docker compose exec backup restic snapshots
+```
+
+For `omicron.blog`, set `ANDROID_APP_CERT_FINGERPRINTS` in the deployment
+`.env` to the SHA-256 fingerprints for the keys that sign the Android app.
+Leave it unset on instances that do not publish that app. Then rebuild and
+recreate the application services; Caddy must be recreated to load the updated
+`Caddyfile`:
+
+```bash
+docker compose up -d --build
+docker compose up -d --force-recreate caddy
+```
+
+Verify the public statement with
+`curl https://omicron.blog/.well-known/assetlinks.json`. The Android verifier
+and an installed release build still need to confirm the end-to-end link flow.
+
+## Content portability
+
+The [import/export workflow](/using/import-export/) ships new backend routes
+and a **Settings → Content** tab. Deploy backend and frontend together. It adds
+no database migration or backfill.
+
+1. Create a backup and verify that its new snapshot exists. Stop on failure:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+2. Pull the release, rebuild, and recreate the affected services:
+
+   ```bash
+   git pull --ff-only
+   docker compose up -d --build backend frontend
+   ```
+
+   Compose picks up the frontend's updated `BODY_SIZE_LIMIT=50m`. Preserve all
+   volumes. No Caddy recreation is needed for this release; Podman Compose
+   users can run the equivalent commands.
+
+3. If you maintain a custom Compose file, frontend environment override, or
+   gateway body cap, allow **50 MiB** archive requests. The SvelteKit proxy
+   still limits other API writes to **5 MiB**; backend image limits remain
+   unchanged.
+4. Verify normal reading and sign-in, then open **Settings → Content**. A
+   signed-out request to `/api/content/export` must return `401`, not a ZIP.
+   Use the preview to inspect an archive before importing. Do not use the
+   integration test suite against your instance database.
+
+## Security-hardening upgrade
+
+The remote-image proxy, browser policy, and Caddy admin socket must ship
+**together**. Do not deploy just the frontend: it will request an image endpoint
+the old backend does not provide. Do not reload only the Caddyfile: the old
+backend still expects the removed admin TCP listener.
+
+1. Before upgrading, create a backup and verify the new snapshot exists:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if the backup fails or the snapshot is missing. Keep an off-host copy
+   and a tested restore procedure; see [Backups](/self-hosting/backups/).
+
+2. Remove a legacy `CADDY_ADMIN_URL=http://caddy:2019` override from `.env`, if
+   present. The bundled stack now uses `/run/caddy-admin/admin.sock`; a nonempty
+   custom URL takes precedence and would keep the toggle pointed at the old port.
+
+3. Pull the release containing the change and recreate the three services:
+
+   ```bash
+   git pull
+   docker compose up -d --build --force-recreate backend frontend caddy
+   ```
+
+   Compose creates the `caddy_admin` volume and mounts it only in Caddy and the
+   backend. Do not delete existing database, upload, secret, or certificate volumes.
+   Podman Compose users can use the equivalent commands.
+
+4. Check sign-in, remote avatars and article images, and the scraper-protection
+   toggle in both directions. Confirm `/.well-known/security.txt` is public and
+   `/api/instance/tls-check?domain=your-domain` returns `404` through the public
+   entrypoint. Check Caddy and backend logs for socket or config-reload errors.
+
+No schema migration or content backfill is required by these hardening changes.
+HTTP-only remote images may stop displaying: the proxy requires HTTPS. Style
+attributes are limited to fixed declaration hashes; custom server-rendered
+inline styles may need to move into a stylesheet. DNS/mail policy, DNSSEC, and
+CAA are separate operator work. HSTS preload remains off unless the owner opts
+in after checking the whole domain tree; see [Security](/self-hosting/security/#domain-and-mail-hardening).
+
 ## What happens
 
 - **Migrations run automatically** on backend startup and are idempotent — a
@@ -43,6 +149,43 @@ only** within a version:
 
 Migrations are versioned SQL in `apps/backend/drizzle/`, replayed at runtime by
 `src/db/migrate.ts`. `drizzle-kit` is **not** required inside the container.
+
+## One-time step: IP access rules
+
+The IP access-rule UI needs a managed insertion marker in the shipped
+`Caddyfile`. Existing deployments must pick up that file in both Caddy and the
+backend; `restart` alone can leave a replaced bind-mounted file pointing at its
+old contents.
+
+1. Create a backup and verify its snapshot before upgrading:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if either command fails or the new snapshot is missing.
+
+2. Pull the release and recreate the affected services:
+
+   ```bash
+   git pull
+   docker compose up -d --build --force-recreate backend frontend caddy backup
+   ```
+
+   The backup service also mounts the Caddyfile, so recreate it to keep future
+   configuration backups current. Never delete named volumes. Podman Compose
+   users can use the equivalent commands.
+
+3. Open **Admin → Security → IP access rules**. Preview a draft against a test
+   address and `/search`, then against `/admin`; the latter must report an
+   exempt path. A preview does not create a live block. Confirm normal sign-in,
+   public reading, feeds, and API access still work.
+
+This feature adds no schema migration or environment variable, and starts with
+no custom rules. A missing-marker error means the backend is still reading an
+older Caddyfile. Stored rules are re-applied after Caddy becomes reachable on
+startup; the short startup gap is fail-open, not a durable network firewall.
 
 ## One-time step: the AI-scraper-shield release
 
@@ -138,6 +281,118 @@ succeeded. See
 
 If you only edited `botPolicy.yaml` yourself and want it picked up without
 recreating anything else, `docker compose restart anubis` is enough.
+
+## Identity OAuth
+
+The identity OAuth release adds four tables (`oauth_apps`, `oauth_requests`,
+`oauth_codes`, and `oauth_tokens`) through migration `0043_gorgeous_shape`.
+Migrations run automatically on backend startup. Existing usernames, posts,
+sessions, and the NodeInfo software name remain unchanged. No new environment
+variables are required.
+
+1. Before updating, take a backup and verify the new snapshot exists:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+   Stop if the backup fails or the snapshot is missing.
+
+2. Pull the release and recreate all services that build the new application or
+   mount its updated proxy and bot-policy files:
+
+   ```bash
+   git pull --ff-only
+   docker compose up -d --build --force-recreate backend frontend caddy anubis backup
+   ```
+
+   This refreshes `Caddyfile` in the backend, Caddy, and backup containers, and
+   `botPolicy.yaml` in Anubis and backup. A plain `restart` can leave an old
+   bind-mounted file in place. Preserve every named volume. Podman Compose users
+   can use the equivalent commands.
+
+3. Validate the proxy configuration and check service status:
+
+   ```bash
+   docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   docker compose ps
+   ```
+
+   Confirm `/.well-known/oauth-authorization-server` returns JSON with the
+   instance's canonical issuer, `GET /api/v1/accounts/verify_credentials` without
+   a token returns `401` rather than a bot challenge, and NodeInfo still
+   advertises `omicron`. Check normal sign-in and reading. A complete third-party
+   sign-in also requires a supported client; see
+   [Identity OAuth](/reference/identity-oauth/).
+
+The new Caddy machine-endpoint routes are required for form-encoded OAuth
+clients; do not fix origin-check failures by disabling browser CSRF protections.
+The backend re-applies saved scraper-shield and access-rule settings when Caddy
+is reachable after startup. FediDB still needs its own Omicron support change;
+upgrading the instance alone does not remove that service's software allowlist.
+
+## Third-party clients
+
+The scoped client-authorization release builds on identity OAuth. Migration
+`0044_unknown_nico_minoru` adds a refresh-token table and application/grant
+permission fields. Existing applications, consent requests, codes, and access
+tokens default to the original identity-only permission; an upgrade does not
+give an already-connected application new powers. Existing clients need new
+registration/consent to request broader API access.
+
+No environment variable is added. Update backend, frontend, and proxy routing
+together:
+
+1. Create a backup and confirm that the new snapshot exists:
+
+   ```bash
+   podman compose exec backup backup-now
+   podman compose exec backup restic snapshots
+   ```
+
+   Do not proceed on a failed backup or missing snapshot. Keep every named
+   volume, including database, uploads, certificates, and secrets.
+
+2. Pull a release containing the feature and recreate the affected services:
+
+   ```bash
+   git pull --ff-only
+   podman compose up -d --build --force-recreate backend frontend caddy backup
+   ```
+
+   Docker Compose users can substitute `docker compose`. The migration runs on
+   backend startup. Recreating Caddy loads the new API routing, while recreating
+   backend and backup refreshes their views of the bind-mounted `Caddyfile`.
+   A plain restart or an unchanged Caddy container can keep the old routing.
+
+3. Validate configuration and status:
+
+   ```bash
+   podman compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   podman compose ps
+   ```
+
+   Confirm `/api/client` reports API version 1, OAuth metadata uses the correct
+   canonical issuer, and API calls/preflights return API responses rather than
+   Anubis challenge HTML. Test browser sign-in, normal reading, client consent,
+   and revocation from Settings → Integrations → Connected applications.
+
+All `/api` paths, OAuth token/revocation transports, and root health/version
+routes go directly to the backend in the updated gateway. Browser consent
+remains in SvelteKit. The updated backend enforces
+[origin checks for cookie-authenticated writes](/reference/http-api/#public-gateway-origin-checks).
+Do not apply this Caddy routing to an older backend: that would remove
+SvelteKit's form-origin protection without replacing it.
+
+Custom proxies must preserve Authorization, the browser's unchanged Origin,
+methods, bodies, OAuth/CORS headers, and preflights; keep
+`/api/instance/tls-check` inaccessible publicly. Do not rewrite a client's Origin
+to the instance origin or remove CSRF checks to make a client work.
+
+See [Third-party clients](/development/third-party-clients/) for protocol and
+permission details. Existing Mastodon apps do not become compatible merely
+because the instance supports these authorization endpoints.
 
 ## Rolling back
 

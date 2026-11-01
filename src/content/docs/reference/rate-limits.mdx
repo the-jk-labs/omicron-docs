@@ -7,23 +7,23 @@ import Callout from "@/components/Callout.astro";
 
 Rate limiting is **on by default** and covers logins, registrations, API writes,
 media uploads, the federation inbox, remote-discovery browsing, and the content
-webhook.
+webhook, as well as OAuth authorization and optional Umami Cloud collection.
 
 ## The limiters
 
-| Limiter           | Variable             | Default | Window | Keyed on                   |
-| ----------------- | -------------------- | ------- | ------ | -------------------------- |
-| Login             | `RL_LOGIN_MAX`       | 15      | 15 min | Source IP                  |
-| Registration      | `RL_REGISTER_MAX`    | 5       | 1 hour | Source IP                  |
-| API writes        | `RL_API_WRITE_MAX`   | 120     | 1 min  | Signed-in user, else IP    |
-| Media uploads     | `RL_UPLOAD_MAX`      | 10      | 1 min  | Signed-in user, else IP    |
-| Federation inbox  | `RL_INBOX_MAX`       | 300     | 1 min  | Source IP                  |
-| Remote discovery  | `RL_REMOTE_MAX`      | 30      | 1 min  | Source IP (anonymous only) |
-| Remote cache-miss | `RL_REMOTE_MISS_MAX` | 20      | 1 min  | Signed-in user, else IP    |
-| Content webhook   | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
+| Limiter             | Variable             | Default | Window | Keyed on                   |
+| ------------------- | -------------------- | ------- | ------ | -------------------------- |
+| Login               | `RL_LOGIN_MAX`       | 15      | 15 min | Source IP                  |
+| Registration        | `RL_REGISTER_MAX`    | 5       | 1 hour | Source IP                  |
+| API writes          | `RL_API_WRITE_MAX`   | 120     | 1 min  | Signed-in user, else IP    |
+| Media uploads       | `RL_UPLOAD_MAX`      | 10      | 1 min  | Signed-in user, else IP    |
+| Federation inbox    | `RL_INBOX_MAX`       | 300     | 1 min  | Source IP                  |
+| Remote discovery    | `RL_REMOTE_MAX`      | 30      | 1 min  | Source IP (anonymous only) |
+| Remote cache-miss   | `RL_REMOTE_MISS_MAX` | 20      | 1 min  | Signed-in user, else IP    |
+| Content webhook     | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
+| Content portability | Fixed in source      | 6       | 1 min  | Signed-in account          |
 
-Plus hard payload caps on the two endpoints that accept unauthenticated or
-machine-sent bodies:
+The inbox and content webhook have environment-configurable payload caps:
 
 | Variable                 | Default   | Meaning                                         |
 | ------------------------ | --------- | ----------------------------------------------- |
@@ -86,6 +86,22 @@ an unbounded payload into the JSON parser.
 A CMS publishing a batch is bursty but never fast, so 30/min leaves room for a
 bulk re-sync while staying far below what a brute-force attempt would need.
 
+## Content portability
+
+The [content import/export endpoints](/reference/http-api/#content-portability--apicontent)
+share a fixed **6 requests per minute per signed-in account** budget.
+`GET /api/content/export` consumes it too; preview and import POSTs also pass
+through the general API-write limiter. There is no dedicated environment
+variable for this budget. `RATE_LIMIT_ENABLED=false` disables the rate budget,
+not the payload or storage bounds.
+
+Archive input is capped at **50 MiB**, with **100 MiB** of total ZIP expansion,
+**10 MiB** per file, **5,000** entries, and **1,000** posts. Bundled images must
+be supported raster files no larger than **5 MiB**, and normal storage quotas
+still apply. Both declared sizes and actual expanded bytes are bounded.
+Imported images are read only from the archive, never downloaded from an
+archive-supplied URL. See [Import and export](/using/import-export/).
+
 ## Remote discovery (outbound bounds)
 
 Beyond the per-IP `RL_REMOTE_MAX` budget, the outbound work itself is bounded so
@@ -122,6 +138,50 @@ cascades to its posts, so the two grow and shrink together. Set the variable to
 `0` to keep the cache forever — see
 [Environment → Rate limiting](/reference/environment/#rate-limiting).
 
+## Identity OAuth
+
+The [identity](/reference/identity-oauth/) and
+[client authorization](/development/third-party-clients/) endpoints have separate
+fixed source-IP budgets. They bypass the general API-write limiter; they do not share
+its per-user budget. These values are fixed in source rather than configured by
+individual environment variables.
+
+| Endpoint                                  | Maximum requests | Window   |
+| ----------------------------------------- | ---------------- | -------- |
+| `POST /api/v1/apps`                       | 10               | 1 hour   |
+| `GET /api/oauth/authorize`                | 30               | 1 minute |
+| `POST /api/oauth/authorize`               | 30               | 1 minute |
+| `POST /oauth/token`                       | 60               | 1 minute |
+| `POST /oauth/revoke`                      | 60               | 1 minute |
+| `GET /api/v1/accounts/verify_credentials` | 120              | 1 minute |
+| `GET /api/v1/apps/verify_credentials`     | 120              | 1 minute |
+| `GET /api/oauth/connections`              | 60               | 1 minute |
+| `DELETE /api/oauth/connections/:id`       | 30               | 1 minute |
+
+OAuth JSON and form request bodies have a fixed **16,384-byte** cap, enforced
+while reading the body. Requests over the cap return `413`, including those
+without a `Content-Length` header. Disabling `RATE_LIMIT_ENABLED` also disables
+these rate budgets, but does not disable the body cap.
+
+The `/oauth/token` budget covers both code exchange and token renewal. Once an
+OAuth client calls an ordinary API resource, the usual API-write/upload budgets
+apply to the account owner; each application does not receive a separate
+per-user allowance.
+
+## Umami Cloud
+
+When [Umami Cloud](/self-hosting/umami/) is enabled,
+`POST /api/site/api/send` has a fixed **60 requests per minute per source IP**
+budget. It also passes through the general API-write limiter. There is no
+dedicated environment variable for the 60-request budget.
+
+The collection body is limited to **16,384 bytes**, checked both against
+`Content-Length` and while reading the stream. Oversized bodies return `413`;
+over-budget requests return `429` with `Retry-After` before any Cloud request.
+The rate checks also run on disabled collection and requests with privacy
+opt-outs. `RATE_LIMIT_ENABLED=false` disables the rate budgets, not the body
+cap for enabled collection.
+
 ## Redis changes the semantics
 
 |                  | Without Redis       | With `REDIS_URL`        |
@@ -133,6 +193,17 @@ cascades to its posts, so the two grow and shrink together. Set the variable to
   Running multiple backend processes without Redis multiplies every effective limit by the process count, and a restart
   clears all counters. The bundled Compose stack sets `REDIS_URL` for you.
 </Callout>
+
+Better Auth's own authentication rules also use the shared atomic Redis counter,
+including sign-in and recovery requests. Their budgets survive **backend**
+restarts for the remainder of each window; this does not promise survival of a
+Redis restart without Redis persistence. On Redis errors, the store falls back
+to per-process memory, so distributed enforcement is temporarily lost.
+
+The [remote-image proxy](/reference/http-api/#remote-images--apimediaproxy) has
+a separate **240 requests per minute per IP** limiter. Its transfer, concurrency,
+and cache limits are fixed in source rather than tuned through the variables
+above.
 
 ## Responses
 

@@ -1,40 +1,93 @@
 ---
 title: Admin API
 description: The administrative endpoints under /api/admin — instance settings, email, moderation, users, and defederation.
-badge: Admin only
+badge: Admins + moderators
 ---
 
 import Callout from "@/components/Callout.astro";
 
-Everything under **`/api/admin`** requires an authenticated **admin** session.
-These are the endpoints the admin panel itself calls; they are documented here
+Everything under **`/api/admin`** requires an authenticated **admin or
+moderator** account — but not every endpoint accepts both. The **Users** and
+**Content and reports** sections below accept moderators; **Instance**,
+**Settings**, **Security**, **Discoverability**, **Media**, **Email**,
+**Federation domains**, and both role-grant endpoints are admin-only, and a
+moderator calling them gets `403 Admin access required.` These are the
+endpoints the admin panel itself calls; they are documented here
 because operators sometimes need to script against them.
 
 <Callout type="warning">
-  There is no API token flow — an admin script authenticates by signing in and keeping the session cookie, exactly like
-  the browser. Treat any script holding that cookie as holding admin rights.
+  Scripts can use a 15-minute bearer JWT minted from a Better Auth session. Treat the session cookie or JWT as holding
+  that account's role and rights; see [HTTP API authentication](/reference/http-api/#authentication).
 </Callout>
+
+Independent apps can instead request `admin:read` or `admin:write` through
+[client OAuth](/development/third-party-clients/). These permissions are not
+included in ordinary `read write`, and they never grant a role or bypass the
+endpoint's ownership/confirmation rules. The account's current role is checked
+for each request. Password-confirmed account deletion and role changes should
+open `/admin` in the system browser rather than collect an operator's password.
 
 ## Instance
 
-| Method | Path                                | Purpose                                              |
-| ------ | ----------------------------------- | ---------------------------------------------------- |
-| `GET`  | `/api/admin/instance`               | Instance name, domain, federation flag               |
-| `PUT`  | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
-| `POST` | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
+| Method   | Path                                | Purpose                                              |
+| -------- | ----------------------------------- | ---------------------------------------------------- |
+| `GET`    | `/api/admin/instance`               | Instance identity, visitor card, public information  |
+| `PUT`    | `/api/admin/instance`               | Update them (domain and federation apply on restart) |
+| `POST`   | `/api/admin/instance/banner`        | Upload the visitor-card banner image                 |
+| `DELETE` | `/api/admin/instance/banner`        | Revert the banner to the bundled artwork             |
+| `POST`   | `/api/admin/instance/rotate-secret` | Rotate the session secret                            |
 
-Rotating signs everyone out on the next restart. If `SESSION_SECRET` is pinned in
-the environment, rotate it there instead.
+`PUT /api/admin/instance` accepts any subset of `appName`, `appDomain`,
+`federationEnabled`, `bannerText`, `about`, `rules`, `privacyPolicy`,
+`contactEmail`, `contactUrl`, `abuseEmail`, and `statusUrl`. The three page
+sections accept Markdown up to 20,000 characters each and are stored alongside
+their server-rendered sanitized HTML; blank clears back to the built-in
+placeholder. Emails must be valid, and contact/status URLs must be `http(s)`.
+Invalid values answer `400`.
+
+Rotating signs everyone out and invalidates JWTs on the next restart. JWT
+issuance and public-key discovery pause until that restart completes. If
+`SESSION_SECRET` is pinned in the environment, rotate it there instead.
 
 ## Settings and analytics
 
-| Method | Path                            | Purpose               |
-| ------ | ------------------------------- | --------------------- |
-| `GET`  | `/api/admin/settings`           | All instance settings |
-| `PUT`  | `/api/admin/settings/analytics` | Analytics behaviour   |
+| Method | Path                            | Purpose                        |
+| ------ | ------------------------------- | ------------------------------ |
+| `GET`  | `/api/admin/settings`           | Built-in view-counting setting |
+| `PUT`  | `/api/admin/settings/analytics` | Built-in analytics behaviour   |
 
-What analytics can and cannot be turned on is described in
+The built-in analytics privacy model is described in
 [Writer dashboard](/using/analytics/).
+
+### Umami Cloud
+
+These routes require an **admin** account; moderators receive `403`.
+
+| Method | Path               | Purpose                              |
+| ------ | ------------------ | ------------------------------------ |
+| `GET`  | `/api/admin/umami` | Read the website ID and enabled flag |
+| `PUT`  | `/api/admin/umami` | Replace both settings                |
+
+Both return the same shape and use `Cache-Control: no-store`:
+
+```json
+{
+  "enabled": true,
+  "websiteId": "94db1cb1-74f4-4a40-ad6c-962362670409"
+}
+```
+
+`PUT` requires both fields. `enabled` is a boolean; `websiteId` is a string
+of at most **4,096 characters** after trimming. Supply a UUID or a script
+snippet containing exactly one quoted `data-website-id` attribute. Only the
+lowercase UUID is stored and returned; the snippet and its URLs are discarded.
+Invalid input returns `400` with `{ "error": string }`.
+
+The default is `{ "enabled": false, "websiteId": "" }`. Setting `enabled` to
+`false` keeps the supplied ID; send an empty string too to remove it. A blank
+ID with `enabled: true` is rejected. Changes apply live and do not delete data
+already held by Cloud. For the admin walkthrough and privacy implications,
+see [Umami Cloud](/self-hosting/umami/).
 
 ## Security
 
@@ -45,6 +98,69 @@ What analytics can and cannot be turned on is described in
 
 The toggle applies live — the backend re-routes traffic through the challenge
 service via Caddy's internal admin API. No restart.
+
+### IP access rules
+
+All of these routes are **admin-only**, including reads and previews:
+
+| Method   | Path                                    | Purpose                        |
+| -------- | --------------------------------------- | ------------------------------ |
+| `GET`    | `/api/admin/security/access-rules`      | List saved rules               |
+| `POST`   | `/api/admin/security/access-rules`      | Add a temporary rule           |
+| `PATCH`  | `/api/admin/security/access-rules/:id`  | Enable or disable a rule       |
+| `DELETE` | `/api/admin/security/access-rules/:id`  | Remove a rule                  |
+| `POST`   | `/api/admin/security/access-rules/test` | Preview saved rules or a draft |
+
+Creation body:
+
+```json
+{
+  "network": "192.0.2.0/24",
+  "action": "block",
+  "reason": "Temporary automated traffic",
+  "expiresInHours": 24
+}
+```
+
+`action` is `allow` or `block`. `network` accepts IPv4/IPv6 addresses or CIDR
+ranges and is normalized to a network with a prefix. IPv4-mapped IPv6 ranges
+and interface-scoped IPv6 addresses are rejected. `expiresInHours` must be
+`1`, `24`, `168`, or `720`; it is required. `reason` is optional, defaults to
+an empty string, and is limited to 300 characters.
+
+`GET`, `POST`, `PATCH`, and `DELETE` return `{ "rules": [...] }`. Each rule
+contains `id`, `network`, `action`, `reason`, `enabled`, `createdAt`, and
+`expiresAt`; timestamps are ISO strings. New rules are enabled and prepended.
+The first enabled, unexpired match wins. At most 100 unexpired rules can be
+saved, including disabled ones. Adding a rule prunes expired entries.
+
+`PATCH` takes `{ "enabled": boolean }`; an expired rule cannot be re-enabled.
+Unknown rule IDs and validation/application failures return `400` with
+`{ "error": string }`. Writes require managed Caddy, but reads and previews do
+not. The challenge switch does not disable IP rules.
+
+Preview body:
+
+```json
+{
+  "ip": "192.0.2.10",
+  "path": "/search",
+  "draft": { "network": "192.0.2.0/24", "action": "allow" }
+}
+```
+
+Omit `draft` to test saved rules only. A draft is tested before saved rules but
+is never persisted or applied. `ip` must be a single address, not a CIDR range.
+`path` must start with `/`, contain no query or fragment, and be at most
+2,048 characters. The result is `{ "action", "ruleId", "message" }`:
+
+- `action`: `allow`, `block`, `default` (no matching custom rule), or `exempt`.
+- `ruleId`: the matched rule's ID, `"draft"`, or `null` for `default`/`exempt`.
+- `message`: a human-readable explanation. It does not simulate Anubis's bot
+  policy or certify that an IP is what Caddy will see behind a proxy.
+
+For exempt paths, proxy limitations, expiry behavior, and the UI walkthrough,
+see [IP access rules](/self-hosting/admin-panel/#ip-access-rules).
 
 ## Discoverability
 
@@ -87,6 +203,11 @@ See [Email](/self-hosting/email/).
 
 ## Users
 
+Moderators may call every endpoint in this table **except the two role
+grants** — and only against regular accounts: acting on an admin's account, or
+(on a moderator's) on another moderator's, is refused with `403`. Role grants
+are admin-only.
+
 | Method   | Path                                      | Purpose                                                                                                                                         |
 | -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET`    | `/api/admin/users`                        | List local accounts, newest first (`?q=` over handle, name and email; `?suspended=`, `?admin=`, `?verified=`; `?cursor=` + `?limit=` for pages) |
@@ -95,7 +216,8 @@ See [Email](/self-hosting/email/).
 | `PATCH`  | `/api/admin/users/:id`                    | Edit profile fields and the login email                                                                                                         |
 | `POST`   | `/api/admin/users/:id/avatar`             | Replace another account's avatar (raw image body)                                                                                               |
 | `DELETE` | `/api/admin/users/:id/avatar`             | Clear another account's avatar back to initials                                                                                                 |
-| `POST`   | `/api/admin/users/:id/role`               | Grant or revoke the admin role (confirm with your password)                                                                                     |
+| `POST`   | `/api/admin/users/:id/role`               | Grant or revoke the admin role (confirm with your password; admin-only)                                                                         |
+| `POST`   | `/api/admin/users/:id/moderator-role`     | Grant or revoke the moderator role (confirm with your password; admin-only)                                                                     |
 | `POST`   | `/api/admin/users/:id/verification-email` | Resend the verification email                                                                                                                   |
 | `POST`   | `/api/admin/users/:id/verify`             | Manually mark the address verified                                                                                                              |
 | `POST`   | `/api/admin/users/:id/delete`             | Delete an account (confirm with username + your password)                                                                                       |
@@ -122,11 +244,22 @@ to the previous one.
 
 ## Content and reports
 
-| Method   | Path                             | Purpose                     |
-| -------- | -------------------------------- | --------------------------- |
-| `GET`    | `/api/admin/reports`             | The moderation queue        |
-| `POST`   | `/api/admin/reports/:id/resolve` | Resolve or dismiss a report |
-| `DELETE` | `/api/admin/posts/:id`           | Remove a post               |
+Moderators may call every endpoint in this section.
+
+| Method   | Path                               | Purpose                           |
+| -------- | ---------------------------------- | --------------------------------- |
+| `GET`    | `/api/admin/reports`               | The moderation queue              |
+| `POST`   | `/api/admin/reports/:id/resolve`   | Resolve or dismiss a report       |
+| `POST`   | `/api/admin/posts/:id/ai-assisted` | Add the AI-Assisted disclosure    |
+| `DELETE` | `/api/admin/posts/:id/ai-assisted` | Remove the AI-Assisted disclosure |
+| `DELETE` | `/api/admin/posts/:id`             | Remove a post                     |
+
+The AI-Assisted routes take no body and return `{ "aiAssisted": true }` or
+`{ "aiAssisted": false }`, respectively. They change only the disclosure and
+accept local posts; remote posts are controlled by their originating instance.
+Repeating a request that already matches the current value is a no-op. Changing
+a published post federates an ActivityPub `Update`; drafts and scheduled posts
+are not federated.
 
 Removing a published post federates a `Delete` to remote servers.
 

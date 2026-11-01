@@ -1,0 +1,234 @@
+---
+title: Identity OAuth
+description: The public-identity-only OAuth permission, its compatibility flow, security requirements, and limits.
+---
+
+import Callout from "@/components/Callout.astro";
+
+The **`read:accounts`** scope lets a service verify the consenting account's
+public identity without obtaining access to private data or normal app
+operations. Existing identity-only authorizations retain those limits.
+
+Omicron also supports public applications, broader scoped API grants, and
+refresh tokens for independent clients; see
+[Third-party clients](/development/third-party-clients/). This page describes
+the narrower identity-only flow, not the complete authorization feature.
+Neither flow is OpenID Connect, a browser-session exchange, or a full Mastodon
+API implementation. NodeInfo still reports `software.name: "omicron"`.
+
+The identity flow uses the **authorization code** grant. Password, implicit,
+client-credentials, and out-of-band flows remain unsupported. An authorization
+consisting solely of `read:accounts` does not receive a refresh token.
+
+<Callout type="warning" title="Third-party support is separate">
+  A service that selects an authentication implementation from a software allowlist must add Omicron itself. In
+  particular, FediDB's unsupported-software warning is not bypassed by these endpoints. Do not advertise Omicron as
+  Mastodon to work around a client's detection.
+</Callout>
+
+## Endpoints
+
+All paths are relative to the instance's canonical public origin.
+
+| Method | Path                                      | Purpose                                                                  |
+| ------ | ----------------------------------------- | ------------------------------------------------------------------------ |
+| `GET`  | `/.well-known/oauth-authorization-server` | Issuer, endpoint, grant, authentication-method, scope, and S256 metadata |
+| `POST` | `/api/v1/apps`                            | Register a public or confidential application                            |
+| `GET`  | `/oauth/authorize`                        | Browser sign-in and explicit consent                                     |
+| `POST` | `/oauth/token`                            | Exchange a single-use authorization code                                 |
+| `POST` | `/oauth/revoke`                           | Revoke one of the client's identity tokens                               |
+| `GET`  | `/api/v1/accounts/verify_credentials`     | Verify the token owner's minimal public identity                         |
+| `GET`  | `/api/v1/apps/verify_credentials`         | Inspect the application's non-secret metadata and approved scopes        |
+
+The browser consent page also uses `GET` and `POST /api/oauth/authorize`.
+`GET /api/oauth/connections` lists the signed-in user's active tokens, and
+`DELETE /api/oauth/connections/:id` revokes an owned token. These backing APIs
+require a live Better Auth cookie session, not an identity token or general API
+JWT. Consent decisions and disconnect requests additionally require an `Origin`
+header matching the instance's canonical origin exactly.
+
+## 1. Register the application
+
+`POST /api/v1/apps` accepts a JSON object or
+`application/x-www-form-urlencoded` body.
+
+| Field                        | Required | Meaning                                                                |
+| ---------------------------- | -------- | ---------------------------------------------------------------------- |
+| `client_name`                | Yes      | Nonblank display name, at most 100 characters; not a verified identity |
+| `redirect_uris`              | Yes      | Array or whitespace-separated string with one to ten exact callbacks   |
+| `scopes`                     | No       | `read:accounts` for this identity-only flow; also the omission default |
+| `website`                    | No       | Application website, at most 2,048 characters                          |
+| `token_endpoint_auth_method` | No       | `none` for a public client; otherwise confidential authentication      |
+
+The website must use HTTPS, without credentials or fragments. Callbacks also
+support reverse-domain native schemes. HTTP is accepted only for `localhost`,
+`127.0.0.1`, or `[::1]` loopback URLs. Wildcards are not allowed.
+Callbacks must not already contain `code`, `state`, `error`, or
+`error_description` query parameters. The complete callback list is capped at
+8,192 characters; an authorization callback must fit the 2,048-character
+authorization parameter limit.
+
+```json
+{
+  "client_name": "Example directory",
+  "redirect_uris": "https://application.example/oauth/callback",
+  "scopes": "read:accounts",
+  "website": "https://application.example"
+}
+```
+
+A successful response is `200` and includes `id`, `name`, `website`,
+`redirect_uris`, `scopes`, and `client_id`. The legacy `redirect_uri` and empty
+`vapid_key` fields remain for compatibility, without advertising Web Push.
+Confidential registration also returns a `client_secret` once, with no scheduled
+expiry (`client_secret_expires_at: 0`). Omicron stores its hash; keep the value
+server-side and out of browser storage, URLs, analytics, and logs. Public
+clients receive no secret and authenticate with their client ID and PKCE.
+
+## 2. Request browser consent
+
+Send the browser to `/oauth/authorize` with these query parameters:
+
+| Parameter               | Required         | Value                                                                |
+| ----------------------- | ---------------- | -------------------------------------------------------------------- |
+| `client_id`             | Yes              | The registered client ID                                             |
+| `redirect_uri`          | Yes              | Exactly one registered callback, including its query string          |
+| `response_type`         | Yes              | `code`                                                               |
+| `scope`                 | Yes              | Exactly `read:accounts`                                              |
+| `state`                 | Recommended      | Unpredictable, browser-session-bound value, at most 2,048 characters |
+| `code_challenge`        | See below        | Base64url SHA-256 digest of the PKCE verifier, without padding       |
+| `code_challenge_method` | With a challenge | `S256`; `plain` is not supported                                     |
+
+Always generate and validate `state` on the client side. Omicron preserves it,
+but does not replace the client's responsibility to bind a callback to the
+browser that initiated sign-in. Do not place private information in it.
+
+S256 PKCE is optional only for the legacy confidential identity-only flow using
+a web callback. Public clients and native callbacks require it; all broader API
+grants do too. Generate a fresh 43–128-character
+verifier from OAuth's unreserved ASCII characters and retain it server-side for
+the exchange. A challenge must be 43 base64url characters. Once authorized,
+PKCE cannot be omitted or downgraded at the token endpoint.
+
+Omicron validates the client, exact callback, requested scope, and challenge
+before showing consent. Invalid requests fail locally instead of redirecting
+to an untrusted callback. The user signs in using the normal instance login;
+consent requires a live cookie session and is never automatic. Its one-use
+ticket is bound to that account, session, and authorization request and expires
+after **10 minutes**.
+
+Approval returns a `code` and the original `state` to the registered callback.
+Denial returns `error=access_denied` and the original `state`, without a code.
+Authorization codes expire after **5 minutes** and are single-use.
+
+## 3. Exchange the code
+
+`POST /oauth/token` accepts JSON or form-encoded parameters:
+
+| Parameter                       | Required                | Value                                                       |
+| ------------------------------- | ----------------------- | ----------------------------------------------------------- |
+| `grant_type`                    | Yes                     | `authorization_code`                                        |
+| `client_id` and `client_secret` | Unless using HTTP Basic | Confidential credentials; public clients send only the ID   |
+| `code`                          | Yes                     | The authorization code                                      |
+| `redirect_uri`                  | Yes                     | Exactly the callback authorized with this code              |
+| `code_verifier`                 | If PKCE was authorized  | The original verifier                                       |
+| `scope`                         | No                      | If sent, exactly `read:accounts`; cannot expand permissions |
+
+HTTP Basic client authentication is also supported: form-encode the client ID
+and secret separately, join with `:`, then base64-encode the result. Do not send
+credentials both in the header and in the body.
+
+```json
+{
+  "access_token": "omi_id_<opaque-credential>",
+  "token_type": "Bearer",
+  "scope": "read:accounts",
+  "created_at": 1790000000,
+  "expires_in": 3600
+}
+```
+
+The timestamp above is illustrative. The token lasts **one hour**, has no
+refresh token, and can verify public identity or inspect its own application's
+non-secret metadata, but cannot authenticate the ordinary `/api` resources.
+Credentials are stored
+hashed. Code consumption and token creation are atomic: parallel exchanges
+cannot both succeed. Detected reuse revokes a previously issued token for that
+code and client, so do not blindly retry an exchange after an ambiguous network
+failure; restart authorization instead.
+
+## 4. Verify identity
+
+Send `Authorization: Bearer <access_token>` to
+`GET /api/v1/accounts/verify_credentials`. The response contains only:
+
+```json
+{
+  "id": "<stable-local-account-id>",
+  "username": "ada",
+  "acct": "ada",
+  "display_name": "Ada",
+  "url": "https://blog.example/@ada",
+  "uri": "https://blog.example/users/ada"
+}
+```
+
+Treat the account ID together with the issuer origin as the identity key.
+Display names can change. Email, roles, credentials, avatar metadata, counts,
+and private account data are not included. A browser cookie or normal Omicron
+API JWT cannot substitute for an identity token on this endpoint. Expired or
+revoked tokens, and tokens belonging to suspended or deleted accounts, fail
+with `401`.
+
+## Revoke access
+
+`POST /oauth/revoke` uses the same client authentication as the token endpoint
+plus a `token` parameter. Public clients send their ID without a secret. It returns `200 {}` for an unknown,
+already-revoked, or differently owned token as well; only the authenticated
+client's token is affected. Users can independently revoke their own tokens in
+[Connected applications](/using/connected-applications/).
+
+Revocation and expiry prevent subsequent identity verification. They do not end
+a third party's already-established session or erase information it received
+earlier.
+
+## Errors and limits
+
+OAuth protocol errors use `error` and `error_description`, with codes including
+`invalid_request`, `invalid_client`, `invalid_scope`, `invalid_grant`,
+`unsupported_grant_type`, `unsupported_response_type`, and `invalid_token`.
+Missing browser sessions and origin failures use the normal Omicron JSON error
+shape. A `401` identity failure carries a Bearer authentication challenge;
+invalid client authentication carries an HTTP Basic challenge.
+
+- JSON and form bodies are capped at **16,384 bytes**, including chunked bodies.
+- Duplicate query-string and form-encoded parameter names are rejected.
+- OAuth responses use `Cache-Control: no-store`; the consent page also uses
+  `Referrer-Policy: no-referrer` and cannot be framed.
+- Endpoint-specific source-IP limits apply separately from normal API writes;
+  see [Rate limits](/reference/rate-limits/#identity-oauth).
+- Cleanup runs at startup and hourly. Expired tickets, codes, and non-renewable
+  tokens are removed. Never-approved confidential identity-only registrations
+  older than **30 days** are removed when they have no pending credentials.
+  Previously approved applications, public registrations, and registrations
+  requesting client-API scopes are retained.
+
+## Reverse proxy and upgrades
+
+The shipped Caddyfile sends the entire API, token exchange, and revocation
+directly to the backend. These machine endpoints
+must not receive bot challenges or the frontend's browser form-origin checks.
+The consent page remains in the frontend; OAuth browser endpoints are also
+exempt from the managed IP access rules.
+
+For a custom proxy, preserve these routes and the instance's canonical public
+origin. Do not disable browser CSRF protections globally to accommodate a
+server-to-server client. Plain frontend-only development proxies are subject
+to SvelteKit's form-origin checks; use the bundled gateway or the backend
+directly for form-encoded machine requests.
+
+There are no new environment variables for scoped client support. Existing
+identity-only rows remain narrow after the additive migration; see
+[Upgrading → Third-party clients](/self-hosting/upgrading/#third-party-clients).
+The [original identity release steps](/self-hosting/upgrading/#identity-oauth)
+also apply when upgrading an instance that predates identity OAuth entirely.
