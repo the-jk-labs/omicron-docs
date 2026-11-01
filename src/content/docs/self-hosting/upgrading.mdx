@@ -46,6 +46,28 @@ Federated body URL corrections apply to newly built Articles and later Updates;
 existing remote copies are not automatically resent. Metadata stripped from
 previously saved content cannot be recovered by this upgrade.
 
+### Follow-up: reference-safe paste and drop
+
+If the accessibility release above is already installed, the
+[paste/drop reference guard](/using/accessibility/#missing-or-ambiguous-references)
+needs only a frontend rebuild. It adds no migration, environment variable,
+dependency change, or content backfill; it needs no backend restart or Caddy
+recreation. Older instances must still apply the combined upgrade above.
+
+Take a fresh backup and confirm its snapshot first, using the commands above.
+Stop on failure. Retain the previous frontend image for rollback, preserve all
+volumes, and keep your usual Compose override files/options. Then run:
+
+```bash
+git pull --ff-only
+docker compose up -d --build --no-deps frontend
+```
+
+Podman Compose users can run the equivalent commands. Check normal reading and
+sign-in, reload already-open editor tabs, and verify that a transfer with a
+missing description target waits for repair rather than offering to insert
+broken references. Existing articles are not automatically repaired or rewritten.
+
 ## Better Auth, passkeys, and Android App Links
 
 This release updates Better Auth, enables native Omicron app sign-in, and allows

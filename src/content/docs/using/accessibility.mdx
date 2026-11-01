@@ -1,6 +1,6 @@
 ---
 title: Accessibility and authoring
-description: Image display preferences, keyboard navigation, image descriptions, passage language, tables, and content-loss warnings in the web app.
+description: Image display preferences, keyboard navigation, accessible authoring, and paste/drop reference repair in the web app.
 ---
 
 import Callout from "@/components/Callout.astro";
@@ -61,7 +61,9 @@ Below the article body, expand **Find and navigate**:
 **Go to document element** jumps to a heading, paragraph, image, table, or other
 document element. To move an image without dragging, select it there, cut it,
 move the text cursor to the destination, and paste it. Its supported description
-and metadata travel with it.
+and metadata travel with it. If the image references a separate long description,
+keep that text in the destination article or copy it with the image; copying the
+image alone does not copy a separate description paragraph.
 
 ## Image descriptions and sizing
 
@@ -150,12 +152,57 @@ that simplification is not reconstructed automatically.
 
 ### Paste and drop review
 
-**Review pasted content** or **Review dropped content** lists detected losses:
+When rich editing would simplify structure or accessibility information,
+**Review pasted content** or **Review dropped content** lists the affected
+information:
 
-- **Cancel** leaves the article unchanged and does not upload the pending files.
+- **Cancel** leaves the article unchanged. Files waiting for the initial review
+  are not uploaded.
 - **Paste simplified content** or **Insert simplified content** accepts the
-  simplified result. Review the remaining descriptions and relationships; undo
-  is available after insertion.
+  simplified result when no missing or ambiguous reference targets are detected.
+  Review the remaining descriptions and relationships; undo is available after
+  insertion.
+
+#### Missing or ambiguous references
+
+References connect images and tables to descriptions, captions, or headers
+through HTML IDs. For example, an image's `aria-describedby="details"` needs a
+description element with `id="details"` in the destination article.
+
+If a target is missing or ambiguous, the review says **Some references have
+missing or ambiguous targets**. The content has not been inserted, and the dialog
+offers **Cancel** only—not an option to accept broken relationships.
+
+1. Choose **Cancel**.
+2. Copy the referenced description with the image, or include the complete table
+   and its headers instead of an incomplete cell selection. If the source itself
+   has duplicate IDs, correct them in the source before trying again.
+3. Retry the paste or drop. Keep referenced text or headers in the article when
+   moving content within it.
+
+Use paste-as-plain-text only when you deliberately want to discard the source
+formatting and relationships. It does not reconstruct missing descriptions.
+
+The editor checks references again before insertion, including after an image
+upload finishes. If another edit removes a target during the upload, insertion
+waits for repair. Cancelling does not remove a file that has already been uploaded.
+
+#### Colliding IDs
+
+When a unique incoming ID is already used by an element remaining in the article,
+the editor renames the incoming ID and updates its bundled references together.
+For example, `details` can become `details-copy`, or another unused suffix when
+that name is taken. Existing article IDs stay unchanged. Caption and description
+references, table `headers`, and same-document fragment links follow the renamed
+target.
+
+This does not guess associations for duplicate IDs in the source, repair older
+broken references, or prove that a description or header relationship is correct.
+The reference guard applies to clipboard and external-drop insertion, not every
+internal drag/copy or stored-content transformation. Instance administrators can
+follow the [frontend-only upgrade steps](/self-hosting/upgrading/#follow-up-reference-safe-paste-and-drop).
+
+#### Image files and other transfer formats
 
 A single image file accompanied by matching HTML can keep its supplied
 description and surrounding text when uploaded. File-only images still need
