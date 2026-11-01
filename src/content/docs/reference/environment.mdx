@@ -128,6 +128,25 @@ These are fallbacks.
 | `SMTP_TLS`                    | `false`                        | `true` = implicit TLS (465); `false` = STARTTLS (587).                              |
 | `EMAIL_VERIFICATION_REQUIRED` | `true`                         | New accounts must confirm their email before they can sign in (`"false"` disables). |
 
+## Android App Links
+
+The backend serves `/.well-known/assetlinks.json` when signing-certificate
+fingerprints are configured. Android uses this public statement to verify that
+the site is allowed to open links in the named app. With no fingerprints, the
+route returns 404; malformed fingerprints prevent the backend from starting.
+
+| Variable                        | Default            | Purpose                                                                     |
+| ------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `ANDROID_APP_CERT_FINGERPRINTS` | _(empty)_          | Comma-separated SHA-256 signing-certificate fingerprints in `AA:BB:…` form. |
+| `ANDROID_APP_ID`                | `blog.omicron.app` | Android package name named in the Digital Asset Links statement.            |
+
+The Omicron-operated `omicron.blog` instance sets the fingerprints for its
+Android app. Leave them unset on other instances unless you operate an app
+signed by those keys; otherwise the instance would claim an app it does not
+ship. Set these values in the deployment `.env`; Compose passes them to the
+backend. The endpoint works with federation disabled and is publicly accessible
+at `/.well-known/assetlinks.json`.
+
 ## Public entrypoint
 
 | Variable     | Default | Purpose                    |

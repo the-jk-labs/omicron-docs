@@ -17,6 +17,11 @@ profiles. The instance you choose must use HTTPS.
 The app keeps each instance's session separate. Changing instances never sends
 an existing session to the new server.
 
+The Omicron-operated `omicron.blog` instance publishes an Android App Links
+association for the app. Android can open eligible `https://omicron.blog/...`
+links in a compatible installed app after it verifies the domain. Other
+instances do not publish this association by default.
+
 ## Sign in or create an account
 
 Use your email address or username and password to sign in. A username may be
@@ -36,8 +41,10 @@ case, the app shows **Check your inbox** after registration or an unverified
 sign-in attempt. Open the confirmation link in your email, then return to the
 app and sign in.
 
-The confirmation link opens the instance's web verification page. Android App
-Links are not currently available for this handoff.
+The confirmation link targets the instance's web verification page. On
+`omicron.blog`, Android App Links can route eligible HTTPS links to a compatible
+installed app, but opening and completing this verification flow depends on
+the app's URL handling and was not verified by the server-side App Links change.
 
 ## Navigate the app
 
