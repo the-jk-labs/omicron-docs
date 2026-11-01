@@ -8,6 +8,15 @@ import Callout from "@/components/Callout.astro";
 You do **not** need a `.env` file. `docker compose up -d --build` works with none
 at all. Create one next to `docker-compose.yml` only to override a default.
 
+<Callout type="warning" title="Compose only forwards declared variables">
+  Compose reads `.env` for interpolation; it does not automatically pass every entry into the backend. Only variables
+  declared in `docker-compose.yml` reach the bundled containers. Backend options not wired there, such as `RL_*`,
+  `SMTP_*`, `EMAIL_VERIFICATION_REQUIRED`, and `HIBP_CHECK_ENABLED`, need explicit entries under the backend's
+  `environment` in a Compose override file, followed by container recreation. The tables below describe application
+  defaults, not a promise that every variable is already forwarded. Prefer the setup wizard and admin panel for settings
+  they expose.
+</Callout>
+
 <Callout type="note">
   Web settings (setup wizard and admin panel) **take precedence** over these values. Environment variables are defaults,
   not overrides.
@@ -59,7 +68,7 @@ Normally auto-generated into the `secrets` volume on first boot — leave unset.
 | `REDIS_URL` | _(bundled `redis` service)_ | Backs the rate limiter, Fedify's KV + message queue, and the app job queue. Unset it to run entirely in-process. |
 
 The Compose stack sets this to its bundled `redis` service automatically. Leave
-it unset for local `deno task dev`, or point it at your own Redis.
+it unset for local `pnpm dev`, or point it at your own Redis.
 
 Better Auth's authentication limiter uses this same Redis connection, with
 atomic counters shared across backend processes. Counters retain their remaining
@@ -128,6 +137,12 @@ These are fallbacks.
 | `SMTP_TLS`                    | `false`                        | `true` = implicit TLS (465); `false` = STARTTLS (587).                              |
 | `EMAIL_VERIFICATION_REQUIRED` | `true`                         | New accounts must confirm their email before they can sign in (`"false"` disables). |
 
+## Accounts
+
+| Variable             | Default | Purpose                                                                                                                                                 |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HIBP_CHECK_ENABLED` | `true`  | Refuse passwords found in Have I Been Pwned breaches. Uses k-anonymity: only a hash prefix leaves the server. `"false"` skips it (air-gapped installs). |
+
 ## Android App Links
 
 The backend serves `/.well-known/assetlinks.json` when signing-certificate
@@ -159,12 +174,14 @@ and 443. Change them only when those ports are genuinely unavailable.
 
 ## AI-scraper protection
 
-| Variable                  | Default             | Purpose                                                                                               |
-| ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| `CADDY_ADMIN_URL`         | `http://caddy:2019` | Caddy's internal admin API, used to toggle the shield live. Override only if you run Caddy elsewhere. |
-| `ANUBIS_REDIRECT_DOMAINS` | _(empty)_           | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain.     |
+| Variable                  | Default   | Purpose                                                                                           |
+| ------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
+| `CADDY_ADMIN_URL`         | _(empty)_ | Optional custom admin HTTP URL; overrides the bundled Unix-socket transport when set.             |
+| `ANUBIS_REDIRECT_DOMAINS` | _(empty)_ | Hostnames a solved challenge may send a reader back to, comma separated. Empty allows any domain. |
 
 The shield itself is turned on from **Admin → Security**, not from here.
+The bundled stack uses `CADDY_ADMIN_SOCKET=/run/caddy-admin/admin.sock`; do not
+restore the old `http://caddy:2019` override.
 
 Set `ANUBIS_REDIRECT_DOMAINS` on a public instance. Left empty, the endpoint that
 redeems a solved challenge will forward a reader to whatever domain a `redir`

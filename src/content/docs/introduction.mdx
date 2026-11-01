@@ -55,10 +55,11 @@ repository functions.
 
 | Layer           | Technology                                       |
 | --------------- | ------------------------------------------------ |
-| Backend         | Deno, Hono, Fedify (ActivityPub), Drizzle ORM    |
+| Backend         | Hono, Fedify (ActivityPub), Drizzle ORM, on Deno |
 | Database        | PostgreSQL                                       |
 | Queue and cache | Redis (optional — falls back to in-process)      |
 | Frontend        | SvelteKit, Bits UI, Tailwind CSS, Tiptap         |
+| Mobile app      | Expo (React Native), for Android and iOS         |
 | Entrypoint      | Caddy, with on-demand Let's Encrypt certificates |
 
 Everything ships in a single `docker-compose.yml`. You do not install or manage
@@ -73,6 +74,8 @@ any of these individually.
   defederation — no config files.
 - Automatic, idempotent database migrations on every upgrade.
 - A writer dashboard with engagement figures that never profile your readers.
+- A [mobile app](/using/mobile-app/) for Android and iOS that connects to any
+  instance.
 
 ## Where to go next
 

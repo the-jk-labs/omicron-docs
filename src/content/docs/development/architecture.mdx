@@ -8,7 +8,7 @@ import Callout from "@/components/Callout.astro";
 Clean, layered, minimal-abstraction. **Layers never mix.**
 
 ```
-apps/backend (Deno)
+apps/backend (runs on Deno; code is runtime-agnostic)
   routes/        HTTP layer only (Hono) — parse, call a service, serialize
   services/      business logic — no HTTP, no SQL
   db/            Drizzle schema + repositories (the ONLY place SQL runs)
@@ -21,6 +21,11 @@ apps/frontend (SvelteKit)
   lib/components/         UI; Icon.svelte is the single Lucide wrapper
   lib/components/ui/      bits-ui (headless) wrappers
   lib/editor/             Tiptap integration (lazy-loaded on /compose)
+
+apps/mobile (Expo / React Native)
+  src/lib/api/            requests, each parsed with its contract schema
+
+packages/contract         zod/mini schemas for every API response
 ```
 
 ## The rules

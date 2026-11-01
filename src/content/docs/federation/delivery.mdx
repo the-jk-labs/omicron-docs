@@ -29,7 +29,7 @@ of setting one environment variable.
 <Callout type="warning" title="In-process mode loses pending work">
   Without Redis, a restart while deliveries are pending drops them silently. The post stays published locally, but the
   followers who had not yet received it never will. The bundled Compose stack sets `REDIS_URL` for you — only local
-  `deno task dev` runs without it by default.
+  `pnpm dev` runs without it by default.
 </Callout>
 
 ## What Redis backs

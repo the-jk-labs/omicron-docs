@@ -263,6 +263,22 @@ are not federated.
 
 Removing a published post federates a `Delete` to remote servers.
 
+## Tags
+
+Admins only. For fragmented or misspelled tags. Slugs are normalized the same
+way as a post's tags.
+
+| Method | Path                      | Purpose                                   |
+| ------ | ------------------------- | ----------------------------------------- |
+| `GET`  | `/api/admin/tags/aliases` | `{ aliases }`: every alias and its target |
+| `POST` | `/api/admin/tags/alias`   | `{ alias, target }`: map a slug to a tag  |
+| `POST` | `/api/admin/tags/merge`   | `{ from, to }`: fold one tag into another |
+
+An alias slug must not already be a real tag, and its target must exist. A merge
+moves every post and tag follow from `from` to `to`, leaves `from` as an alias
+of `to`, and deletes the `from` tag. It cannot be undone. Both return `400` when
+the two slugs are the same or invalid.
+
 ## Federation domains
 
 | Method   | Path                         | Purpose                     |

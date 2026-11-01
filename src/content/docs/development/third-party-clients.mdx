@@ -28,7 +28,7 @@ any account credentials:
 
 | Endpoint                                      | Use                                                                      |
 | --------------------------------------------- | ------------------------------------------------------------------------ |
-| `GET /api/instance`                           | Instance settings and federation availability                            |
+| `GET /api/instance`                           | Instance settings, federation availability, and contract `apiVersion`    |
 | `GET /api/client`                             | API version, supported scopes, token lifetimes, and delegated operations |
 | `GET /.well-known/oauth-authorization-server` | Issuer and OAuth endpoint/authentication metadata                        |
 
@@ -40,9 +40,11 @@ Encode substituted path segments; do not treat `:id` as a literal identifier.
 Allow additional response fields and capabilities. Changes that remove or
 change existing contract fields require an API-version change. Use the
 [HTTP API](/reference/http-api/) and [admin API](/reference/admin-api/) references
-for payloads. The application repository's
-[client contract](https://github.com/the-jk-labs/omicron/blob/main/CLIENT_API.md)
-also links the typed requests and serializers.
+for payloads. Response shapes are defined authoritatively by the zod/mini
+schemas in the application repository's
+[`packages/contract`](https://github.com/the-jk-labs/omicron/blob/main/packages/contract/src/index.ts);
+its [client contract](https://github.com/the-jk-labs/omicron/blob/main/CLIENT_API.md)
+also links the typed requests.
 
 ## Register your application
 
