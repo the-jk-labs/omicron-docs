@@ -43,10 +43,38 @@ flashing content. Prefer still images and avoid flashing media when publishing.
 
 - Use **Skip to content**, the first keyboard-focusable link, to move past the
   shared navigation to the main content.
-- In the article editor, use arrow keys within the formatting toolbar and Tab
-  to move between control groups and the body.
+- In the article body, press **Alt+F10** to focus **Text style**, the first
+  formatting tool. Use arrow keys to move between tools, including dropdowns
+  and the emoji picker. **Home** and **End** move to the first and last tool.
+- From the toolbar, press **Escape** or **Alt+F10** to return to the body
+  without replacing the current text selection. Close an open menu, popover,
+  or dialog with **Escape** first; it returns focus to its opener.
+- **Tab** still moves between control groups and the body. These shortcuts
+  do not apply to the title or other fields, and do not bypass the warning
+  before editing simplified imported content.
 - Use the usual undo and redo shortcuts in the body. Pasted or dropped content
   that you explicitly accept can be undone.
+
+These controls need the [editor keyboard shortcut update](/self-hosting/upgrading/#follow-up-editor-keyboard-shortcuts).
+Browsers, operating systems, and assistive technology may reserve some key
+combinations; use Tab and the toolbar controls when a shortcut is unavailable.
+
+### Formatting shortcuts
+
+Select a passage in the article body before applying inline formatting:
+
+| Action               | Windows / Linux                       | macOS                                             |
+| -------------------- | ------------------------------------- | ------------------------------------------------- |
+| Toggle bold          | **Ctrl+B**                            | **Command+B**                                     |
+| Toggle italic        | **Ctrl+I**                            | **Command+I**                                     |
+| Toggle underline     | **Ctrl+U**                            | **Command+U**                                     |
+| Add or remove a link | **Ctrl+K**                            | **Command+K**                                     |
+| Toggle heading level | **Ctrl+Alt+1** through **Ctrl+Alt+6** | **Command+Option+1** through **Command+Option+6** |
+
+The link shortcut uses the same action as **Link** in the toolbar. For unlinked
+text, it opens **Add link**: enter the **URL** and submit the form. **Escape**
+cancels without adding a link. If the selection is already in a link, the
+shortcut removes that link instead of opening a dialog.
 
 ### Find and navigate
 

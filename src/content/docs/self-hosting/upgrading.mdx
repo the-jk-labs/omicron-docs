@@ -68,6 +68,28 @@ sign-in, reload already-open editor tabs, and verify that a transfer with a
 missing description target waits for repair rather than offering to insert
 broken references. Existing articles are not automatically repaired or rewritten.
 
+### Follow-up: editor keyboard shortcuts
+
+Instances that already have the accessibility release above need only a frontend
+rebuild for [toolbar focus and link shortcuts](/using/accessibility/#keyboard-navigation).
+This follow-up adds no migration, environment variable, or dependency change;
+it needs no backend restart or Caddy recreation.
+
+Take a fresh backup and confirm its snapshot using the commands above. Stop on
+failure, retain the previous frontend image for rollback, preserve all volumes,
+and keep your usual Compose override files/options. Then run:
+
+```bash
+git pull --ff-only
+docker compose up -d --build --no-deps frontend
+```
+
+Podman Compose users can run the equivalent commands. Check normal reading and
+sign-in, then reload already-open editor tabs. Select a passage in the body,
+press **Alt+F10**, and confirm that **Escape** returns to the same selection.
+Check that **Ctrl+K** (**Command+K** on macOS) opens **Add link** for unlinked
+text and that cancelling leaves the text unchanged.
+
 ## Better Auth, passkeys, and Android App Links
 
 This release updates Better Auth, enables native Omicron app sign-in, and allows
