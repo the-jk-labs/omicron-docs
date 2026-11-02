@@ -90,6 +90,29 @@ press **Alt+F10**, and confirm that **Escape** returns to the same selection.
 Check that **Ctrl+K** (**Command+K** on macOS) opens **Add link** for unlinked
 text and that cancelling leaves the text unchanged.
 
+### Follow-up: rapid keyboard selection before paste
+
+Instances that already have the accessibility release above need only a frontend
+rebuild for the editor to apply the latest keyboard selection when a paste
+starts immediately after the final selection key. This follow-up adds no
+migration, environment variable, or dependency change; it needs no backend
+restart or Caddy recreation.
+
+Take a fresh backup and confirm its snapshot using the commands above. Stop on
+failure, retain the previous frontend image for rollback, preserve all volumes,
+and keep your usual Compose override files/options. Then run:
+
+```bash
+git pull --ff-only
+docker compose up -d --build --no-deps frontend
+```
+
+Podman Compose users can run the equivalent commands. Check normal reading and
+sign-in, then reload already-open editor tabs. Select a passage with the
+keyboard and paste immediately: the paste should replace only that passage, and
+undo should restore it. This fixes the reproduced stale-selection paste path,
+not every browser selection or navigation difference.
+
 ## Better Auth, passkeys, and Android App Links
 
 This release updates Better Auth, enables native Omicron app sign-in, and allows
