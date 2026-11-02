@@ -163,6 +163,11 @@ const jsonLd = {
         }
       })();
     </script>
+    {/* Vercel Web Analytics */}
+    <script>
+      import { inject } from '@vercel/analytics';
+      inject();
+    </script>
   </head>
   <body class="flex min-h-full flex-col">
     <a
