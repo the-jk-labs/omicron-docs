@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
+import vercel from "@astrojs/vercel";
 import { defineConfig } from "astro/config";
 
 // The canonical origin. docs.omicron.blog is the official domain, so it is the
@@ -17,6 +18,9 @@ const site = process.env.SITE_URL ?? "https://docs.omicron.blog";
 // https://astro.build/config
 export default defineConfig({
   site,
+  adapter: vercel({
+    webAnalytics: { enabled: true },
+  }),
   integrations: [svelte(), mdx(), sitemap()],
   markdown: {
     shikiConfig: {
