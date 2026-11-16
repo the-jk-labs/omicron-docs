@@ -212,6 +212,7 @@ are admin-only.
 | -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET`    | `/api/admin/users`                        | List local accounts, newest first (`?q=` over handle, name and email; `?suspended=`, `?admin=`, `?verified=`; `?cursor=` + `?limit=` for pages) |
 | `POST`   | `/api/admin/users/:id/suspend`            | Suspend or reinstate an account                                                                                                                 |
+| `POST`   | `/api/admin/users/:id/freeze`             | Freeze or unfreeze an account. Frozen accounts are hidden and remote copies are retracted; body `{ freeze, notify? }`                           |
 | `GET`    | `/api/admin/users/:id`                    | One account with counts, latest posts and reports against it                                                                                    |
 | `PATCH`  | `/api/admin/users/:id`                    | Edit profile fields and the login email                                                                                                         |
 | `POST`   | `/api/admin/users/:id/avatar`             | Replace another account's avatar (raw image body)                                                                                               |
