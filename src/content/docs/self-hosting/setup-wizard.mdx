@@ -68,7 +68,7 @@ exists. If you genuinely need a clean slate on a throwaway instance:
 
 ```bash
 docker compose down -v      # deletes ALL data, then start over
-docker compose up -d --build
+docker compose up -d
 ```
 
 <Callout type="danger">`down -v` destroys the database, uploads, secrets, and certificates. There is no undo.</Callout>

@@ -5,8 +5,9 @@ description: How settings are layered — generated secrets, web settings, and t
 
 import Callout from "@/components/Callout.astro";
 
-You normally need **no configuration at all**. `docker compose up -d --build`
-works with no `.env` file. Create one next to `docker-compose.yml` **only** to
+You normally need **no configuration at all**. The stack starts with no `.env`
+file; the installer's only entry is the
+[release channel](/self-hosting/release-channels/). Add to it, next to `docker-compose.yml`, **only** to
 override a default.
 
 ## The three layers

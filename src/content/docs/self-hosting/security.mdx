@@ -275,11 +275,14 @@ content and federated media URLs are not rewritten.
 ## Keeping up to date
 
 ```bash
-git pull && docker compose up -d --build && docker image prune -f && docker builder prune -f
+cd omicron && ./install.sh
 ```
 
-Pull and rebuild regularly for security fixes, back up before upgrades, and test
-that your backups actually restore.
+Update regularly for security fixes; the installer backs up before every update.
+Test that your backups actually restore. Security fixes reach the
+[edge channel](/self-hosting/release-channels/) as soon as they are merged, and
+stable with the next release. See [Upgrading](/self-hosting/upgrading/) for
+source installs.
 
 ## Reporting a vulnerability
 

@@ -15,8 +15,23 @@ docker compose logs -f backend    # or: caddy, frontend, postgres, redis
 ## Installation
 
 **The first `up` takes a long time or seems stuck.**
-The first build compiles the images — a few minutes is normal. Watch progress
-with `docker compose logs -f`.
+The first start downloads the images, and a source install compiles them — a
+few minutes is normal on either. Watch progress with `docker compose logs -f`.
+
+**The installer says "unauthorized" or "manifest unknown" when pulling.**
+Check `OMICRON_VERSION` and `OMICRON_REGISTRY` in `.env`. A version must be
+`stable`, `edge`, or a release that exists, such as `2.1.0` — not `2.1`.
+
+**The installer stops with "The pre-update backup failed".**
+It takes a backup before every update and changes nothing when that fails.
+Usually the stack is not running: start it with `docker compose up -d` and run
+the installer again. See [Backups](/self-hosting/backups/) if `backup-now` itself
+fails.
+
+**The installer says the version "is older than what this instance runs".**
+The version you chose lacks commits the running one has, typically after a
+switch from edge to stable. Migrations only go forward, so it stops. Wait for a
+newer release, or see [Release channels](/self-hosting/release-channels/#moving-back-needs-a-restore).
 
 **A service keeps restarting.**
 Read its logs specifically. A restarting `backend` is usually a database it cannot

@@ -15,11 +15,42 @@ The script:
 
 1. Detects your container engine (`docker compose`, `docker-compose`,
    `podman compose`, or `podman-compose`).
-2. Downloads the source into a directory in the current working directory.
-3. Runs the equivalent of `compose up -d --build`.
-4. Prints the URLs to open and the command to upgrade later.
+2. Pulls the prebuilt images of the **stable** channel, the newest release.
+3. Downloads the few files the images run with (`docker-compose.yml`,
+   `Caddyfile`, `botPolicy.yaml`, the Anubis theme, `backup/restore.sh`) into
+   `./omicron`, at the exact commit the images were built from.
+4. Saves the channel to `.env`, runs `compose up -d`, and prints the URLs to
+   open.
 
-No git required. Re-running the installer later performs an upgrade.
+No git and no build: the install takes about as long as the image download.
+To update later, run `./install.sh` inside `omicron`. It backs up first; see
+[Upgrading](/self-hosting/upgrading/).
+
+For every change as soon as it is merged, install the **edge** channel instead,
+or pin one release. See [Release channels](/self-hosting/release-channels/):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | OMICRON_VERSION=edge sh
+```
+
+### Installer options
+
+All optional, set in the environment of the run:
+
+| Variable                    | Default                    | Purpose                                                                      |
+| --------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
+| `OMICRON_VERSION`           | `stable`                   | `stable`, `edge`, or an exact version such as `2.1.0`. Saved to `.env`.      |
+| `OMICRON_REGISTRY`          | `ghcr.io/the-jk-labs`      | Where images come from; the Docker Hub mirror works too. Saved to `.env`.    |
+| `OMICRON_DIR`               | `omicron` (`.` inside one) | Install directory.                                                           |
+| `HTTP_PORT` / `HTTPS_PORT`  | `80` / `443`               | Host ports, e.g. `8080`/`8443` for [rootless Podman](/self-hosting/podman/). |
+| `OMICRON_SKIP_BACKUP=1`     | off                        | Update without the pre-update backup.                                        |
+| `OMICRON_ALLOW_DOWNGRADE=1` | off                        | Move to an older version. Needs a restore afterwards.                        |
+
+<Callout type="warning" title="Keep the directory">
+  Compose names the volumes after the install directory (`omicron_pgdata`, …). Moving or renaming the directory makes
+  the next start create new, empty volumes; your data is still in the old ones, but the instance looks wiped. Update in
+  place instead.
+</Callout>
 
 <Callout type="tip">
   Piping a script to a shell is worth reading first. The script is short and lives at
@@ -27,7 +58,7 @@ No git required. Re-running the installer later performs an upgrade.
   prefer.
 </Callout>
 
-## Option B — clone and run
+## Option B — build from source
 
 ```bash
 git clone https://github.com/the-jk-labs/omicron.git omicron
@@ -35,11 +66,14 @@ cd omicron
 docker compose up -d --build
 ```
 
-This is the same thing, with the source in a directory you control — which is
-what you want if you plan to track upstream with `git pull`.
+In a checkout, Compose also loads `docker-compose.override.yml`, which adds the
+build sections, so `--build` compiles the images from your working tree instead
+of pulling them. This is what you want if you run local changes. The first
+build takes a few minutes; later builds are cached and fast.
 
-The first build compiles the images and takes a few minutes. Subsequent builds
-are cached and fast.
+Running `./install.sh` in a checkout switches it to the prebuilt images: the
+installer checks out the commit the images were built from instead of
+downloading the files.
 
 ## What comes up
 

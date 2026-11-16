@@ -17,7 +17,10 @@ docker compose up -d --build
 ```
 
 Everything is wired, including Postgres, Redis, and Caddy. Good for testing
-upgrades, migrations, and anything involving the reverse proxy.
+upgrades, migrations, and anything involving the reverse proxy. Compose loads
+`docker-compose.override.yml` next to the main file, and its build sections are
+what make `--build` compile your working tree rather than pull the published
+images.
 
 ## Option B — run the apps directly
 
@@ -114,7 +117,9 @@ apps/backend/      Hono + Fedify + Drizzle (runs on Deno)
 apps/frontend/     SvelteKit + Bits UI + Tailwind + Tiptap
 apps/mobile/       Expo (React Native) app for Android and iOS
 packages/contract/ zod/mini schemas for every API response
-docker-compose.yml The whole stack
+docker-compose.yml The whole stack, on the published images
+docker-compose.override.yml  Build sections for a source checkout
+deploy.files       What an image install fetches next to its .env
 Caddyfile          Public entrypoint config
-install.sh         The one-line installer
+install.sh         The installer and updater
 ```

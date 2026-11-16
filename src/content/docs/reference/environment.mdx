@@ -5,8 +5,9 @@ description: Every variable, its default, and when you would actually set it. Al
 
 import Callout from "@/components/Callout.astro";
 
-You do **not** need a `.env` file. `docker compose up -d --build` works with none
-at all. Create one next to `docker-compose.yml` only to override a default.
+You do **not** need a `.env` file. The stack starts with none at all; the
+installer creates one holding only the release channel. Add to it, next to
+`docker-compose.yml`, only to override a default.
 
 <Callout type="warning" title="Compose only forwards declared variables">
   Compose reads `.env` for interpolation; it does not automatically pass every entry into the backend. Only variables
@@ -21,6 +22,16 @@ at all. Create one next to `docker-compose.yml` only to override a default.
   Web settings (setup wizard and admin panel) **take precedence** over these values. Environment variables are defaults,
   not overrides.
 </Callout>
+
+## Version
+
+Written by the installer; change them, then run `./install.sh`. See
+[Release channels](/self-hosting/release-channels/).
+
+| Variable           | Default               | Purpose                                                                                         |
+| ------------------ | --------------------- | ----------------------------------------------------------------------------------------------- |
+| `OMICRON_VERSION`  | `stable`              | `stable` (newest release), `edge` (every merge to `main`), or an exact version such as `2.1.0`. |
+| `OMICRON_REGISTRY` | `ghcr.io/the-jk-labs` | Registry the Omicron images come from. The Docker Hub mirror is `docker.io/<namespace>`.        |
 
 ## Instance identity
 
