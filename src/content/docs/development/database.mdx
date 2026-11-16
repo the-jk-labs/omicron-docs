@@ -61,8 +61,9 @@ database is already current.
 `drizzle-kit` is **not** required inside the container — only during development,
 to generate the SQL.
 
-This is why upgrading an instance is just `git pull && docker compose up -d
---build` with no migration step for the operator to remember.
+This is why upgrading an instance is just `./install.sh` (or, from source,
+`git pull && docker compose up -d --build`) with no migration step for the
+operator to remember.
 
 ## The backward-compatibility rule
 

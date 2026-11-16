@@ -1,0 +1,112 @@
+---
+title: Release channels
+description: Stable, edge, or one pinned version — what each gets you, how to switch, and why moving back needs a restore.
+---
+
+import Callout from "@/components/Callout.astro";
+
+Omicron ships as prebuilt images for `amd64` and `arm64`. One line in `.env`
+picks which ones an instance runs:
+
+| `OMICRON_VERSION`  | Runs                          | Updates when                           |
+| ------------------ | ----------------------------- | -------------------------------------- |
+| `stable` (default) | The newest release            | A new release is published             |
+| `edge`             | Every change merged to `main` | A merge passes CI, often several a day |
+| `2.1.0`            | That exact release            | Never — you change it yourself         |
+
+**Stable** is for most instances. **Edge** gets fixes and features as soon as
+they are merged, and with them any bug that tests did not catch. A pinned
+version never moves on its own. Use it when upgrades should happen only on a
+date you pick.
+
+Nothing updates automatically on any channel. The channel decides what
+`./install.sh` moves to when you run it.
+
+## Choosing or switching
+
+Set the variable for one run of the installer. It is saved to `.env`, so later
+updates keep the choice:
+
+```bash
+cd omicron
+OMICRON_VERSION=edge ./install.sh
+```
+
+Or edit `OMICRON_VERSION=` in `.env` and run `./install.sh`. A fresh install
+uses `stable` unless told otherwise:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | OMICRON_VERSION=edge sh
+```
+
+## Moving back needs a restore
+
+Migrations run forward on startup and are never reversed. An instance that ran
+a newer version may have a database schema an older backend cannot read. So:
+
+| Move                                  | Safe?                                                  |
+| ------------------------------------- | ------------------------------------------------------ |
+| stable → edge                         | Yes                                                    |
+| older release → newer release         | Yes                                                    |
+| edge → stable                         | Only once a stable release includes everything you ran |
+| newer → older (release or edge build) | No — restore a backup from before the newer version    |
+
+The installer enforces this. It asks GitHub whether the version you chose is
+missing commits the running one has, and refuses if so, without changing
+anything:
+
+```
+✖ stable is older than what this instance runs (e544865), and
+✖ migrations only go forward, so it may not read your database. Nothing was changed.
+```
+
+For edge → stable, the usual answer is to wait for the next release. To go
+back anyway, see [Rolling back](/self-hosting/upgrading/#rolling-back).
+
+## Where the images come from
+
+| Registry                            | Images                                                  |
+| ----------------------------------- | ------------------------------------------------------- |
+| GitHub Container Registry (default) | `ghcr.io/the-jk-labs/omicron-{backend,frontend,backup}` |
+| Docker Hub (mirror)                 | `docker.io/omicronhq/omicron-{backend,frontend,backup}` |
+
+Both get the same images in the same publish. To pull from Docker Hub instead,
+set `OMICRON_REGISTRY=docker.io/omicronhq` the same way as the version.
+
+Each image has these tags:
+
+| Tag                | Points at                                            |
+| ------------------ | ---------------------------------------------------- |
+| `stable`, `latest` | The newest release                                   |
+| `2.1`              | The newest `2.1.x` release                           |
+| `2`                | The newest release, while 2 is the current major     |
+| `2.1.0`            | That release                                         |
+| `edge`             | The newest commit on `main` that passed CI           |
+| `edge-sha-e544865` | That one commit, kept so an edge build can be traced |
+| `2.2.0-rc.1`       | A pre-release; it moves no channel                   |
+
+A patch to an older line, such as `2.0.5` released after `2.1.0`, moves `2.0`
+but never `stable`, `latest` or a major tag.
+
+## Why update with the installer, not `docker compose pull`
+
+Each release also changes a few files that live next to `docker-compose.yml` on
+the host: the `Caddyfile`, `botPolicy.yaml`, the Anubis theme and the Compose
+file itself. The installer reads which commit the backend image was built from
+(its `org.opencontainers.image.revision` label) and fetches those files at that
+exact commit, so they always match the code that reads them.
+
+<Callout type="warning" title="A bare pull can mismatch the files">
+  `docker compose pull && docker compose up -d` updates the images but not those files. That usually works, and breaks
+  on the release that changes the Caddyfile or the Compose file. Run `./install.sh` instead.
+</Callout>
+
+## Checking what you run
+
+```bash
+grep OMICRON_VERSION .env
+docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
+  "$(docker compose ps -q backend)"
+```
+
+The second command prints the commit the running backend was built from.

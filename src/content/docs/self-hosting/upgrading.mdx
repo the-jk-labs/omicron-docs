@@ -1,19 +1,60 @@
 ---
 title: Upgrading
-description: Two commands, automatic migrations, and the guarantee that upgrades never touch your data.
+description: One command, a backup first, automatic migrations, and the guarantee that upgrades never touch your data.
 ---
 
 import Callout from "@/components/Callout.astro";
 
 ```bash
-git pull
+cd omicron
+./install.sh
+```
+
+The installer updates to the newest version of your
+[release channel](/self-hosting/release-channels/), in this order:
+
+1. Takes a backup (`backup-now`). If it fails, it stops and changes nothing.
+2. Pulls the new backend image and reads which commit it was built from.
+3. Refuses if that is older than what runs now. Migrations only go forward.
+4. Fetches `docker-compose.yml`, the `Caddyfile`, `botPolicy.yaml` and the other
+   deployment files at that commit.
+5. Pulls the other images and starts the stack. If any deployment file changed,
+   it recreates every container, so none keeps an old `Caddyfile` mounted.
+6. Removes images nothing uses any more.
+
+A **source checkout** that builds its own images updates as before:
+
+```bash
+git pull --ff-only
 docker compose up -d --build
 docker image prune -f
 docker builder prune -f      # or the equivalent podman commands
 ```
 
-If you installed with the one-liner, re-running it does the same thing —
-including the cache cleanup below.
+<Callout type="note" title="Release-specific steps below">
+  The sections below were written for source installs, so they say `git pull` and `--build`. On an image install,
+  `./install.sh` does the pull, the backup and any recreate for you. Still read the section for anything to set or check
+  by hand.
+</Callout>
+
+## One-time step: moving to prebuilt images
+
+Instances installed before the release channels build from source. To move one
+to the prebuilt images, run the current installer inside its directory:
+
+```bash
+cd omicron
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh -o install.sh
+sh install.sh
+```
+
+- It backs up first, so the stack must be running.
+- These installs have been following `main`, so with no `OMICRON_VERSION` in
+  `.env` the installer keeps them on **edge**. Moving straight to `stable` could
+  go back in time; see [Release channels](/self-hosting/release-channels/#moving-back-needs-a-restore).
+- In a git checkout, it checks out the commit the images were built from, which
+  leaves the checkout on a detached `HEAD`. Commit or stash local changes first.
+- The volumes stay the same, as long as the directory does.
 
 ## Federation network (auto-cache)
 
@@ -262,12 +303,12 @@ in after checking the whole domain tree; see [Security](/self-hosting/security/#
 
 - **Migrations run automatically** on backend startup and are idempotent — a
   no-op when the schema is already current.
-- A rebuild recreates the **containers** but never the **volumes**, so your data,
+- An upgrade recreates **containers** but never **volumes**, so your data,
   secrets, and TLS certificates are preserved.
-- `image prune`/`builder prune` drop the previous build's now-untagged image
-  layers and build cache, so a `--build` upgrade never leaves disk usage
-  creeping up. Both only remove untagged, unused layers — never a named
-  volume — so this is safe to run every time.
+- `image prune` drops the previous version's images once nothing uses them, and
+  on source installs `builder prune` drops the build cache, so upgrades never
+  leave disk usage creeping up. Neither ever removes a named volume, so both are
+  safe to run every time.
 - The app version is logged on boot and exposed at `GET /version`.
 
 <Callout type="tip" title="Back up first">
@@ -533,12 +574,18 @@ because the instance supports these authorization endpoints.
 
 ## Rolling back
 
-Check out the previous tag and rebuild:
+Go back by restoring, not just by running older code. Take the backup from
+before the upgrade, then:
 
 ```bash
-git checkout <previous-tag>
-docker compose up -d --build
+OMICRON_VERSION=<previous-version> OMICRON_ALLOW_DOWNGRADE=1 OMICRON_SKIP_BACKUP=1 ./install.sh
+./backup/restore.sh <snapshot-id>
 ```
+
+Without `OMICRON_ALLOW_DOWNGRADE=1` the installer refuses to go back.
+`OMICRON_SKIP_BACKUP=1` keeps it from taking a new snapshot of the state you are
+leaving; leave it out if you want that snapshot too. On a source install, check
+out the previous tag and run `docker compose up -d --build` instead.
 
 <Callout type="warning" title="Rollbacks are not always safe">
 Migrations run forward automatically; they are not reversed on downgrade. Because

@@ -28,6 +28,7 @@ export const nav: NavSection[] = [
     items: [
       { slug: "self-hosting/requirements", label: "Requirements" },
       { slug: "self-hosting/installation", label: "Installation" },
+      { slug: "self-hosting/release-channels", label: "Release channels" },
       { slug: "self-hosting/domain-and-https", label: "Domain and HTTPS" },
       { slug: "self-hosting/setup-wizard", label: "Setup wizard" },
       { slug: "self-hosting/email", label: "Email" },

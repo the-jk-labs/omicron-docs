@@ -10,16 +10,18 @@ Podman 4+. Nothing else. The database, queue, and TLS are all bundled.
 
 ## Option A — one command
 
-The installer detects your container engine, downloads the source, and brings the
-stack up:
+The installer detects your container engine, pulls the prebuilt images of the
+newest release, and brings the stack up:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | sh
 ```
 
-When it finishes it prints the URLs and the command to upgrade later.
+When it finishes it prints the URLs and the command to upgrade later. To follow
+every merged change instead of releases, see
+[Release channels](/self-hosting/release-channels/).
 
-## Option B — clone and run it yourself
+## Option B — build from source
 
 ```bash
 git clone https://github.com/the-jk-labs/omicron.git omicron
@@ -27,8 +29,8 @@ cd omicron
 docker compose up -d --build
 ```
 
-The first build compiles the images and can take a few minutes. Watch it with
-`docker compose logs -f`.
+This compiles the images from the source, which can take a few minutes. Watch it
+with `docker compose logs -f`.
 
 <Callout type="note">
   There is **no config file to edit**. The session secret and the database password are generated on first boot and
