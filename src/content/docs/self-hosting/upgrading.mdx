@@ -15,6 +15,45 @@ docker builder prune -f      # or the equivalent podman commands
 If you installed with the one-liner, re-running it does the same thing —
 including the cache cleanup below.
 
+## Federation network (auto-cache)
+
+This release lets a federating instance cache the Omicron network in the
+background. It is **on by default**, so the upgrade starts outbound requests
+without any admin action. The migration adds two tables and one column, runs on
+startup, and needs no environment variable. Existing domain blocks are unchanged:
+the new `severity` column defaults to **suspend**, which is what they already do.
+
+1. Take a backup and confirm the new snapshot exists. Stop on failure:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+2. Run the upgrade commands at the top of this page. No Caddy recreation is needed.
+
+3. Decide whether to keep auto-cache on. It starts on the first boot, and only
+   while federation is on. Right away it:
+
+   - asks [FediDB](https://fedidb.com/software/omicron) for every Omicron instance
+     it lists, and tracks each one;
+   - reads each tracked instance's NodeInfo and public feed, then caches recent
+     public posts from up to 20 of its writers, every 6 hours by default.
+
+   These are plain HTTPS GET requests identifying the instance as
+   `Omicron/<version> (+https://your-domain)`. No user data is sent. To stop
+   them, open **Admin → Federation → Federation network** and switch off
+   **Auto-cache the network**, which stops syncing and discovery. Switching off
+   only **Discover Omicron instances on FediDB** stops discovery and leaves
+   syncing running. Neither switch needs a restart.
+
+4. Check **Admin → Federation** shortly after startup. A FediDB error there does
+   not stop the tracked instances from syncing; discovery retries within the hour.
+
+Cached posts from an instance that stops being synced age out under
+[`REMOTE_CACHE_RETENTION_DAYS`](/reference/environment/) (default 30), so expect the
+database to hold more remote posts than before.
+
 ## Web accessibility and content preservation
 
 Deploy backend and frontend together for the
