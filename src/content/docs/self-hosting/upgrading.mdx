@@ -22,39 +22,74 @@ The installer updates to the newest version of your
    it recreates every container, so none keeps an old `Caddyfile` mounted.
 6. Removes images nothing uses any more.
 
-A **source checkout** that builds its own images updates as before:
+A **source checkout** that builds its own images updates with `git pull` and a
+build. The build sections live in `docker-compose.build.yml`, added with `-f`:
 
 ```bash
 git pull --ff-only
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 docker image prune -f
 docker builder prune -f      # or the equivalent podman commands
 ```
 
 <Callout type="note" title="Release-specific steps below">
   The sections below were written for source installs, so they say `git pull` and `--build`. On an image install,
-  `./install.sh` does the pull, the backup and any recreate for you. Still read the section for anything to set or check
+  `./install.sh` does the pull, the backup and any recreate for you. On a source install, add `-f docker-compose.yml -f
+  docker-compose.build.yml` to their `docker compose up` commands. Still read the section for anything to set or check
   by hand.
 </Callout>
 
-## One-time step: moving to prebuilt images
+## One-time step: moving a source install to prebuilt images
 
-Instances installed before the release channels build from source. To move one
-to the prebuilt images, run the current installer inside its directory:
+Instances installed before 2.1.0 build their own images from a git checkout.
+They can move to the prebuilt images, or keep building.
+
+### Before you start
+
+- **The stack must be running.** The installer takes a backup before it changes
+  anything, and stops if it can't.
+- **Edited files git tracks**, such as the `Caddyfile`? Commit or stash them:
+  the installer checks out a new commit and stops on local changes.
+- **Your own `docker-compose.override.yml` stays as it is.** It is yours: the
+  repository doesn't ship that name, and the installer never touches it.
+- **Stay in the same directory.** The volumes are named after it.
+
+### Move
+
+Pipe the installer from inside the checkout. Don't save it as `install.sh` there
+first: that replaces a file git tracks, and the checkout then refuses to switch.
 
 ```bash
 cd omicron
-curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh -o install.sh
-sh install.sh
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | sh                          # edge
+curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh | OMICRON_VERSION=stable sh   # stable
 ```
 
-- It backs up first, so the stack must be running.
-- These installs have been following `main`, so with no `OMICRON_VERSION` in
-  `.env` the installer keeps them on **edge**. Moving straight to `stable` could
-  go back in time; see [Release channels](/self-hosting/release-channels/#moving-back-needs-a-restore).
-- In a git checkout, it checks out the commit the images were built from, which
-  leaves the checkout on a detached `HEAD`. Commit or stash local changes first.
-- The volumes stay the same, as long as the directory does.
+| Channel | Choose it if                                                                                   |
+| ------- | ---------------------------------------------------------------------------------------------- |
+| edge    | You followed `main` with `git pull` and want to keep doing so. The default for these installs. |
+| stable  | You want releases only. Works when your checkout is no newer than the latest release.          |
+
+Before it changes anything, the installer asks GitHub whether the version you
+chose is older than your checkout. If it is, or GitHub can't answer, it stops;
+see [Release channels](/self-hosting/release-channels/#moving-back-needs-a-restore).
+Then it backs up, pulls the images, checks out the commit they were built from
+(a detached `HEAD`), saves the channel to `.env`, and recreates the stack. Later
+updates are `./install.sh`. Confirm with:
+
+```bash
+curl localhost:8000/version      # the release you chose, or newer on edge
+docker compose ps                # Omicron images from ghcr.io/the-jk-labs
+```
+
+### Or keep building from source
+
+Nothing forces the move. Build with `docker-compose.build.yml`, as above:
+
+```bash
+git pull --ff-only
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+```
 
 ## Federation network (auto-cache)
 
@@ -585,7 +620,7 @@ OMICRON_VERSION=<previous-version> OMICRON_ALLOW_DOWNGRADE=1 OMICRON_SKIP_BACKUP
 Without `OMICRON_ALLOW_DOWNGRADE=1` the installer refuses to go back.
 `OMICRON_SKIP_BACKUP=1` keeps it from taking a new snapshot of the state you are
 leaving; leave it out if you want that snapshot too. On a source install, check
-out the previous tag and run `docker compose up -d --build` instead.
+out the previous tag and run `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build` instead.
 
 <Callout type="warning" title="Rollbacks are not always safe">
 Migrations run forward automatically; they are not reversed on downgrade. Because

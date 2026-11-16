@@ -51,13 +51,21 @@ a newer version may have a database schema an older backend cannot read. So:
 | edge → stable                         | Only once a stable release includes everything you ran |
 | newer → older (release or edge build) | No — restore a backup from before the newer version    |
 
-The installer enforces this. It asks GitHub whether the version you chose is
-missing commits the running one has, and refuses if so, without changing
-anything:
+The installer enforces this. Before it backs up or changes anything, it asks
+GitHub whether the version you chose is missing commits the running one has,
+and refuses if so:
 
 ```
 ✖ stable is older than what this instance runs (e544865), and
 ✖ migrations only go forward, so it may not read your database. Nothing was changed.
+```
+
+If GitHub can't answer, it stops too rather than guess. GitHub allows 60 such
+checks an hour per address; run it again later, or set `GITHUB_TOKEN` to any
+GitHub token to raise the limit:
+
+```
+✖ Couldn't ask GitHub whether stable is older than what runs now (e544865). Nothing was changed.
 ```
 
 For edge → stable, the usual answer is to wait for the next release. To go

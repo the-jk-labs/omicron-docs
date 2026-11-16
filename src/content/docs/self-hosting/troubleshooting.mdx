@@ -28,6 +28,21 @@ Usually the stack is not running: start it with `docker compose up -d` and run
 the installer again. See [Backups](/self-hosting/backups/) if `backup-now` itself
 fails.
 
+**The installer says "Couldn't ask GitHub whether … is older than what runs now".**
+Its version check couldn't reach GitHub's API, or GitHub rate-limited it (60 an
+hour per address), so it stopped before changing anything. Run it again later,
+or set `GITHUB_TOKEN` to any GitHub token. Only if you are sure the version is
+not older, `OMICRON_ALLOW_DOWNGRADE=1` goes past the check.
+
+**The installer says "Local changes block the checkout".**
+A source checkout has an edited file git tracks, often `install.sh` itself when
+it was downloaded into the directory. `git status` shows which; commit, stash,
+or `git checkout -- <file>` it, then pipe the installer instead of saving it.
+
+**The installer says "This version adds files that would replace your own, untracked".**
+A file of yours in the checkout has the name of one the new version adds. Move
+it aside and run the installer again.
+
 **The installer says the version "is older than what this instance runs".**
 The version you chose lacks commits the running one has, typically after a
 switch from edge to stable. Migrations only go forward, so it stops. Wait for a
