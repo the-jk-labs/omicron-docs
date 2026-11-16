@@ -71,6 +71,76 @@ your next published post arrive in that account's timeline.
   alongside its `/@{username}` profile page.
 - The federation inbox becomes a public, unauthenticated POST endpoint —
   rate-limited per source IP and capped in body size.
+- The instance starts **caching the Omicron network** in the background, and
+  contacts the FediDB directory once a day. See below.
+
+## The federation network (auto-cache)
+
+Without help, the Global feed only carries remote posts someone here already
+looked up, followed, or saw boosted, so a new instance's Global feed starts
+almost empty. The auto-cache network fills it ahead of your readers.
+
+**Admin → Federation → Federation network** lists the _tracked instances_.
+They come from two places:
+
+| Source            | How it gets there                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| **FediDB**        | Once a day, every Omicron instance listed by [FediDB](https://fedidb.com/software/omicron) is added |
+| **Added by hand** | You type a domain into **Add instance**                                                             |
+
+Each tracked instance is synced every **6 hours** by default:
+
+1. Its NodeInfo is read to confirm it runs Omicron.
+2. Its public local feed is read **only to learn who has written recently**, up
+   to **20 writers** by default.
+3. Each writer is resolved over ActivityPub, and up to 20 of their latest public
+   posts are cached.
+
+Posts are never copied from the other instance's API. They are fetched the same
+way as when a reader opens a remote profile, so they go through the same checks:
+only public posts, only from the author's own server, and never from blocked
+domains or accounts.
+
+| Setting                                  | Default | Range |
+| ---------------------------------------- | ------- | ----- |
+| **Auto-cache the network**               | On      | —     |
+| **Discover Omicron instances on FediDB** | On      | —     |
+| **Sync every (hours)**                   | 6       | 1–168 |
+| **Writers per instance**                 | 20      | 1–100 |
+
+Settings apply live, with no restart. Turning **Auto-cache the network** off
+stops both syncing and discovery.
+
+Each instance row shows its status, its NodeInfo summary, how many accounts and
+posts are cached from it, and when it last synced and will sync next:
+
+| Status             | Meaning                                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Waiting**        | Not synced yet                                                                                                 |
+| **Synced**         | The last sync worked                                                                                           |
+| **Other software** | Not Omicron. Writers can't be discovered there; follows and replies still federate normally. Rechecked weekly. |
+| **Failing**        | The last sync failed. The error is shown, and retries back off up to once a week.                              |
+| **Skipped**        | The domain is suspended or limited under Domain blocks                                                         |
+| **Paused**         | You switched it off                                                                                            |
+
+- **Pause** an instance with its switch. A paused FediDB instance stays paused:
+  discovery never turns it back on.
+- **Sync now** syncs one instance immediately.
+- Only instances **added by hand** can be removed. A FediDB instance would be
+  added back by the next discovery run, so pause it instead.
+- **Check FediDB now** runs discovery immediately. If FediDB is unreachable the
+  error is shown and discovery retries within the hour; tracked instances keep
+  syncing.
+
+Cached content still ages out under
+[`REMOTE_CACHE_RETENTION_DAYS`](/reference/environment/) once an instance stops
+being synced.
+
+<Callout type="note" title="What it sends">
+  Discovery and syncing are plain HTTPS GET requests to FediDB and to the tracked instances, identifying themselves as
+  `Omicron/<version> (+https://your-domain)`. Nothing about your users is sent. Turn both switches off if your instance
+  should never contact a server on its own.
+</Callout>
 
 ## What it does not change
 
@@ -91,8 +161,8 @@ notified, and their follow records remain on their side.
 
 Once you federate, you inherit the wider network's problems. Two tools:
 
-- **Admin → Federation** defederates (blocks) a domain, and purges already-cached
-  content from it.
+- **Admin → Federation** suspends or limits a domain, and blocks single remote
+  accounts.
 - **Admin → Reports** is the moderation queue for user-reported posts and actors,
   local or remote.
 
