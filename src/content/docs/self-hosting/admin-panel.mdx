@@ -101,9 +101,18 @@ confirmed.
 
 ## Federation
 
-**Defederate** (block) a domain, or re-federate it. Blocking **purges
-already-cached content** from that domain — it is not just a forward-looking
-filter.
+Three sections:
+
+- **Federation network** — the instances this one caches ahead of its readers,
+  FediDB discovery, and the sync settings. See
+  [The federation network](/self-hosting/federation/#the-federation-network-auto-cache).
+- **Domain blocks** — **suspend** a domain (full defederation, purges
+  already-cached content) or **limit** it (keeps federating, hidden from Global,
+  Trending and auto-caching).
+- **Account blocks** — block a single remote account for the whole instance.
+
+See [Moderation tools](/using/moderation/#federation-and-defederation) for what
+each block does.
 
 ## Security
 

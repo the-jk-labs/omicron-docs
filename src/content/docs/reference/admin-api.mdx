@@ -281,16 +281,54 @@ the two slugs are the same or invalid.
 
 ## Federation domains
 
-| Method   | Path                         | Purpose                     |
-| -------- | ---------------------------- | --------------------------- |
-| `GET`    | `/api/admin/domains`         | Blocked domains             |
-| `POST`   | `/api/admin/domains`         | Block (defederate) a domain |
-| `DELETE` | `/api/admin/domains/:domain` | Re-federate a domain        |
+| Method   | Path                         | Purpose                                   |
+| -------- | ---------------------------- | ----------------------------------------- |
+| `GET`    | `/api/admin/domains`         | Blocked domains, each with its `severity` |
+| `POST`   | `/api/admin/domains`         | Suspend or limit a domain                 |
+| `DELETE` | `/api/admin/domains/:domain` | Lift a block                              |
 
-<Callout type="danger" title="Blocking purges">
-  Defederating a domain **purges already-cached content** from it — this is not a forward-only filter, and re-federating
-  does not bring the purged content back.
+`POST` takes `{ domain, reason?, severity? }`, where `severity` is `"suspend"`
+(the default) or `"limit"`, and answers `201` with `{ domain, purged }`. Posting
+a domain that is already listed updates its reason and severity.
+
+<Callout type="danger" title="Suspending purges">
+  Suspending a domain **purges already-cached content** from it — this is not a forward-only filter, and lifting the
+  block does not bring the purged content back. A limit purges nothing.
 </Callout>
+
+## Remote account blocks
+
+| Method   | Path                               | Purpose                           |
+| -------- | ---------------------------------- | --------------------------------- |
+| `GET`    | `/api/admin/blocked-actors`        | Blocked remote accounts           |
+| `POST`   | `/api/admin/blocked-actors`        | `{ account, reason? }`: block one |
+| `DELETE` | `/api/admin/blocked-actors?apId=…` | Unblock by ActivityPub id         |
+
+`account` is a `user@host` handle or a profile URL. An account the instance
+hasn't cached is looked up first, which needs federation on. `404` when it
+can't be found, `400` for a local account. Blocking purges the account's cached
+profile, posts and follows.
+
+## Federation network
+
+| Method   | Path                                           | Purpose                                          |
+| -------- | ---------------------------------------------- | ------------------------------------------------ |
+| `GET`    | `/api/admin/federation`                        | Settings, last FediDB run, and tracked instances |
+| `PATCH`  | `/api/admin/federation/settings`               | Change any of the settings below                 |
+| `POST`   | `/api/admin/federation/discover`               | Read FediDB now                                  |
+| `POST`   | `/api/admin/federation/instances`              | `{ domain }`: track an instance by hand          |
+| `PATCH`  | `/api/admin/federation/instances/:domain`      | `{ autoCache }`: pause or resume one             |
+| `DELETE` | `/api/admin/federation/instances/:domain`      | Stop tracking a hand-added instance              |
+| `POST`   | `/api/admin/federation/instances/:domain/sync` | Sync one instance now                            |
+
+Settings are `autoCache` and `fedidbDiscovery` (booleans, both default `true`),
+`syncIntervalHours` (1–168, default 6) and `authorsPerInstance` (1–100, default
+20).
+
+- Removing an instance FediDB listed answers `400`: pause it instead.
+- Adding or resuming a suspended or limited domain answers `400`.
+- Discover and sync answer `400` while federation is off, and `409` when a sync of
+  that instance is already running. Both are limited to 6 calls a minute per admin.
 
 ## Notes for scripting
 

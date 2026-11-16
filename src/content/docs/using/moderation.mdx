@@ -133,10 +133,27 @@ resend it from the same place.
 
 ### Federation and defederation
 
-**Admin → Federation** blocks a domain outright — and blocking **purges
-already-cached content** from that domain, rather than only filtering what
-arrives next. Re-federating a domain restores delivery going forward; purged
-content does not come back on its own. Moderators cannot reach this tab.
+**Admin → Federation** has two kinds of block. Moderators cannot reach this tab.
+
+**Domain blocks** come in two levels:
+
+| Level       | Effect                                                                                                                                                                                         |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Suspend** | Full defederation. Inbound activity is dropped, nothing is delivered, and **already-cached content is purged**.                                                                                |
+| **Limit**   | Keeps federating, but the domain's posts stay off **Global**, **Trending** and random picks, and it is never auto-cached. Profiles, follows, replies and search still work. Nothing is purged. |
+
+A block covers the domain and all its subdomains. Each blocked domain has a
+**Limit instead** or **Suspend instead** button. Switching to Suspend asks for
+confirmation, because it purges. Unblocking restores delivery going forward;
+purged content does not come back on its own.
+
+**Account blocks** cut off one remote account for everyone here, without
+touching the rest of its server. Enter a handle (`user@example.social`) or a
+profile link. The account's cached profile, posts and follows are removed, its
+activity is dropped, and it can't be looked up again. The block names the
+account's permanent ActivityPub id, so it still holds if the account changes
+its handle. An account this instance has never seen is looked up first, which
+needs federation to be on.
 
 <Callout type="warning" title="Defederation is blunt and visible">
   Blocking a domain cuts off every account on it, including people your users follow. Their follows break silently from
@@ -172,6 +189,6 @@ See [IP access rules](/self-hosting/admin-panel/#ip-access-rules).
 1. Publish your instance's rules somewhere readers can find them.
 2. Handle reports promptly — an unattended queue trains people not to report.
 3. Prefer the narrowest tool that works: report → remove post → suspend account →
-   delete account → defederate domain.
+   delete account → block a remote account → limit its domain → suspend the domain.
 4. Keep a note of why each domain block was made. Six months later you will not
    remember.
