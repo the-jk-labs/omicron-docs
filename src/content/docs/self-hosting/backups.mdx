@@ -10,7 +10,8 @@ import Callout from "@/components/Callout.astro";
 Every instance ships a `backup` service (pg_dump + restic) that needs no
 configuration: daily at 02:00 UTC it snapshots the database, uploads, state,
 and secrets into the encrypted `backups` volume, keeping the last 3 daily
-snapshots plus 1 weekly and pruning the rest. Snapshots are encrypted at rest
+snapshots plus 1 weekly and pruning the rest. A snapshot is also taken each
+time the backup service starts. Snapshots are encrypted at rest
 (AES-256) with a password generated into the `secrets` volume on first boot.
 
 | What        | Default                                                        |
@@ -18,6 +19,7 @@ snapshots plus 1 weekly and pruning the rest. Snapshots are encrypted at rest
 | Schedule    | Daily 02:00 UTC (`BACKUP_SCHEDULE`)                            |
 | Destination | Local `backups` volume (`BACKUP_REPOSITORY`)                   |
 | Retention   | 3 daily + 1 weekly (`BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`) |
+| Manual      | Newest 5 kept, separately (`BACKUP_KEEP_MANUAL`)               |
 | Contents    | Database dump, uploads, state, secrets, Caddyfile, bot policy  |
 
 ```bash
@@ -26,6 +28,11 @@ docker compose exec backup restic snapshots # list snapshots
 ./backup/restore.sh                         # restore the latest snapshot
 ./backup/restore.sh 562229b2                # restore a specific snapshot
 ```
+
+Manual snapshots — `backup-now`, including the one `install.sh` takes before
+every update — are kept by count, not by day: the newest 5, or all of them with
+`BACKUP_KEEP_MANUAL=0`. A daily or startup snapshot later the same day never
+removes one, so the state from before an upgrade survives the upgrade itself.
 
 <Callout type="danger" title="Save the encryption password offline">
 Backups cannot be restored without it:

@@ -81,6 +81,13 @@ podman-compose keeps a container on its old image otherwise. See
 ## SELinux
 
 On Fedora, RHEL, and derivatives, SELinux is enforcing by default. The bundled
-Compose file uses named volumes rather than host bind mounts, which avoids the
-usual `:z`/`:Z` labelling problems. If you add your own bind mount, remember the
-label suffix.
+Compose file keeps data in named volumes, and mounts its few host files (the
+`Caddyfile`, `botPolicy.yaml`, the Anubis theme) with the shared `z` label, so
+every container that needs one can read it. If you add your own bind mount,
+such as a custom bot policy, give it `z` too:
+
+```yaml
+- /home/you/botPolicy.yaml:/data/cfg/botPolicy.yaml:ro,z
+```
+
+Without it the container gets `permission denied` and keeps restarting.
