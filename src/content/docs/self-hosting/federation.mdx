@@ -94,7 +94,8 @@ Each tracked instance is synced every **6 hours** by default:
 2. Its public local feed is read **only to learn who has written recently**, up
    to **20 writers** by default.
 3. Each writer is resolved over ActivityPub, and up to 20 of their latest public
-   posts are cached.
+   long-form posts (Articles) are cached. Short notes from other software are
+   skipped.
 
 Posts are never copied from the other instance's API. They are fetched the same
 way as when a reader opens a remote profile, so they go through the same checks:
@@ -116,6 +117,7 @@ posts are cached from it, and when it last synced and will sync next:
 
 | Status             | Meaning                                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Syncing**        | A sync of this instance is running now                                                                         |
 | **Waiting**        | Not synced yet                                                                                                 |
 | **Synced**         | The last sync worked                                                                                           |
 | **Other software** | Not Omicron. Writers can't be discovered there; follows and replies still federate normally. Rechecked weekly. |
