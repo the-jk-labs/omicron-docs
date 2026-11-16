@@ -13,14 +13,15 @@ directly (fastest feedback loop).
 ```bash
 git clone https://github.com/the-jk-labs/omicron.git
 cd omicron
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
 Everything is wired, including Postgres, Redis, and Caddy. Good for testing
-upgrades, migrations, and anything involving the reverse proxy. Compose loads
-`docker-compose.override.yml` next to the main file, and its build sections are
-what make `--build` compile your working tree rather than pull the published
-images.
+upgrades, migrations, and anything involving the reverse proxy. `docker-compose.build.yml`
+adds the build sections, so `--build` compiles your working tree rather than
+pulling the published images. Set
+`COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml` in your shell to drop
+the `-f` flags.
 
 ## Option B — run the apps directly
 
@@ -118,7 +119,7 @@ apps/frontend/     SvelteKit + Bits UI + Tailwind + Tiptap
 apps/mobile/       Expo (React Native) app for Android and iOS
 packages/contract/ zod/mini schemas for every API response
 docker-compose.yml The whole stack, on the published images
-docker-compose.override.yml  Build sections for a source checkout
+docker-compose.build.yml     Build sections for a source checkout
 deploy.files       What an image install fetches next to its .env
 Caddyfile          Public entrypoint config
 install.sh         The installer and updater

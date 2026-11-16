@@ -15,7 +15,8 @@ To drive Podman by hand, just substitute the command:
 podman compose up -d              # or: podman-compose up -d
 ```
 
-In a source checkout, add `--build` to compile the images from the working tree.
+In a source checkout, add `-f docker-compose.yml -f docker-compose.build.yml` and
+`--build` to compile the images from the working tree.
 
 ## The one difference: ports below 1024
 

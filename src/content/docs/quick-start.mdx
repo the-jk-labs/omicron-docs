@@ -26,7 +26,7 @@ every merged change instead of releases, see
 ```bash
 git clone https://github.com/the-jk-labs/omicron.git omicron
 cd omicron
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
 This compiles the images from the source, which can take a few minutes. Watch it

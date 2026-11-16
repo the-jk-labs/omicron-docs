@@ -37,14 +37,15 @@ curl -fsSL https://raw.githubusercontent.com/the-jk-labs/omicron/main/install.sh
 
 All optional, set in the environment of the run:
 
-| Variable                    | Default                    | Purpose                                                                      |
-| --------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| `OMICRON_VERSION`           | `stable`                   | `stable`, `edge`, or an exact version such as `2.1.0`. Saved to `.env`.      |
-| `OMICRON_REGISTRY`          | `ghcr.io/the-jk-labs`      | Where images come from; the Docker Hub mirror works too. Saved to `.env`.    |
-| `OMICRON_DIR`               | `omicron` (`.` inside one) | Install directory.                                                           |
-| `HTTP_PORT` / `HTTPS_PORT`  | `80` / `443`               | Host ports, e.g. `8080`/`8443` for [rootless Podman](/self-hosting/podman/). |
-| `OMICRON_SKIP_BACKUP=1`     | off                        | Update without the pre-update backup.                                        |
-| `OMICRON_ALLOW_DOWNGRADE=1` | off                        | Move to an older version. Needs a restore afterwards.                        |
+| Variable                    | Default                    | Purpose                                                                             |
+| --------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
+| `OMICRON_VERSION`           | `stable`                   | `stable`, `edge`, or an exact version such as `2.1.0`. Saved to `.env`.             |
+| `OMICRON_REGISTRY`          | `ghcr.io/the-jk-labs`      | Where images come from; the Docker Hub mirror works too. Saved to `.env`.           |
+| `OMICRON_DIR`               | `omicron` (`.` inside one) | Install directory.                                                                  |
+| `HTTP_PORT` / `HTTPS_PORT`  | `80` / `443`               | Host ports, e.g. `8080`/`8443` for [rootless Podman](/self-hosting/podman/).        |
+| `OMICRON_SKIP_BACKUP=1`     | off                        | Update without the pre-update backup.                                               |
+| `OMICRON_ALLOW_DOWNGRADE=1` | off                        | Move to an older version, or go on when GitHub can't say. Needs a restore if older. |
+| `GITHUB_TOKEN`              | —                          | Any GitHub token; raises the limit for the installer's version check.               |
 
 <Callout type="warning" title="Keep the directory">
   Compose names the volumes after the install directory (`omicron_pgdata`, …). Moving or renaming the directory makes
@@ -63,13 +64,18 @@ All optional, set in the environment of the run:
 ```bash
 git clone https://github.com/the-jk-labs/omicron.git omicron
 cd omicron
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
-In a checkout, Compose also loads `docker-compose.override.yml`, which adds the
-build sections, so `--build` compiles the images from your working tree instead
-of pulling them. This is what you want if you run local changes. The first
-build takes a few minutes; later builds are cached and fast.
+`docker-compose.build.yml` adds the build sections, so this compiles the images
+from your working tree instead of pulling them. This is what you want if you run
+local changes. The first build takes a few minutes; later builds are cached and
+fast.
+
+<Callout type="tip" title="Your own settings">
+  Put instance-specific Compose changes, such as an extra mount, in `docker-compose.override.yml`. Compose loads it on
+  every engine, the repository never ships a file by that name, and the installer never touches it.
+</Callout>
 
 Running `./install.sh` in a checkout switches it to the prebuilt images: the
 installer checks out the commit the images were built from instead of
@@ -81,13 +87,16 @@ downloading the files.
 docker compose ps
 ```
 
-| Service    | Purpose                                           | Published on   |
-| ---------- | ------------------------------------------------- | -------------- |
-| `caddy`    | Public entrypoint, TLS termination, Let's Encrypt | 80, 443        |
-| `frontend` | SvelteKit web app                                 | 127.0.0.1:5173 |
-| `backend`  | JSON API + ActivityPub (Deno)                     | 127.0.0.1:8000 |
-| `postgres` | Database                                          | internal only  |
-| `redis`    | Queue + rate-limit state                          | internal only  |
+| Service        | Purpose                                           | Published on   |
+| -------------- | ------------------------------------------------- | -------------- |
+| `caddy`        | Public entrypoint, TLS termination, Let's Encrypt | 80, 443        |
+| `frontend`     | SvelteKit web app                                 | 127.0.0.1:5173 |
+| `backend`      | JSON API + ActivityPub (Deno)                     | 127.0.0.1:8000 |
+| `postgres`     | Database                                          | internal only  |
+| `redis`        | Queue + rate-limit state                          | internal only  |
+| `anubis`       | AI-scraper shield, in the path only when enabled  | internal only  |
+| `backup`       | Daily encrypted snapshots (restic)                | internal only  |
+| `init-secrets` | Generates the secrets on first boot, then idles   | none           |
 
 The frontend and backend ports are bound to **loopback only**. They exist for
 troubleshooting on the host; all public traffic goes through Caddy.
