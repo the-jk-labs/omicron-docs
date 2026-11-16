@@ -65,13 +65,13 @@ back anyway, see [Rolling back](/self-hosting/upgrading/#rolling-back).
 
 ## Where the images come from
 
-| Registry                            | Images                                                    |
-| ----------------------------------- | --------------------------------------------------------- |
-| GitHub Container Registry (default) | `ghcr.io/the-jk-labs/omicron-{backend,frontend,backup}`   |
-| Docker Hub (mirror)                 | `docker.io/<namespace>/omicron-{backend,frontend,backup}` |
+| Registry                            | Images                                                  |
+| ----------------------------------- | ------------------------------------------------------- |
+| GitHub Container Registry (default) | `ghcr.io/the-jk-labs/omicron-{backend,frontend,backup}` |
+| Docker Hub (mirror)                 | `docker.io/omicronhq/omicron-{backend,frontend,backup}` |
 
 Both get the same images in the same publish. To pull from Docker Hub instead,
-set `OMICRON_REGISTRY=docker.io/<namespace>` the same way as the version.
+set `OMICRON_REGISTRY=docker.io/omicronhq` the same way as the version.
 
 Each image has these tags:
 
