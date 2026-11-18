@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 ## What this repo is
 
@@ -9,7 +9,7 @@ Never add product code to this repo, and never edit the Omicron repo from here.
 ## Stack
 
 Astro 7 (content collections + MDX) · Svelte 5 islands · Bits UI · Tailwind CSS
-3.4 · Pagefind (search). Fully static output, deployed on Vercel.
+4 · Pagefind (search). Fully static output, deployed on Vercel.
 
 ## Adding or editing a page
 
@@ -39,12 +39,11 @@ thing.
 
    Never `text-neutral-*`, `bg-gray-*`, `text-red-600`, raw `bg-white`.
 
-3. **Copy the Bits UI docs' example class strings verbatim**, adapting v4 → v3
-   syntax: `outline-hidden` → `outline-none`, `ring-0!` → `!ring-0`,
-   `data-highlighted:` → `data-[highlighted]:`.
+3. **Copy the Bits UI docs' example class strings verbatim.** Both are on
+   Tailwind v4, so no syntax adaptation is needed.
 
-Tokens live in `tailwind.config.ts`; the CSS variables (ported verbatim from the
-Bits UI docs `:root`) live in `src/styles/app.css`. Keep both in sync with the
+Tokens (`@theme`) and the CSS variables (ported verbatim from the Bits UI docs
+`:root`) both live in `src/styles/app.css`; there is no `tailwind.config.ts`. Keep both in sync with the
 Omicron app. Do not invent new design tokens.
 
 Light and dark are both first-class — verify any UI change in both.
