@@ -41,9 +41,10 @@ owner-approved exception as of 2026-10-31:
 | Advisory                                                                 | Dependency path                                                    | Reason                                                                                                                                                                                                                             |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) | `@astrojs/svelte → @sveltejs/vite-plugin-svelte → deepmerge@4.3.1` | Low-severity prototype poisoning; no patched release is available. In this site, the plugin merges repository-controlled build configuration. The deployed output is static, not an HTTP service using deepmerge on visitor input. |
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) | `@astrojs/mdx → @astrojs/internal-helpers → picomatch`             | High severity; no patched release is available (vulnerable `<=4.0.7`). picomatch only matches repository-controlled glob patterns at build time. The deployed output is static and never evaluates visitor-supplied patterns.      |
 
-This acknowledges the advisory; it does not patch `deepmerge` or ignore other
-advisories. Remove the exception when a patched release is available or the
+This acknowledges these advisories; it does not patch the packages or ignore
+other advisories. Remove an exception when a patched release is available or the
 dependency is removed. Reassess it before introducing server rendering or
 externally supplied build configuration.
 

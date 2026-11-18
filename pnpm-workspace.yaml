@@ -5,9 +5,10 @@ minimumReleaseAgeExcludePrune: true
 trustPolicy: "off"
 trustPolicyExcludePrune: true
 auditConfig:
-  # Unpatched static-build dependency; scope and removal condition are in README.
+  # Unpatched static-build dependencies; scope and removal condition are in README.
   ignoreGhsas:
     - GHSA-gcqx-w48m-w2h4
+    - GHSA-fc5q-39xc-vjpf
 allowBuilds:
   esbuild: true
   sharp: true
