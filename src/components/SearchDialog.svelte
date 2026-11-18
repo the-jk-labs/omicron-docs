@@ -95,7 +95,7 @@
        field would crowd out the nav — never hidden, search always reachable. -->
   <Dialog.Trigger
     aria-label="Search docs"
-    class="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-input border border-border-input bg-background-alt px-0 text-sm text-muted-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-56 sm:justify-start sm:px-3"
+    class="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-input border border-border-input bg-background-alt px-0 text-sm text-muted-foreground shadow-btn transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-hidden sm:w-56 sm:justify-start sm:px-3"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +121,7 @@
   <Dialog.Portal>
     <Dialog.Overlay class="fixed inset-0 z-50 bg-black/60" />
     <Dialog.Content
-      class="fixed left-1/2 top-[12vh] z-50 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 rounded-card border border-border bg-background p-1.5 shadow-popover outline-none"
+      class="fixed top-[12vh] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 rounded-card border border-border bg-background p-1.5 shadow-popover outline-hidden"
     >
       <Dialog.Title class="sr-only">Search the documentation</Dialog.Title>
       <Dialog.Description class="sr-only">Find a page by title or content. Press Escape to close.</Dialog.Description>
@@ -146,7 +146,7 @@
           bind:value={query}
           placeholder="Search the documentation…"
           aria-label="Search query"
-          class="h-11 w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+          class="h-11 w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden"
         />
       </div>
 
@@ -165,12 +165,12 @@
               <li>
                 <a
                   href={result.href}
-                  class="block rounded-card px-3 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                  class="block rounded-card px-3 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-hidden"
                 >
                   <span class="flex items-baseline gap-2">
                     <span class="text-sm font-medium text-foreground">{result.title}</span>
                     {#if result.meta}
-                      <span class="text-xxs uppercase tracking-wide text-muted-foreground">
+                      <span class="text-xxs tracking-wide text-muted-foreground uppercase">
                         {result.meta}
                       </span>
                     {/if}

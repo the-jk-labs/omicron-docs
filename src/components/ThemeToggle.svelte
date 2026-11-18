@@ -25,7 +25,7 @@
   onclick={toggle}
   aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
   title="Toggle theme"
-  class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
+  class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-hidden active:scale-[0.98]"
 >
   {#if dark}
     <svg

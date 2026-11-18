@@ -6,7 +6,7 @@ The documentation site for [Omicron](https://github.com/the-jk-labs/omicron), a
 federated blogging platform.
 
 Built with **Astro** (content collections + MDX), **Svelte 5** islands using
-**Bits UI**, and **Tailwind CSS 3.4**. The theme tokens are ported from the
+**Bits UI**, and **Tailwind CSS 4**. The theme tokens are ported from the
 Bits UI docs theme, identical to the ones the Omicron app uses, so the docs and
 the product look like one thing.
 
@@ -109,9 +109,7 @@ The same rules the Omicron app follows:
 - **Theme tokens only** — `foreground`, `muted`, `background`, `accent`,
   `destructive`, `border`, and the matching radii and shadows. Never
   `text-neutral-*`, `bg-gray-*`, or raw `bg-white`.
-- **Copy the Bits UI docs' class strings verbatim**, adapting for Tailwind v3:
-  `outline-hidden` → `outline-none`, `ring-0!` → `!ring-0`,
-  `data-highlighted:` → `data-[highlighted]:`.
+- **Copy the Bits UI docs' class strings verbatim** — both use Tailwind v4.
 
 Both light and dark themes are first-class. Check any UI change in both.
 

@@ -23,7 +23,7 @@
     <Accordion.Item value={section.label} class="border-b border-dark-10 px-1 py-1">
       <Accordion.Header>
         <Accordion.Trigger
-          class="flex w-full flex-1 select-none items-center justify-between rounded-card px-3 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-foreground-alt transition-all hover:bg-muted [&[data-state=open]>svg]:rotate-180"
+          class="flex w-full flex-1 items-center justify-between rounded-card px-3 py-2.5 text-[13px] font-semibold tracking-wide text-foreground-alt uppercase transition-all select-none hover:bg-muted [&[data-state=open]>svg]:rotate-180"
         >
           {section.label}
           <svg
@@ -55,7 +55,7 @@
                 href={hrefFor(item.slug)}
                 onclick={() => onnavigate?.()}
                 aria-current={active ? "page" : undefined}
-                class="-ml-px flex items-center border-l-2 py-1.5 pl-4 pr-3 text-[13.5px] transition-colors
+                class="-ml-px flex items-center border-l-2 py-1.5 pr-3 pl-4 text-[13.5px] transition-colors
                   {active
                   ? 'border-foreground font-medium text-foreground'
                   : 'border-transparent text-muted-foreground hover:border-dark-40 hover:text-foreground'}"
