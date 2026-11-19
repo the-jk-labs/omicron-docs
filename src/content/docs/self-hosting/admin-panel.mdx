@@ -104,6 +104,17 @@ re-verification: the new address gets a confirmation link, the old address gets
 a security notice, and the account stays unverified until the new address is
 confirmed.
 
+Only an admin changes a login email directly: whoever holds the address can
+sign in as the account. A **moderator's** change becomes a request instead.
+Every admin gets a notification and approves or declines it in **Users**;
+approving runs the same re-verification. A newer request for the same account
+replaces the older one.
+
+**Reset two-factor…** (admins only, not on another admin) turns off an account's
+[two-factor sign-in](/using/account/#two-factor-sign-in) when its owner lost their
+authenticator. They sign in with their password and, if the instance requires it,
+set it up again.
+
 ## Federation
 
 Three sections:
@@ -120,6 +131,29 @@ See [Moderation tools](/using/moderation/#federation-and-defederation) for what
 each block does.
 
 ## Security
+
+### Two-factor for moderators and admins
+
+**Require two-factor for moderators and admins** is on by default. Moderators and
+admins can act on every account, so a stolen password shouldn't be enough. While
+it is on:
+
+- a moderator or admin without two-factor can't use any moderation tool: the API
+  answers `403`, and `/admin` and the app's Moderation screen show only the
+  setup until they finish it;
+- they can't turn their own two-factor off;
+- they get no backup codes.
+
+The setting can only be switched off by an admin who has two-factor set up.
+
+**Recovery.** A moderator who lost their phone: an admin uses **Reset
+two-factor…** on their account in **Users**. An admin's can't be reset from the
+panel, not even by another admin, so it is reset on the server; they then sign
+in with their password and set it up again:
+
+```bash
+docker compose exec backend deno task reset-two-factor <username>
+```
 
 ### AI-scraper protection
 
@@ -286,10 +320,11 @@ Expiry is checked by Caddy **on each request**, without a restart or cleanup
 timer. Saved rules are restored when the backend reconciles Caddy after a stack
 restart; there is a brief fail-open window while Caddy becomes reachable.
 
-<Callout type="warning" title="Not a host firewall or a CDN-aware IP filter">
-  Rules match the peer connecting directly to Caddy, not an IP supplied in forwarding headers. Do not use this first
-  version behind another reverse proxy or CDN: it can match the proxy instead of the visitor. Manage network-wide bans
-  in your host/provider firewall separately. Omicron does not change SSH access or firewall rules.
+<Callout type="warning" title="Not a host firewall">
+  Rules match the visitor's address as Caddy determines it, never one a visitor supplies. Behind a CDN or load balancer,
+  set [`TRUSTED_PROXIES`](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer) first, or rules match the CDN
+  instead of the visitor. Manage network-wide bans in your host/provider firewall separately. Omicron does not change
+  SSH access or firewall rules.
 </Callout>
 
 **Compatibility and recovery paths are exempt from custom IP rules:** the API,

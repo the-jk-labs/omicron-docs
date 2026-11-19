@@ -61,6 +61,39 @@ restored address so you can get back in.
   again afterwards.
 </Callout>
 
+## Two-factor sign-in
+
+Two-factor sign-in asks for a six-digit code from an authenticator app after your
+password, so a stolen password alone can't open your account. It is optional for
+regular accounts and [required for moderators and admins](/self-hosting/admin-panel/#two-factor-for-moderators-and-admins)
+on most instances.
+
+Turn it on in **Settings → Account → Two-factor authentication**:
+
+1. Enter your password.
+2. Add Omicron to your authenticator app: scan the QR code, choose **Open in
+   authenticator app**, or enter the key shown under **Can't scan it?**. Password
+   managers that keep one-time codes (1Password, Bitwarden, …) work too.
+3. Enter the **6-digit code from the app** to confirm.
+
+A regular account then gets **backup codes**. Each signs you in once when your
+phone isn't at hand; keep them somewhere safe. **New backup codes** replaces the
+old set, and **Turn off** removes two-factor again (both ask for your password).
+
+From then on, signing in with your password also asks for a code. Ten wrong
+codes in a row lock the account for a while.
+
+**Lost your authenticator?** Sign in with a backup code, then set it up again. No
+backup codes left: ask an admin, who can reset it from your account in
+**Admin → Users**.
+
+<Callout type="note" title="Moderators and admins">
+  Staff accounts get no backup codes, and the server refuses any kept from before: a backup code would be a second
+  password for an account that can act on everyone. While the instance requires it, you can't turn yours off. If you
+  lose your phone, an admin resets it; an admin's is reset on the server, see [Admin
+  panel](/self-hosting/admin-panel/#two-factor-for-moderators-and-admins).
+</Callout>
+
 ## Passkeys
 
 Passkeys sign you in with your fingerprint, face, or screen lock instead of a
