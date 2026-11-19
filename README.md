@@ -6,7 +6,7 @@ The documentation site for [Omicron](https://github.com/the-jk-labs/omicron), a
 federated blogging platform.
 
 Built with **Astro** (content collections + MDX), **Svelte 5** islands using
-**Bits UI**, and **Tailwind CSS 3.4**. The theme tokens are ported from the
+**Bits UI**, and **Tailwind CSS 4**. The theme tokens are ported from the
 Bits UI docs theme, identical to the ones the Omicron app uses, so the docs and
 the product look like one thing.
 
@@ -41,9 +41,10 @@ owner-approved exception as of 2026-10-31:
 | Advisory                                                                 | Dependency path                                                    | Reason                                                                                                                                                                                                                             |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) | `@astrojs/svelte → @sveltejs/vite-plugin-svelte → deepmerge@4.3.1` | Low-severity prototype poisoning; no patched release is available. In this site, the plugin merges repository-controlled build configuration. The deployed output is static, not an HTTP service using deepmerge on visitor input. |
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) | `@astrojs/mdx → @astrojs/internal-helpers → picomatch`             | High severity; no patched release is available (vulnerable `<=4.0.7`). picomatch only matches repository-controlled glob patterns at build time. The deployed output is static and never evaluates visitor-supplied patterns.      |
 
-This acknowledges the advisory; it does not patch `deepmerge` or ignore other
-advisories. Remove the exception when a patched release is available or the
+This acknowledges these advisories; it does not patch the packages or ignore
+other advisories. Remove an exception when a patched release is available or the
 dependency is removed. Reassess it before introducing server rendering or
 externally supplied build configuration.
 
@@ -109,9 +110,7 @@ The same rules the Omicron app follows:
 - **Theme tokens only** — `foreground`, `muted`, `background`, `accent`,
   `destructive`, `border`, and the matching radii and shadows. Never
   `text-neutral-*`, `bg-gray-*`, or raw `bg-white`.
-- **Copy the Bits UI docs' class strings verbatim**, adapting for Tailwind v3:
-  `outline-hidden` → `outline-none`, `ring-0!` → `!ring-0`,
-  `data-highlighted:` → `data-[highlighted]:`.
+- **Copy the Bits UI docs' class strings verbatim** — both use Tailwind v4.
 
 Both light and dark themes are first-class. Check any UI change in both.
 

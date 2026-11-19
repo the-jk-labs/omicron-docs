@@ -21,10 +21,10 @@ const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
 ---
 
 <BaseLayout {title} {description} currentSlug={slug} showFooter={false}>
-  <div class="mx-auto flex w-full max-w-[90rem] flex-1 px-4 sm:px-6">
+  <div class="mx-auto flex w-full max-w-360 flex-1 px-4 sm:px-6">
     {/* Sidebar — sticky under the header, its own scroll region. */}
     <aside
-      class="hidden w-[17rem] shrink-0 lg:block"
+      class="hidden w-68 shrink-0 lg:block"
       style="position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height))"
     >
       <nav aria-label="Documentation" class="no-scrollbar h-full overflow-y-auto py-6 pr-4">
@@ -85,7 +85,7 @@ const section = nav.find((s) => s.items.some((i) => i.slug === slug))?.label;
 
     {/* Table of contents — hidden below xl, where the reading column takes over. */}
     <aside
-      class="hidden w-[15rem] shrink-0 xl:block"
+      class="hidden w-60 shrink-0 xl:block"
       style="position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height))"
     >
       <div class="no-scrollbar h-full overflow-y-auto py-10 pl-2">
