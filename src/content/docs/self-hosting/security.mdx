@@ -194,6 +194,12 @@ Cached remote actors and their posts are also pruned daily once they are stale
 and unreferenced — see `REMOTE_CACHE_RETENTION_DAYS` above — so a hostile
 instance serving many distinct actors cannot grow the database without bound.
 
+Sign-in, two-factor codes and password changes have their own budgets, and
+moderators and admins must use [two-factor sign-in](/self-hosting/admin-panel/#two-factor-for-moderators-and-admins)
+unless an admin turns that off. Behind a CDN, set
+[`TRUSTED_PROXIES`](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer)
+so these limits see visitors rather than the CDN.
+
 Without Redis these counters are per-process and reset on restart. With
 `REDIS_URL` set they are shared and durable. See
 [Rate limits](/reference/rate-limits/).

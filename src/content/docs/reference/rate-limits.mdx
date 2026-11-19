@@ -23,6 +23,19 @@ webhook, as well as OAuth authorization and optional Umami Cloud collection.
 | Content webhook     | `RL_WEBHOOK_MAX`     | 30      | 1 min  | Source IP                  |
 | Content portability | Fixed in source      | 6       | 1 min  | Signed-in account          |
 
+Sign-in and account security have fixed budgets on top, per source IP:
+
+| Endpoint                                                               | Budget         |
+| ---------------------------------------------------------------------- | -------------- |
+| Two-factor code, backup code, email-change code                        | 10 per 15 min  |
+| Change password, delete account, two-factor on / off, new backup codes | 10 per hour    |
+| Password reset, verification email                                     | 5 per hour     |
+| Request an email change                                                | 3 per 24 hours |
+
+"Source IP" is the visitor's address as Caddy determines it. Behind a CDN or load
+balancer, set [`TRUSTED_PROXIES`](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer),
+or every visitor through the same proxy shares one budget.
+
 The inbox and content webhook have environment-configurable payload caps:
 
 | Variable                 | Default   | Meaning                                         |
@@ -238,7 +251,10 @@ RATE_LIMIT_ENABLED=false
 ## Tuning
 
 - **Login too tight for a shared office IP?** Raise `RL_LOGIN_MAX` rather than
-  disabling the limiter.
+  disabling the limiter. The bundled stack doesn't forward `RL_*` to the backend
+  on its own; see [Environment variables](/reference/environment/).
+- **Everyone throttled at once behind a CDN?** Set `TRUSTED_PROXIES` to its
+  ranges; see [Behind a CDN](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer).
 - **An import tool hitting the write cap?** Raise `RL_API_WRITE_MAX` temporarily
   and put it back afterwards.
 - **A large federated instance getting throttled on delivery?** Raise

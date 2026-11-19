@@ -69,6 +69,37 @@ HTTPS_PORT=8443
 Automatic HTTPS on non-standard ports is not standard behaviour, so for a real
 public instance prefer freeing 80 and 443 instead.
 
+## Behind a CDN or load balancer
+
+Visitors normally connect straight to Caddy. If a CDN (Cloudflare and the like),
+a cloud load balancer or your own proxy sits in front instead, Caddy sees that
+proxy as the client. Every visitor through it would then share one rate-limit
+budget: 15 failed sign-ins from anyone there would lock everyone out for 15
+minutes. IP rules and the scraper shield would also act on the proxy.
+
+Tell Caddy the proxy's address ranges in `.env`, space-separated, in CIDR form,
+then recreate Caddy:
+
+```bash
+TRUSTED_PROXIES=203.0.113.0/24 2001:db8::/32
+```
+
+```bash
+docker compose up -d --force-recreate caddy
+```
+
+Caddy then reads the visitor's address from the `X-Forwarded-For` those hosts
+send, right to left, so an address a visitor forges in front is ignored. It
+passes exactly that one address on to the backend, the web app and Anubis. Use
+the provider's full published list: Cloudflare's is at
+[cloudflare.com/ips](https://www.cloudflare.com/ips/), and it changes from time to
+time.
+
+<Callout type="warning" title="Only when there is a proxy">
+  Leave `TRUSTED_PROXIES` unset when visitors connect directly. Trusting a range you don't control lets hosts in it
+  claim any visitor address, and so dodge rate limits and IP rules.
+</Callout>
+
 ## Localhost never gets a certificate
 
 That is expected. `localhost` is served over plain HTTP for local development.

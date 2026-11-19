@@ -175,12 +175,13 @@ at `/.well-known/assetlinks.json`.
 
 ## Public entrypoint
 
-| Variable     | Default | Purpose                    |
-| ------------ | ------- | -------------------------- |
-| `HTTP_PORT`  | `80`    | Host HTTP port for Caddy.  |
-| `HTTPS_PORT` | `443`   | Host HTTPS port for Caddy. |
+| Variable          | Default   | Purpose                                                                                                                                                                                      |
+| ----------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HTTP_PORT`       | `80`      | Host HTTP port for Caddy.                                                                                                                                                                    |
+| `HTTPS_PORT`      | `443`     | Host HTTPS port for Caddy.                                                                                                                                                                   |
+| `TRUSTED_PROXIES` | _(empty)_ | Address ranges (CIDR, space-separated) of a CDN or load balancer in front of Caddy. Empty trusts nothing. See [Behind a CDN](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer). |
 
-Changing these breaks standard automatic HTTPS — Let's Encrypt validates over 80
+Changing the ports breaks standard automatic HTTPS — Let's Encrypt validates over 80
 and 443. Change them only when those ports are genuinely unavailable.
 
 ## AI-scraper protection

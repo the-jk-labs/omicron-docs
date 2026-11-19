@@ -91,6 +91,31 @@ git pull --ff-only
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
+## Two-factor sign-in and enforced sign-in limits
+
+This release adds [two-factor sign-in](/using/account/#two-factor-sign-in),
+requires it for moderators and admins, routes moderators' login-email changes
+through an admin, and makes the sign-in limits actually apply. Two migrations
+(`0051_two_factor`, `0052_email_change_requests`) add tables and run on startup.
+
+1. Take a backup and confirm the snapshot, as always. `./install.sh` does this
+   for you; by hand:
+
+   ```bash
+   docker compose exec backup backup-now
+   docker compose exec backup restic snapshots
+   ```
+
+2. Update (`./install.sh`). The Caddyfile changes too, and the installer
+   recreates the stack for it; a source install needs `--force-recreate caddy`.
+3. **Every moderator and admin sets up an authenticator app** in Settings →
+   Account before moderating again; until then moderation tools answer `403`. To
+   opt out, an admin with two-factor set up switches off **Admin → Security →
+   Require two-factor for moderators and admins**.
+4. **Behind a CDN or load balancer?** Set `TRUSTED_PROXIES` now. Sign-in limits
+   are per IP, and without it every visitor through the proxy shares one budget;
+   see [Behind a CDN](/self-hosting/domain-and-https/#behind-a-cdn-or-load-balancer).
+
 ## Federation network (auto-cache)
 
 This release lets a federating instance cache the Omicron network in the
