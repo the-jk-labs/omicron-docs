@@ -33,17 +33,17 @@ const pages = flatNav
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
+  class="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-sm supports-backdrop-filter:bg-background/70"
   style="height: var(--header-height)"
 >
   {/* Same max width and padding as the docs shell, so the wordmark lines up
       with the sidebar and the search cluster with the table of contents. */}
-  <div class="mx-auto flex h-full max-w-[90rem] items-center gap-3 px-4 sm:px-6">
+  <div class="mx-auto flex h-full max-w-360 items-center gap-3 px-4 sm:px-6">
     {currentSlug && <MobileNav client:idle sections={nav} currentSlug={currentSlug} />}
 
     <a
       href="/"
-      class="flex items-center gap-2 rounded-button text-[15px] font-semibold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      class="flex items-center gap-2 rounded-button text-[15px] font-semibold tracking-tight text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <Logo class="h-7 w-auto shrink-0" />
       Omicron
@@ -57,7 +57,7 @@ const pages = flatNav
         target="_blank"
         rel="noreferrer noopener"
         aria-label="Omicron on GitHub"
-        class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" class="size-[18px]" aria-hidden="true">
           <path

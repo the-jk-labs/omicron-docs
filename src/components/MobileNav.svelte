@@ -13,7 +13,7 @@
 <Dialog.Root bind:open>
   <Dialog.Trigger
     aria-label="Open navigation"
-    class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+    class="inline-flex size-9 items-center justify-center rounded-input border border-border-input bg-background-alt text-foreground shadow-btn transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-hidden lg:hidden"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -33,13 +33,13 @@
   <Dialog.Portal>
     <Dialog.Overlay class="fixed inset-0 z-50 bg-black/60 lg:hidden" />
     <Dialog.Content
-      class="fixed inset-y-0 left-0 z-50 flex w-[19rem] max-w-[85vw] flex-col border-r border-border bg-background outline-none lg:hidden"
+      class="fixed inset-y-0 left-0 z-50 flex w-76 max-w-[85vw] flex-col border-r border-border bg-background outline-hidden lg:hidden"
     >
       <div class="flex items-center justify-between border-b border-border px-4 py-3">
         <Dialog.Title class="text-sm font-semibold tracking-tight text-foreground">Documentation</Dialog.Title>
         <Dialog.Close
           aria-label="Close navigation"
-          class="inline-flex size-8 items-center justify-center rounded-input text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+          class="inline-flex size-8 items-center justify-center rounded-input text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

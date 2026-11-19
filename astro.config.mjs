@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 
 // The canonical origin. docs.omicron.blog is the official domain, so it is the
@@ -31,6 +32,7 @@ export default defineConfig({
     format: "directory",
   },
   vite: {
+    plugins: [tailwindcss()],
     resolve: {
       // `@/…` in .astro and .svelte files, mirroring tsconfig paths.
       alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },

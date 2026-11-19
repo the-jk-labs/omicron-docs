@@ -5,17 +5,16 @@ minimumReleaseAgeExcludePrune: true
 trustPolicy: "off"
 trustPolicyExcludePrune: true
 auditConfig:
-  # Unpatched static-build dependency; scope and removal condition are in README.
+  # Unpatched static-build dependencies; scope and removal condition are in README.
   ignoreGhsas:
     - GHSA-gcqx-w48m-w2h4
+    - GHSA-fc5q-39xc-vjpf
 allowBuilds:
   esbuild: true
   sharp: true
 overrides:
   # Ajv requires 3.x; an open-ended range can select an incompatible major.
   fast-uri: "^3.1.9"
-  # Tailwind 3 and postcss-nested 6 otherwise retain the vulnerable 6.x parser.
-  postcss-selector-parser@<7.1.6: "^7.1.7"
   # Astro 7.4.5+'s bundler accepts the 2.0 betas, which @astrojs/check then loads and crashes on; every consumer takes 1.x.
   "@emnapi/core": "^1.11.3"
   "@emnapi/runtime": "^1.11.3"
