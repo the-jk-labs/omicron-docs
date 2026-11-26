@@ -255,18 +255,19 @@ Daily encrypted snapshots (database + uploads + state + secrets) via the
 built-in `backup` service. All optional — unset means the default, and the
 defaults already protect a fresh instance locally.
 
-| Variable                | Default           | Purpose                                                                                                                                    |
-| ----------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `BACKUP_ENABLED`        | `true`            | Set `false` to disable the sidecar entirely.                                                                                               |
-| `BACKUP_SCHEDULE`       | `0 2 * * *`       | 5-field cron, UTC. Daily at 02:00.                                                                                                         |
-| `BACKUP_REPOSITORY`     | `/backups/restic` | Snapshot destination. Local path by default; `s3:<endpoint>/<bucket>` for R2, S3, MinIO, B2.                                               |
-| `BACKUP_S3_REGION`      | `auto`            | Region for S3-compatible backends (`auto` is what R2 wants; set a real region for AWS). Ignored locally. `AWS_DEFAULT_REGION` wins if set. |
-| `AWS_ACCESS_KEY_ID`     | —                 | Key for the off-site backend. Unused locally.                                                                                              |
-| `AWS_SECRET_ACCESS_KEY` | —                 | Secret for the off-site backend. Unused locally.                                                                                           |
-| `BACKUP_KEEP_DAILY`     | `3`               | Days of automatic (daily and startup) snapshots to keep, one per day; older ones are pruned after each run.                                |
-| `BACKUP_KEEP_WEEKLY`    | `1`               | Weekly snapshots to keep.                                                                                                                  |
-| `BACKUP_KEEP_MONTHLY`   | `0`               | Monthly snapshots to keep.                                                                                                                 |
-| `BACKUP_KEEP_MANUAL`    | `5`               | Manual snapshots (`backup-now`, the installer's pre-update backup) to keep, newest first. `0` keeps them all.                              |
+| Variable                  | Default           | Purpose                                                                                                                                    |
+| ------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BACKUP_ENABLED`          | `true`            | Set `false` to disable the sidecar entirely.                                                                                               |
+| `BACKUP_SCHEDULE`         | `0 2 * * *`       | 5-field cron, UTC. Daily at 02:00.                                                                                                         |
+| `BACKUP_REPOSITORY`       | `/backups/restic` | Snapshot destination. Local path by default; `s3:<endpoint>/<bucket>` for R2, S3, MinIO, B2.                                               |
+| `BACKUP_S3_REGION`        | `auto`            | Region for S3-compatible backends (`auto` is what R2 wants; set a real region for AWS). Ignored locally. `AWS_DEFAULT_REGION` wins if set. |
+| `AWS_ACCESS_KEY_ID`       | —                 | Key for the off-site backend. Unused locally.                                                                                              |
+| `AWS_SECRET_ACCESS_KEY`   | —                 | Secret for the off-site backend. Unused locally.                                                                                           |
+| `BACKUP_KEEP_DAILY`       | `3`               | Days of automatic (daily and startup) snapshots to keep, one per day; older ones are pruned after each run.                                |
+| `BACKUP_KEEP_WEEKLY`      | `1`               | Weekly snapshots to keep.                                                                                                                  |
+| `BACKUP_KEEP_MONTHLY`     | `0`               | Monthly snapshots to keep.                                                                                                                 |
+| `BACKUP_KEEP_MANUAL`      | `5`               | Manual snapshots (`backup-now`, the installer's pre-update backup) to keep, newest first. `0` keeps them all.                              |
+| `BACKUP_MAINTENANCE_DAYS` | `0`               | Run `restic prune` and `restic check` at most every N days instead of after every run; `7` suits an off-site repository. `0` = every run.  |
 
 Verified against `.env.example` and `docker-compose.yml` in the app repo. See
 [Backups and restore](/self-hosting/backups/) for operations.

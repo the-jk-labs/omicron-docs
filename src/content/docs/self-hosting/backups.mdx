@@ -20,6 +20,7 @@ time the backup service starts. Snapshots are encrypted at rest
 | Destination | Local `backups` volume (`BACKUP_REPOSITORY`)                   |
 | Retention   | 3 daily + 1 weekly (`BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`) |
 | Manual      | Newest 5 kept, separately (`BACKUP_KEEP_MANUAL`)               |
+| Maintenance | Prune + check after every run (`BACKUP_MAINTENANCE_DAYS`)      |
 | Contents    | Database dump, uploads, state, secrets, Caddyfile, bot policy  |
 
 ```bash
@@ -64,6 +65,14 @@ AWS_SECRET_ACCESS_KEY=...
 `BACKUP_S3_REGION` defaults to `auto` (what R2 wants); set a real region for
 AWS. Then `docker compose up -d` and one `backup-now` to confirm a snapshot
 lands. All variables are listed under [Environment variables](/reference/environment/).
+
+Every run ends with `restic prune` and `restic check`, which read repository
+data. Locally that is cheap; on a bucket it is a download you pay for, on every
+daily run, every container start and every update. For an off-site repository,
+`BACKUP_MAINTENANCE_DAYS=7` runs them at most once a week. Retention still
+applies on every run, so the same snapshots are kept; only reclaiming their
+space and verifying the repository wait, which means corruption is found up to
+a week later. A failed check still fails the run and is retried on the next one.
 
 ## Manual methods
 
