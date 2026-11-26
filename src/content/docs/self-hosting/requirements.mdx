@@ -21,7 +21,7 @@ is a container engine.
 | Disk         | 2 GB free        | a few GB (grows with uploads) | 5 GB+ (grows with uploads)       |
 | Architecture | amd64 or arm64   | amd64 or arm64                | amd64 or arm64                   |
 | Domain       | not needed       | optional                      | **required**                     |
-| Open ports   | none (localhost) | 80 + 443                      | **80 + 443, publicly reachable** |
+| Open ports   | none (localhost) | 80 + 443 (TCP), 443 (UDP)     | **80 + 443, publicly reachable** |
 
 Notes:
 
@@ -36,6 +36,9 @@ Notes:
 - **No managed database, TLS certificate, or secret to provision.** Postgres, the
   Let's Encrypt certificate, the session secret, and the database password are
   bundled or generated on first boot.
+- **UDP 443 is optional.** It carries HTTP/3, which Caddy offers to every
+  browser and which helps most on phones and lossy networks. If a firewall
+  blocks it, browsers quietly keep using HTTP/2 and nothing breaks.
 
 <Callout type="warning" title="Federation needs to be reachable">
   Other ActivityPub servers deliver activities to your inbox over port 443. A federated instance behind a firewall that

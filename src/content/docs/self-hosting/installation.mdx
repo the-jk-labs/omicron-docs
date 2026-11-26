@@ -87,16 +87,16 @@ downloading the files.
 docker compose ps
 ```
 
-| Service        | Purpose                                           | Published on   |
-| -------------- | ------------------------------------------------- | -------------- |
-| `caddy`        | Public entrypoint, TLS termination, Let's Encrypt | 80, 443        |
-| `frontend`     | SvelteKit web app                                 | 127.0.0.1:5173 |
-| `backend`      | JSON API + ActivityPub (Deno)                     | 127.0.0.1:8000 |
-| `postgres`     | Database                                          | internal only  |
-| `redis`        | Queue + rate-limit state                          | internal only  |
-| `anubis`       | AI-scraper shield, in the path only when enabled  | internal only  |
-| `backup`       | Daily encrypted snapshots (restic)                | internal only  |
-| `init-secrets` | Generates the secrets on first boot, then idles   | none           |
+| Service        | Purpose                                           | Published on     |
+| -------------- | ------------------------------------------------- | ---------------- |
+| `caddy`        | Public entrypoint, TLS termination, Let's Encrypt | 80, 443, 443/udp |
+| `frontend`     | SvelteKit web app                                 | 127.0.0.1:5173   |
+| `backend`      | JSON API + ActivityPub (Deno)                     | 127.0.0.1:8000   |
+| `postgres`     | Database                                          | internal only    |
+| `redis`        | Queue + rate-limit state                          | internal only    |
+| `anubis`       | AI-scraper shield, in the path only when enabled  | internal only    |
+| `backup`       | Daily encrypted snapshots (restic)                | internal only    |
+| `init-secrets` | Generates the secrets on first boot, then idles   | none             |
 
 The frontend and backend ports are bound to **loopback only**. They exist for
 troubleshooting on the host; all public traffic goes through Caddy.
