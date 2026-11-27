@@ -70,7 +70,15 @@ Generated from the indexing switch — never a file you edit. When indexing is o
 it allows crawling, points at the sitemap, and disallows the paths that should
 never be indexed: `/compose`, `/posts/manage`, `/drafts`, `/dashboard`,
 `/settings`, `/admin`, `/api/`, `/search`, `/notifications`,
-`/follow-requests`, and the sign-in and setup screens.
+`/follow-requests`, `/verify-email`, `/reset-password`, `/forgot-password`, and
+`/setup`.
+
+`/login` and `/register` are deliberately **not** disallowed in `robots.txt`.
+Both are linked site-wide from the navigation and already emit
+`noindex, nofollow`; blocking them in `robots.txt` stops crawlers from reading
+that directive and causes engines to index the blocked URLs without a snippet.
+When the scraper shield is on, Anubis still challenges generic browsers on both
+paths while allowing verified search crawlers through to read the `noindex` tag.
 
 `/search` is disallowed deliberately. Every distinct `?q=` is a distinct URL, so
 one discovered search link lets a crawler generate them without end, each
@@ -169,7 +177,10 @@ Handled automatically, with nothing to configure:
   local articles (empty, remote-only, or single-post), empty, private, or frozen
   local profiles, and empty, private, or "Read later" reading lists — also carry
   `noindex, follow` and omit structured data. Keeping `follow` lets crawlers keep
-  traversing links onward to local articles without indexing thin shells.
+  traversing links onward to local articles without indexing thin shells. Tags
+  with no visible articles, no followers, and no active profile reference (such
+  as draft-only or orphaned tags) return `404` instead, and unreferenced tags
+  are pruned automatically during daily cache cleanup.
 
 ## When search traffic disappears
 
