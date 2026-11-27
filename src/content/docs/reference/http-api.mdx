@@ -290,15 +290,19 @@ Federated equivalents, keyed by handle (`user@domain`):
 
 ## Tags — `/api/tags`
 
-| Method            | Path            | Purpose                 |
-| ----------------- | --------------- | ----------------------- |
-| `GET`             | `/`             | Trending tags           |
-| `GET`             | `/suggest?q=`   | Composer autocomplete   |
-| `GET`             | `/search?q=`    | Search tags by name     |
-| `GET`             | `/following`    | Tags the user follows   |
-| `GET`             | `/:slug`        | One tag                 |
-| `GET`             | `/:slug/posts`  | Posts under a tag       |
-| `POST` / `DELETE` | `/:slug/follow` | Follow / unfollow a tag |
+| Method            | Path            | Purpose                                                                     |
+| ----------------- | --------------- | --------------------------------------------------------------------------- |
+| `GET`             | `/`             | Trending tags                                                               |
+| `GET`             | `/suggest?q=`   | Composer autocomplete                                                       |
+| `GET`             | `/search?q=`    | Search tags by name                                                         |
+| `GET`             | `/following`    | Tags the user follows                                                       |
+| `GET`             | `/:slug/detail` | One tag (avoids colliding with `/following`, `/suggest`, and `/search`)     |
+| `GET`             | `/:slug`        | Compatible alias for `/:slug/detail` (shadowed by the literal routes above) |
+| `GET`             | `/:slug/posts`  | Posts under a tag                                                           |
+| `POST` / `DELETE` | `/:slug/follow` | Follow / unfollow a tag                                                     |
+
+`GET /api/tags/:slug/detail` returns `{ tag, postCount, localPostCount, followerCount, isFollowing }`.
+`postCount` counts all published articles visible to the viewer (local and cached remote); `localPostCount` counts only published local articles and determines whether `/tags/:slug` is indexable. Both `/:slug/detail` and `/:slug/posts` resolve tag aliases to the canonical `tag.slug`.
 
 ## Lists — `/api/lists`
 
