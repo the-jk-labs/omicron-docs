@@ -53,9 +53,9 @@ tag, or list it is the newest thing that page lists.
 - **Posts from other instances** — they belong to the instance that published
   them. Serving them here would compete with the original; those pages are
   additionally marked `noindex` for the same reason.
-- **Private and suspended accounts** — nothing public to show.
-- **Tags used by only one post** — the page would list a single link and add
-  nothing over the post itself.
+- **Private, frozen, suspended, and empty accounts** — nothing public to show.
+- **Tags with fewer than two local articles** — empty, remote-only, or
+  single-post tag pages add nothing over the posts themselves.
 - **Empty reading lists, and every "Read later" list** — a personal queue, not a
   published collection.
 
@@ -145,8 +145,9 @@ Handled automatically, with nothing to configure:
   an article reached through an alias hostname still has a single address.
 - **Permanent redirects to it.** An article's address is built from its title, so
   retitling one moves it; the address it left `308`s to the new one rather than
-  disappearing, as does any older form of the link. Crawlers follow that and
-  carry the ranking over instead of re-learning the page from nothing.
+  disappearing, as does any older form of the link. Aliased or differently cased
+  tag slugs (`/tags/<alias>`) also `308` to the canonical tag URL. Crawlers follow
+  that and carry the ranking over instead of re-learning the page from nothing.
 - **The language a post was written in**, on `<html lang>` and in the structured
   data, taken from the author's language selection.
 - **Structured data** — `BlogPosting` for a post (with author, dates, language,
@@ -163,6 +164,12 @@ Handled automatically, with nothing to configure:
   that federates well would offer search engines far more copied text than
   original writing, which reads as a scraper site and costs the instance's own
   authors their ranking.
+- **`noindex, follow` on thin local index pages.** The same thin or non-public
+  surfaces omitted from the sitemap — tag pages with fewer than two published
+  local articles (empty, remote-only, or single-post), empty, private, or frozen
+  local profiles, and empty, private, or "Read later" reading lists — also carry
+  `noindex, follow` and omit structured data. Keeping `follow` lets crawlers keep
+  traversing links onward to local articles without indexing thin shells.
 
 ## When search traffic disappears
 
